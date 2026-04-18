@@ -1,0 +1,67 @@
+# Archivos y directorios a ignorar en Git
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Archivos de sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Archivos IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+.classpath
+
+# Configuraciones locales
+config.local.php
+.env
+.env.local
+
+# Archivos temporales
+tmp/
+temp/
+*.tmp
+*.bak
+*.cache
+
+# Sesiones PHP (si se guardan en archivo)
+sessions/
+*.sess
+
+# Base de datos local (si se agrega en el futuro)
+*.sqlite
+*.db
+
+# Dependencias (si se agregan en el futuro)
+vendor/
+node_modules/
+composer.lock
+package-lock.json
+
+# Archivos de backup
+*.backup
+*.old
+*_backup
+
+# Uploads de usuarios (si se agregan)
+uploads/
+files/
+
+# Cache de frameworks
+cache/
+storage/
+
+# Archivos sensibles
+credentials.php
+secrets.php
+api_keys.php

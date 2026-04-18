@@ -1,0 +1,4 @@
+{
+  "skill_path": "../antigravity-awesome-skills/skills",
+  "active_bundles": ["web-wizard", "database-expert", "clean-code-specialist"]
+}

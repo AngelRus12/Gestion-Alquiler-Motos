@@ -1,0 +1,14 @@
+RewriteEngine On
+
+# Hide .php extension
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ $1.php [L]
+
+# Redirect .php to without extension
+RewriteCond %{REQUEST_METHOD} !=POST
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /([^.]+)\.php\ HTTP
+RewriteRule ^([^.]+)\.php$ /$1 [R=301,L]
+
+# Set default charset to UTF-8
+AddDefaultCharset UTF-8
