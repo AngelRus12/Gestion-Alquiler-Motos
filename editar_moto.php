@@ -2,36 +2,64 @@
 session_start();
 require_once 'loginbd.php';
 
-if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_rol'] !== 'admin') {
-    header('Location: login.php');
+// 1. Seguridad: Verificar que el usuario es administrador
+if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
+    header('Location: login.php?error=acceso_denegado');
     exit();
 }
 
 $conexion = mysqli_connect($db_hostname, $db_username, $db_password, $db_database);
-$id = $_GET['id'];
-$mensaje = "";
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $marca = $_POST['marca'];
-    $modelo = $_POST['modelo'];
-    $precio = $_POST['precio_dia'];
-    $disponible = $_POST['disponible'];
-
-    $sql = "UPDATE motos SET marca='$marca', modelo='$modelo', precio_dia='$precio', disponible='$disponible' WHERE id=$id";
-    if (mysqli_query($conexion, $sql)) {
-        $mensaje = "<div class='success'>¡Listo! La moto se ha actualizado.</div>";
-    }
+if (!$conexion) {
+    die("Error de conexión: " . mysqli_connect_error());
 }
+mysqli_set_charset($conexion, "utf8");
 
-$res = mysqli_query($conexion, "SELECT * FROM motos WHERE id = $id");
-$moto = mysqli_fetch_assoc($res);
+// 2. Validar que se ha proporcionado un ID de moto
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    header('Location: admin_dashboard.php?error=id_invalido');
+    exit();
+}
+$id = (int)$_GET['id'];
 
 // Función para detectar dispositivos móviles
 function isMobile() {
     return preg_match("/(android|avantgo|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino)/i", $_SERVER["HTTP_USER_AGENT"]);
 }
-
 $is_mobile = isMobile();
+
+// 3. Procesar el formulario si se envía por POST
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Recoger y limpiar datos
+    $marca = trim($_POST['marca']);
+    $modelo = trim($_POST['modelo']);
+    $precio = (float)$_POST['precio_dia'];
+    $disponible = (int)$_POST['disponible'];
+
+    // Usar consultas preparadas para la actualización
+    $sql = "UPDATE motos SET marca = ?, modelo = ?, precio_dia = ?, disponible = ? WHERE id = ?";
+    $stmt = mysqli_prepare($conexion, $sql);
+    mysqli_stmt_bind_param($stmt, "ssdii", $marca, $modelo, $precio, $disponible, $id);
+    
+    if (mysqli_stmt_execute($stmt)) {
+        mysqli_stmt_close($stmt);
+        mysqli_close($conexion);
+        header('Location: admin_dashboard.php?msg=actualizado');
+        exit();
+    } else {
+        // En caso de error, redirigir con un mensaje
+        header('Location: editar_moto.php?id=' . $id . '&error=sql');
+        exit();
+    }
+}
+
+// 4. Obtener los datos de la moto para mostrarlos en el formulario
+$sql_moto = "SELECT * FROM motos WHERE id = ?";
+$stmt_moto = mysqli_prepare($conexion, $sql_moto);
+mysqli_stmt_bind_param($stmt_moto, "i", $id);
+mysqli_stmt_execute($stmt_moto);
+$resultado = mysqli_stmt_get_result($stmt_moto);
+$moto = mysqli_fetch_assoc($resultado);
+mysqli_stmt_close($stmt_moto);
 ?>
 
 <!DOCTYPE html>
@@ -55,48 +83,46 @@ $is_mobile = isMobile();
     </div>
 
     <div class="container">
-        <h2 class="titulo-admin">Modificar datos de la Moto</h2>
+        <h2 class="titulo-admin">Modificar Datos de la Moto</h2>
         
         <div class="formulario-admin">
-            <?php echo $mensaje; ?>
-            
-            <form method="POST">
+            <?php 
+            if (isset($_GET['error'])) {
+                echo "<div class='alerta alerta-error'>Hubo un error al actualizar. Inténtalo de nuevo.</div>";
+            }
+            ?>
+            <form action="editar_moto.php?id=<?php echo $id; ?>" method="POST">
                 <div class="form-group">
                     <label>Marca</label>
-                    <input type="text" name="marca" value="<?php 
-                    echo $moto['marca']; ?>" required>
+                    <input type="text" name="marca" value="<?php echo htmlspecialchars($moto['marca']); ?>" required>
                 </div>
                 
                 <div class="form-group">
                     <label>Modelo</label>
-                    <input type="text" name="modelo" value="<?php 
-                    echo $moto['modelo']; ?>" required>
+                    <input type="text" name="modelo" value="<?php echo htmlspecialchars($moto['modelo']); ?>" required>
                 </div>
                 
                 <div class="form-group">
                     <label>Precio por Día (€)</label>
-                    <input type="number" step="0.01" name="precio_dia" value="<?php 
-                    echo $moto['precio_dia']; ?>" required>
+                    <input type="number" step="0.01" name="precio_dia" value="<?php echo htmlspecialchars($moto['precio_dia']); ?>" required>
                 </div>
                 
                 <div class="form-group">
                     <label>Estado de disponibilidad</label>
                     <select name="disponible">
-                        <option value="1" <?php if($moto['disponible']) 
-                            echo 'selected'; ?>>Disponible para alquilar</option>
-                        <option value="0" <?php if(!$moto['disponible']) 
-                            echo 'selected'; ?>>No disponible / Reservada</option>
+                        <option value="1" <?php if($moto['disponible'] == 1) echo 'selected'; ?>>Disponible para alquilar</option>
+                        <option value="0" <?php if($moto['disponible'] == 0) echo 'selected'; ?>>No disponible / Reservada</option>
                     </select>
                 </div>
 
                 <div class="acciones-form">
-                    <button type="submit" class="btn">Guardar cambios ahora</button>
+                    <button type="submit" class="btn">Guardar Cambios</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <footer class="footer-admin">
+    <footer class="pie-pagina">
         <p>&copy; 2026 ARUSLAT - Alquiler de Motos</p>
     </footer>
 </body>

@@ -1,7 +1,6 @@
 <?php
 session_start();
 require_once 'loginbd.php';
-require_once 'funciones.php';
 
 $conexion = mysqli_connect($db_hostname, $db_username, $db_password, $db_database);
 
@@ -37,12 +36,6 @@ if ($usuario = mysqli_fetch_assoc($resultado)) {
         $_SESSION['usuario_id'] = $usuario['id'];
         $_SESSION['usuario_nombre'] = $usuario['nombre'];
         $_SESSION['rol'] = $usuario['rol']; 
-        
-        // Cancelar reservas antiguas
-        cancelar_reservas_antiguas($conexion);
-        
-        // Actualizar estados del sistema
-        actualizar_sistema_completo($conexion);
         
         if ($usuario['rol'] == 'admin') {
             header('Location: admin_dashboard.php');

@@ -2,8 +2,8 @@
 session_start();
 require_once 'loginbd.php';
 
-if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_rol'] !== 'admin') {
-    header('Location: login.php');
+if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
+    header('Location: login.php?error=acceso_denegado');
     exit();
 }
 

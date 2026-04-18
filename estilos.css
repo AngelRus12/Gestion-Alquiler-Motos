@@ -499,3 +499,10 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
 .espaciado-arriba { margin-top: 25px; }
 .clear { clear: both; }
 .separador-admin { border: 0; border-top: 1px solid var(--borde-tarjeta); margin: 40px 0; }
+
+.enlace-discreto {
+    color: var(--naranja-principal);
+    text-decoration: underline;
+    font-weight: 600;
+}
+.enlace-discreto:hover { color: var(--texto-blanco); }

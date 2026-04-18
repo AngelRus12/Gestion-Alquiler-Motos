@@ -161,9 +161,8 @@ $is_mobile = isMobile();
                                     </span>
                                 </td>
                                 <td style="white-space: nowrap;">
-                                    <a href="editar_usuario.php?id=<?php echo $user['id']; ?>" class="boton boton-secundario boton-pequeño">Editar</a>
-                                    <a href="eliminar_usuario.php?id=<?php echo $user['id']; ?>" 
-                                       class="boton boton-secundario boton-pequeño" style="background-color: #4d1c1c; color: #f44336;">Eliminar</a>
+                                    <a href="editar_usuario.php?id=<?php echo $user['id']; ?>" class="boton boton-pequeño">Editar</a>
+                                    <a href="eliminar_usuario.php?id=<?php echo $user['id']; ?>" class="boton boton-pequeño etiqueta-error">Eliminar</a>
                                 </td>
                             </tr>
                             <?php } ?>
@@ -225,7 +224,9 @@ $is_mobile = isMobile();
                                             mysqli_stmt_execute($stmt_quien);
                                             $res_quien = mysqli_stmt_get_result($stmt_quien);
                                             if ($quien_alquila = mysqli_fetch_assoc($res_quien)) {
-                                                echo '<a href="detalle_alquiler.php?id=' . $quien_alquila['alquiler_id'] . '" class="boton-secundario btn-sm" style="margin-top: 5px;">👤 ' . htmlspecialchars($quien_alquila['nombre']) . '</a>';
+                                                // Mostramos el nombre del cliente
+                                                // Creamos un botón que enlaza a los detalles del alquiler
+                                                echo '<a href="detalle_alquiler.php?id=' . $quien_alquila['alquiler_id'] . '" class="boton boton-secundario boton-pequeño" style="margin-top: 5px;">👤 ' . htmlspecialchars($quien_alquila['nombre'] . ' ' . $quien_alquila['apellidos']) . '</a>';
                                             }
                                             mysqli_stmt_close($stmt_quien);
                                             ?>
@@ -233,9 +234,8 @@ $is_mobile = isMobile();
                                     <?php } ?>
                                 </td>
                                 <td style="white-space: nowrap;">
-                                    <a href="editar_moto.php?id=<?php echo $moto['id']; ?>" class="boton boton-secundario boton-pequeño">Editar</a>
-                                    <a href="eliminar_moto.php?id=<?php echo $moto['id']; ?>" 
-                                       class="boton boton-secundario boton-pequeño" style="background-color: #4d1c1c; color: #f44336;">Eliminar</a>
+                                    <a href="editar_moto.php?id=<?php echo $moto['id']; ?>" class="boton boton-pequeño">Editar</a>
+                                    <a href="eliminar_moto.php?id=<?php echo $moto['id']; ?>" class="boton boton-pequeño etiqueta-error">Eliminar</a>
                                 </td>
                             </tr>
                             <?php } ?>
@@ -322,6 +322,7 @@ $is_mobile = isMobile();
                                 <th>Fechas</th>
                                 <th>Total</th>
                                 <th>Estado</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -344,9 +345,7 @@ $is_mobile = isMobile();
                             <tr>
                                 <td>#<?php echo $alquiler_full['id']; ?></td>
                                 <td>
-                                    <a href="detalle_alquiler.php?id=<?php echo $alquiler_full['id']; ?>" style="color: var(--naranja-principal); text-decoration: underline;">
-                                        <?php echo $alquiler_full['nombre'] . " " . $alquiler_full['apellidos']; ?>
-                                    </a>
+                                    <?php echo htmlspecialchars($alquiler_full['nombre'] . " " . $alquiler_full['apellidos']); ?>
                                 </td>
                                 <td><?php echo $alquiler_full['marca'] . " " . $alquiler_full['modelo']; ?></td>
                                 <td>
@@ -355,6 +354,9 @@ $is_mobile = isMobile();
                                 </td>
                                 <td class="precio"><strong><?php echo $alquiler_full['precio_total']; ?>€</strong></td>
                                 <td><span class="etiqueta estado-alquiler <?php echo $alquiler_full['estado']; ?>"><?php echo str_replace('_', ' ', strtoupper($alquiler_full['estado'])); ?></span></td>
+                                <td>
+                                    <a href="detalle_alquiler.php?id=<?php echo $alquiler_full['id']; ?>" class="boton boton-pequeño">Ver Detalles</a>
+                                </td>
                             </tr>
                             <?php 
                                 } 

@@ -1,7 +1,7 @@
 <?php
 session_start();
-if (!isset($_SESSION['usuario_rol']) || $_SESSION['usuario_rol'] !== 'admin') {
-    header('Location: login.php');
+if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'admin') {
+    header('Location: login.php?error=acceso_denegado');
     exit();
 }
 
@@ -39,7 +39,7 @@ $is_mobile = isMobile();
     <div class="container-formulario">
         <h2 class="titulo-admin">Añadir Nueva Moto</h2>
         
-        <form action="guardar_moto.php" method="POST">
+        <form action="guardar_moto.php" method="POST" enctype="multipart/form-data">
             
             <div class="form-fila">
                 <input type="text" name="marca" placeholder="Marca (Ej: BMW)" required>
@@ -72,8 +72,8 @@ $is_mobile = isMobile();
             </div>
 
             <div class="form-group">
-                <label>Ruta de la imagen:</label>
-                <input type="text" name="ruta_imagen" placeholder="Ej: img/s1000rr.jpg" required>
+                <label>Imagen de la moto:</label>
+                <input type="file" name="imagen" accept="image/jpeg, image/png, image/webp" required>
             </div>
             
             <button type="submit" class="btn btn-block">Registrar Moto</button>
