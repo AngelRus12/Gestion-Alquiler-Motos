@@ -225,7 +225,7 @@ $is_mobile = isMobile();
                                             mysqli_stmt_execute($stmt_quien);
                                             $res_quien = mysqli_stmt_get_result($stmt_quien);
                                             if ($quien_alquila = mysqli_fetch_assoc($res_quien)) {
-                                                echo '<small style="font-size: 12px; color: var(--texto-gris); padding-left: 2px;">👤 <a href="detalle_alquiler.php?id=' . $quien_alquila['alquiler_id'] . '" style="color: var(--naranja-principal); text-decoration: underline;">' . htmlspecialchars($quien_alquila['nombre'] . ' ' . $quien_alquila['apellidos']) . '</a></small>';
+                                                echo '<a href="detalle_alquiler.php?id=' . $quien_alquila['alquiler_id'] . '" class="boton-secundario btn-sm" style="margin-top: 5px;">👤 ' . htmlspecialchars($quien_alquila['nombre']) . '</a>';
                                             }
                                             mysqli_stmt_close($stmt_quien);
                                             ?>
