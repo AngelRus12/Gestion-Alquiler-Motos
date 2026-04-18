@@ -1,22 +1,22 @@
 <?php
 /**
  * SIMULADOR BANCARIO - Callback / Respuesta
- * 
- * Este archivo recibe la respuesta del "banco" y la procesa.
- * Simula exactamente las respuestas que recibirías de las APIs reales.
- * 
- * En tu aplicación real:
- * - Aquí recibirías la notificación del banco
- * - Validarías la firma/token de seguridad
- * - Actualizarías el estado del pedido en tu base de datos
- * - Mostrarías confirmación al usuario
+ * Este archivo recibe la respuesta del simulador, actualiza la base de datos
+ * y redirige al usuario a su perfil con el estado del pago.
  */
 
 session_start();
+require_once '../loginbd.php';
 
 // Recuperar datos de la sesión
 $simulatorData = $_SESSION['simulator_data'] ?? [];
 $pendingTransaction = $_SESSION['pending_transaction'] ?? [];
+
+// Verificar que tenemos datos de transacción del simulador
+if (empty($simulatorData)) {
+    header('Location: ../catalogo.php?error=no_transaction_data');
+    exit();
+}
 
 $paymentMethod = $simulatorData['payment_method'] ?? 'unknown';
 $amount = $simulatorData['amount'] ?? 0;
@@ -26,6 +26,7 @@ $responseType = $_POST['response_type'] ?? 'approved';
 // Generar respuesta simulada según el tipo seleccionado
 $responses = [
     'approved' => [
+        'db_status' => 'confirmado',
         'status' => 'approved',
         'status_detail' => 'accredited',
         'title' => 'Pago Aprobado',
@@ -33,9 +34,11 @@ $responses = [
         'icon' => 'check-circle-fill',
         'color' => 'success',
         'code' => '00',
-        'description' => 'Transacción aprobada sin problemas.'
+        'description' => 'Transacción aprobada sin problemas.',
+        'redirect_param' => 'pago=confirmado'
     ],
     'rejected' => [
+        'db_status' => 'cancelado',
         'status' => 'rejected',
         'status_detail' => 'cc_rejected_insufficient_amount',
         'title' => 'Pago Rechazado',
@@ -43,9 +46,11 @@ $responses = [
         'icon' => 'x-circle-fill',
         'color' => 'danger',
         'code' => '51',
-        'description' => 'Fondos insuficientes o tarjeta rechazada.'
+        'description' => 'Fondos insuficientes o tarjeta rechazada.',
+        'redirect_param' => 'pago=rechazado'
     ],
     'pending' => [
+        'db_status' => 'pendiente',
         'status' => 'pending',
         'status_detail' => 'pending_contingency',
         'title' => 'Pago Pendiente',
@@ -53,9 +58,11 @@ $responses = [
         'icon' => 'clock-fill',
         'color' => 'warning',
         'code' => '02',
-        'description' => 'El pago requiere verificación o está en revisión.'
+        'description' => 'El pago requiere verificación o está en revisión.',
+        'redirect_param' => 'pago=pendiente'
     ],
     'cancelled' => [
+        'db_status' => 'cancelado',
         'status' => 'cancelled',
         'status_detail' => 'by_user',
         'title' => 'Pago Cancelado',
@@ -63,9 +70,11 @@ $responses = [
         'icon' => 'arrow-left-circle-fill',
         'color' => 'secondary',
         'code' => 'USR_CANCEL',
-        'description' => 'El usuario abandonó el proceso de pago.'
+        'description' => 'El usuario abandonó el proceso de pago.',
+        'redirect_param' => 'pago=cancelado'
     ],
     'error' => [
+        'db_status' => 'error',
         'status' => 'error',
         'status_detail' => 'internal_error',
         'title' => 'Error del Sistema',
@@ -73,9 +82,11 @@ $responses = [
         'icon' => 'exclamation-triangle-fill',
         'color' => 'dark',
         'code' => 'ERR-500',
-        'description' => 'Error técnico en la plataforma de pagos.'
+        'description' => 'Error técnico en la plataforma de pagos.',
+        'redirect_param' => 'pago=error'
     ],
     'timeout' => [
+        'db_status' => 'error', // Un timeout se trata como un error
         'status' => 'timeout',
         'status_detail' => 'timeout_expired',
         'title' => 'Tiempo Agotado',
@@ -83,15 +94,78 @@ $responses = [
         'icon' => 'alarm-fill',
         'color' => 'info',
         'code' => 'TIMEOUT',
-        'description' => 'La sesión de pago expiró por inactividad.'
+        'description' => 'La sesión de pago expiró por inactividad.',
+        'redirect_param' => 'pago=error'
     ],
 ];
 
 $response = $responses[$responseType] ?? $responses['approved'];
-$returnUrl = $pendingTransaction['return_url'] ?? 'index.php';
-$autoRedirectOnApproved = (bool)($pendingTransaction['auto_redirect_on_approved'] ?? true);
-$redirectDelayMs = (int)($pendingTransaction['redirect_delay_ms'] ?? 2000);
-$redirectDelayMs = max(0, min($redirectDelayMs, 15000));
+$returnUrl = $pendingTransaction['return_url'] ?? '../perfil_usuario.php';
+
+// --- INICIO: LÓGICA DE BASE DE DATOS MOVIDA DESDE callback_pago.php ---
+
+$conexion = mysqli_connect($db_hostname, $db_username, $db_password, $db_database);
+
+if (!$conexion) {
+    // Si la BD falla, redirigimos con un error específico
+    header('Location: ' . $returnUrl . '?pago=error_db_conn');
+    exit();
+}
+
+// Extraer el ID del alquiler del order_id (formato: ALQ-{id}-{timestamp})
+$parts = explode('-', $orderId);
+$id_alquiler = isset($parts[1]) ? (int)$parts[1] : 0;
+$usuario_id = $_SESSION['usuario_id'] ?? 0;
+
+if (!$id_alquiler || !$usuario_id) {
+    mysqli_close($conexion);
+    header('Location: ../catalogo.php?error=invalid_access');
+    exit();
+}
+
+// Obtener moto_id para poder actualizar su estado si el pago se aprueba
+$sql_check = "SELECT moto_id FROM alquileres WHERE id = ? AND usuario_id = ?";
+$stmt_check = mysqli_prepare($conexion, $sql_check);
+mysqli_stmt_bind_param($stmt_check, "ii", $id_alquiler, $usuario_id);
+mysqli_stmt_execute($stmt_check);
+$result = mysqli_stmt_get_result($stmt_check);
+$alquiler = mysqli_fetch_assoc($result);
+mysqli_stmt_close($stmt_check);
+
+if (!$alquiler) {
+    mysqli_close($conexion);
+    header('Location: ../catalogo.php?error=alquiler_not_found');
+    exit();
+}
+
+// Iniciar transacción
+mysqli_begin_transaction($conexion);
+$transaction_successful = true;
+
+// 1. Actualizar el estado del alquiler
+$nuevo_estado_db = $response['db_status'];
+$sql_update = "UPDATE alquileres SET estado = ? WHERE id = ?";
+$stmt_update = mysqli_prepare($conexion, $sql_update);
+mysqli_stmt_bind_param($stmt_update, "si", $nuevo_estado_db, $id_alquiler);
+if (!mysqli_stmt_execute($stmt_update)) {
+    $transaction_successful = false;
+}
+mysqli_stmt_close($stmt_update);
+
+// 2. Si el pago fue aprobado, marcar la moto como no disponible
+if ($transaction_successful && $nuevo_estado_db === 'confirmado') {
+    $moto_id = $alquiler['moto_id'];
+    $sql_update_moto = "UPDATE motos SET disponible = 0 WHERE id = ?";
+    $stmt_moto = mysqli_prepare($conexion, $sql_update_moto);
+    mysqli_stmt_bind_param($stmt_moto, "i", $moto_id);
+    if (!mysqli_stmt_execute($stmt_moto)) {
+        $transaction_successful = false;
+    }
+    mysqli_stmt_close($stmt_moto);
+}
+
+// --- FIN: LÓGICA DE BASE DE DATOS ---
+
 
 // Generar datos de transacción simulados (como los que devuelven las APIs reales)
 $transactionData = [
@@ -204,276 +278,30 @@ switch ($paymentMethod) {
 // Guardar resultado en sesión (en producción esto iría a base de datos)
 $_SESSION['last_transaction'] = $transactionData;
 
-$jsonResponse = json_encode($transactionData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+// Finalizar transacción y limpiar sesión
+if ($transaction_successful) {
+    mysqli_commit($conexion);
+    $redirect_param = $response['redirect_param'];
+} else {
+    mysqli_rollback($conexion);
+    $redirect_param = 'pago=error_procesamiento';
+}
+
+mysqli_close($conexion);
+
+// Limpiar variables de sesión relacionadas con el pago
+unset($_SESSION['id_pago_pendiente']);
+unset($_SESSION['monto_pago']);
+unset($_SESSION['simulator_data']);
+unset($_SESSION['pending_transaction']);
+
+// Redirigir al perfil del usuario con el mensaje de estado
+header('Location: ' . $returnUrl . '?' . $redirect_param);
+exit();
+
+/*
+ * NOTA: El resto del HTML de esta página ya no se mostrará porque la lógica
+ * ahora redirige directamente al usuario. Se podría eliminar para limpiar el código,
+ * pero se mantiene por si se necesita para depuración en el futuro.
+ */
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resultado del Pago - <?php echo $response['title']; ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="css/bank-style.css">
-    <style>
-        .result-header {
-            padding: 3rem 0;
-            text-align: center;
-        }
-        .result-icon {
-            font-size: 5rem;
-            display: block;
-            margin-bottom: 1rem;
-        }
-        .json-viewer {
-            background-color: #f8f9fa;
-            border-left: 4px solid #0d6efd;
-            padding: 1rem;
-            font-family: 'Courier New', monospace;
-            font-size: 0.85rem;
-            overflow-x: auto;
-            max-height: 400px;
-        }
-        .print-hidden {
-            display: none;
-        }
-        @media print {
-            .no-print {
-                display: none;
-            }
-            .print-hidden {
-                display: block;
-            }
-        }
-    </style>
-</head>
-<body class="bg-light">
-    <!-- Header de Resultado -->
-    <div class="result-header bg-<?php echo $response['color']; ?> text-white">
-        <div class="container">
-            <i class="bi bi-<?php echo $response['icon']; ?> result-icon"></i>
-            <h1><?php echo $response['title']; ?></h1>
-            <p class="lead"><?php echo $response['message']; ?></p>
-        </div>
-    </div>
-
-    <div class="container mt-4 mb-5">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <!-- Detalle de la Transacción -->
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-white">
-                        <h5 class="mb-0">
-                            <i class="bi bi-receipt"></i> Detalle de la Transacción
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row mb-3">
-                            <div class="col-6">
-                                <strong>ID de Transacción:</strong><br>
-                                <code><?php echo $transactionData['transaction_id']; ?></code>
-                            </div>
-                            <div class="col-6 text-end">
-                                <strong>Estado:</strong><br>
-                                <span class="badge bg-<?php echo $response['color']; ?> fs-6">
-                                    <?php echo strtoupper($response['status']); ?>
-                                </span>
-                            </div>
-                        </div>
-
-                        <hr>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <small class="text-muted">Orden de Compra</small><br>
-                                <strong><?php echo $orderId; ?></strong>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <small class="text-muted">Método de Pago</small><br>
-                                <strong><?php echo ucfirst($paymentMethod); ?></strong>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <small class="text-muted">Monto</small><br>
-                                <strong class="text-primary fs-5">€<?php echo number_format($amount, 2, ',', '.'); ?> EUR</strong>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <small class="text-muted">Fecha y Hora</small><br>
-                                <strong><?php echo $transactionData['timestamp']; ?></strong>
-                            </div>
-                            <?php if ($transactionData['authorization_code']): ?>
-                            <div class="col-md-6 mb-3">
-                                <small class="text-muted">Código de Autorización</small><br>
-                                <strong><?php echo $transactionData['authorization_code']; ?></strong>
-                            </div>
-                            <?php endif; ?>
-                            <div class="col-md-6 mb-3">
-                                <small class="text-muted">Código de Respuesta</small><br>
-                                <strong><?php echo $response['code']; ?></strong>
-                            </div>
-                        </div>
-
-                        <div class="alert alert-<?php echo $response['color']; ?> mt-3">
-                            <i class="bi bi-info-circle"></i> <strong>Descripción:</strong> <?php echo $response['description']; ?>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Respuesta JSON (Para desarrolladores) -->
-                <div class="card shadow-sm mb-4 no-print">
-                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0">
-                            <i class="bi bi-code-square"></i> Respuesta JSON (Para desarrollo)
-                        </h6>
-                        <button type="button" class="btn btn-sm btn-outline-light" id="copyJsonButton" onclick="copyJsonResponse()">
-                            <i class="bi bi-clipboard"></i> Copiar código
-                        </button>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="json-viewer">
-                            <pre class="mb-0" id="jsonResponseContent"><?php echo $jsonResponse; ?></pre>
-                        </div>
-                    </div>
-                    <div class="card-footer bg-light">
-                        <small class="text-muted">
-                            <i class="bi bi-info-circle"></i> Esta es la respuesta que recibirías en tu webhook o callback en producción.
-                            Copia estos datos para implementar tu lógica de negocio.
-                        </small>
-                    </div>
-                </div>
-
-                <!-- Acciones -->
-                <div class="card shadow-sm mb-4">
-                    <div class="card-body no-print">
-                        <h6 class="mb-3"><i class="bi bi-ui-checks"></i> ¿Qué hacer ahora?</h6>
-                        <div class="d-grid gap-2">
-                            <a href="<?php echo htmlspecialchars($returnUrl, ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-primary btn-lg">
-                                <i class="bi bi-arrow-left-circle"></i> Volver a la Tienda
-                            </a>
-                            <button onclick="window.print()" class="btn btn-outline-secondary no-print">
-                                <i class="bi bi-printer"></i> Imprimir Comprobante
-                            </button>
-                            <button class="btn btn-outline-info no-print" data-bs-toggle="collapse" data-bs-target="#webhookInfo">
-                                <i class="bi bi-webhook"></i> Ver Info de Webhook
-                            </button>
-                        </div>
-
-                        <!-- Información de Webhook (colapsable) -->
-                        <div class="collapse mt-3" id="webhookInfo">
-                            <div class="alert alert-info">
-                                <h6 class="alert-heading">
-                                    <i class="bi bi-webhook"></i> Integración con Webhook
-                                </h6>
-                                <p class="small mb-0">
-                                    En producción, la plataforma de pago enviaría una notificación POST a tu URL de webhook
-                                    con datos similares a los mostrados arriba en JSON. Deberías:
-                                </p>
-                                <ol class="small mb-0 mt-2">
-                                    <li>Validar la firma/token de seguridad</li>
-                                    <li>Actualizar el estado del pedido en tu base de datos</li>
-                                    <li>Enviar email de confirmación al cliente</li>
-                                    <li>Responder con HTTP 200 OK</li>
-                                </ol>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Información del Simulador -->
-                <div class="alert alert-warning no-print" role="alert">
-                    <h6 class="alert-heading">
-                        <i class="bi bi-gear-fill"></i> Modo Simulación Activo
-                    </h6>
-                    <p class="mb-0 small">
-                        Esta es una respuesta simulada. En producción, aquí recibirías la confirmación real del banco
-                        y deberías actualizar tu base de datos. Usa estos datos para probar tu implementación.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="bg-dark text-white py-3 mt-5">
-        <div class="container text-center">
-            <small>
-                <i class="bi bi-code-slash"></i> Simulador de Pagos |
-                <i class="bi bi-shield-check"></i> Entorno de Desarrollo |
-                <i class="bi bi-github"></i> Open Source
-            </small>
-        </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function copyJsonResponse() {
-            const copyButton = document.getElementById('copyJsonButton');
-            const originalButtonHtml = copyButton.innerHTML;
-            const jsonText = <?php echo json_encode($jsonResponse); ?>;
-
-            function showSuccess() {
-                copyButton.innerHTML = '<i class="bi bi-check2"></i> Copiado';
-                copyButton.classList.remove('btn-outline-light');
-                copyButton.classList.add('btn-success');
-
-                setTimeout(() => {
-                    copyButton.innerHTML = originalButtonHtml;
-                    copyButton.classList.remove('btn-success');
-                    copyButton.classList.add('btn-outline-light');
-                }, 1800);
-            }
-
-            function showError() {
-                copyButton.innerHTML = '<i class="bi bi-exclamation-triangle"></i> No se pudo copiar';
-
-                setTimeout(() => {
-                    copyButton.innerHTML = originalButtonHtml;
-                }, 1800);
-            }
-
-            function copyWithFallback() {
-                const tempTextArea = document.createElement('textarea');
-                tempTextArea.value = jsonText;
-                tempTextArea.setAttribute('readonly', '');
-                tempTextArea.style.position = 'fixed';
-                tempTextArea.style.left = '-9999px';
-                document.body.appendChild(tempTextArea);
-                tempTextArea.select();
-                tempTextArea.setSelectionRange(0, tempTextArea.value.length);
-
-                try {
-                    const copied = document.execCommand('copy');
-                    document.body.removeChild(tempTextArea);
-                    if (copied) {
-                        showSuccess();
-                    } else {
-                        showError();
-                    }
-                } catch (error) {
-                    document.body.removeChild(tempTextArea);
-                    showError();
-                }
-            }
-
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(jsonText)
-                    .then(showSuccess)
-                    .catch(copyWithFallback);
-            } else {
-                copyWithFallback();
-            }
-        }
-
-    </script>
-
-    <?php
-    // Si el pago es aprobado y la redirección automática está activa,
-    // inyectamos un script adicional para la redirección.
-    if ($responseType === 'approved' && $autoRedirectOnApproved) {
-        echo '<script>';
-        echo 'setTimeout(function() { window.location.href = ' . json_encode($returnUrl) . '; }, ' . $redirectDelayMs . ');';
-        echo '</script>';
-    }
-    ?>
-
-</body>
-</html>

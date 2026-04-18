@@ -65,7 +65,7 @@ $is_mobile = isMobile();
         </div>
     </header>
 
-    <main class="container" style="padding: 50px 20px;">
+    <main class="container">
         <div class="detalle-grid">
             <div class="detalle-info">
                 <div class="detalle-img">
@@ -75,12 +75,12 @@ $is_mobile = isMobile();
                         <img src="imgs/default.jpg" alt="Sin imagen">
                     <?php endif; ?>
                 </div>
-                <h1 style="color: white; margin-top: 20px;"><?php echo htmlspecialchars($moto['marca'] . " " . $moto['modelo']); ?></h1>
-                <p style="margin-bottom: 20px;"><?php echo htmlspecialchars($moto['descripcion']); ?></p>
-                <div class="perfil-container" style="padding: 15px;">
+                <h1 class="titulo-seccion" style="text-align: left; margin-top: 20px; margin-bottom: 15px;"><?php echo htmlspecialchars($moto['marca'] . " " . $moto['modelo']); ?></h1>
+                <p><?php echo htmlspecialchars($moto['descripcion']); ?></p>
+                <div class="perfil-container" style="margin-top: 20px; padding: 25px;">
                     <p>• Matricula: <strong><?php echo $moto['matricula']; ?> </strong></p>
                     <p>• Año: <strong><?php echo $moto['año']; ?> </strong></p>
-                    <p>• Cilindrada: <strong><?php echo $moto['cilindrada']; ?> cc</strong></p>
+                    <p>• Cilindrada: <strong><?php echo $moto['cilindrada']; ?> cc</strong></p> 
                     <p>• Precio dia: <strong><?php echo $moto['precio_dia']; ?> €</strong></p>
                 </div>
             </div>

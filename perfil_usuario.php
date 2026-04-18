@@ -173,6 +173,7 @@ $is_mobile = isMobile();
                             <th style="text-align: center;">Días</th> 
                             <th>Total</th>
                             <th>Estado</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>   
@@ -193,23 +194,26 @@ $is_mobile = isMobile();
                             <td><?php echo date("d/m/Y", strtotime($alq['fecha_fin'])); ?></td>
                             <td style="text-align: center;"><?php echo $alq['dias_alquiler']; ?></td> 
                             <td class="precio"><?php echo $alq['precio_total']; ?>€</td>
-                            <td>
-                                <span class="estado-alquiler <?php  
-                                    if($alq['estado'] == 'en_curso') { echo 'en-curso'; }
-                                    elseif($alq['estado'] == 'finalizado') { echo 'finalizado'; }
-                                    elseif($alq['estado'] == 'confirmado') { echo 'confirmado'; }
-                                    elseif($alq['estado'] == 'cancelado') { echo 'cancelado'; }
-                                    else { echo 'pendiente'; }
+                            <td style="text-align: center;">
+                                <span class="etiqueta <?php  
+                                    if($alq['estado'] == 'en_curso') { echo 'en-curso'; } // azul
+                                    elseif($alq['estado'] == 'finalizado') { echo 'etiqueta-error'; } // rojo
+                                    elseif($alq['estado'] == 'confirmado') { echo 'etiqueta-exito'; } // verde
+                                    elseif($alq['estado'] == 'cancelado') { echo 'etiqueta-error'; } // rojo
+                                    else { echo 'etiqueta-aviso'; } // amarillo para 'pendiente'
                                 ?>">
                                     <?php echo str_replace('_', ' ', strtoupper($alq['estado'])); ?>
                                 </span>
+                            </td>
+                            <td style="text-align: center;">
+                                <a href="detalle_alquiler.php?id=<?php echo $alq['id']; ?>" class="boton boton-pequeño">Ver Detalles</a>
                             </td>
                         </tr>
                         <?php 
                                 mysqli_stmt_close($stmt_moto);
                             } 
                         } else { ?>
-                            <tr><td colspan='6' style='text-align:center;'>No tienes alquileres registrados.</td></tr>
+                            <tr><td colspan='7' style='text-align:center;'>No tienes alquileres registrados.</td></tr>
                         <?php } ?>
                     </tbody>
                 </table>

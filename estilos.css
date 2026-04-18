@@ -420,6 +420,38 @@ tr:hover td {
     margin: 40px 0 20px 0;
     color: var(--texto-blanco);
 }
+
+/* ==========================================================
+   DISEÑO DE DETALLE MOTO (Desktop)
+   ========================================================== */
+.detalle-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 40px;
+    align-items: flex-start;
+    margin-top: 40px;
+}
+
+.detalle-img img {
+    width: 100%;
+    border-radius: var(--borde-redondeado);
+    border: 1px solid var(--borde-tarjeta);
+}
+
+.reserva-card {
+    background: var(--bg-tarjeta);
+    border: 1px solid var(--borde-tarjeta);
+    padding: 30px;
+    border-radius: var(--borde-redondeado);
+    position: sticky;
+    top: 120px; /* Ajusta este valor según la altura de tu navbar + un margen */
+    box-shadow: var(--sombre-tarjeta);
+}
+
+.reserva-card h3 {
+    color: var(--texto-blanco);
+    margin-bottom: 25px;
+}
 /* ==========================================================
    Pasarela de pago (BOTONES)
    ========================================================== */

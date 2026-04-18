@@ -23,7 +23,7 @@ $order_id = 'ALQ-' . $id_alquiler . '-' . time();
 $description = 'Alquiler de motocicleta - ID: ' . $id_alquiler;
 
 // URL de retorno después del pago
-$return_url = 'http://' . $_SERVER['HTTP_HOST'] . '/alquilermotos/callback_pago.php';
+$return_url = 'http://' . $_SERVER['HTTP_HOST'] . '/perfil_usuario.php';
 ?>
 <!DOCTYPE html>
 <html lang="es">
