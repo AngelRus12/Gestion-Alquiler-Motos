@@ -50,18 +50,6 @@ $is_mobile = isMobile();
     <?php else: ?>
         <link rel="stylesheet" href="estilos.css">
     <?php endif; ?>
-    <style>
-        .stats-badge {
-            display: inline-block;
-            background: #e03e00;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            margin-right: 10px;
-            margin-top: 10px;
-        }
-    </style>
 </head>
 <body>
     <header class="navbar">
@@ -77,7 +65,7 @@ $is_mobile = isMobile();
                     }
 
                     if ($_SESSION['rol'] === 'admin') { ?>
-                        <a href="admin_dashboard" style="color: #e03e00; font-weight: bold;">Panel Admin</a>
+                        <a href="admin_dashboard" class="nav-destacado">Panel Admin</a>
                     <?php } ?>
 
                     <a href="perfil_usuario">Mi Perfil</a> 
@@ -92,7 +80,7 @@ $is_mobile = isMobile();
 
     <main class="main-content">
         <div class="container">
-            <h2 style="margin-top: 40px; text-align: center;">Mi Perfil</h2>
+            <h2 class="titulo-pagina">Mi Perfil</h2>
             
             <?php
             // Mostrar mensajes de pago
@@ -142,6 +130,29 @@ $is_mobile = isMobile();
                 echo '<span class="alerta-icono">✔️</span> ¡Reserva realizada exitosamente! El pago se realizará en tienda.';
                 echo '</div>';
             }
+
+            // Mensajes para cambio de contraseña
+            if (isset($_GET['password_change'])) {
+                echo '<div class="alerta alerta-exito">✔️ Tu contraseña ha sido actualizada correctamente.</div>';
+            }
+            if (isset($_GET['password_change_error'])) {
+                $error_msg = 'Ocurrió un error al cambiar la contraseña.';
+                switch ($_GET['password_change_error']) {
+                    case 'current_mismatch':
+                        $error_msg = 'La contraseña actual que introdujiste es incorrecta.';
+                        break;
+                    case 'new_mismatch':
+                        $error_msg = 'La nueva contraseña y su confirmación no coinciden.';
+                        break;
+                    case 'format':
+                        $error_msg = 'La nueva contraseña debe tener al menos 8 caracteres, una letra y un número.';
+                        break;
+                    case 'empty':
+                        $error_msg = 'Debes rellenar todos los campos para cambiar la contraseña.';
+                        break;
+                }
+                echo '<div class="alerta alerta-error">❌ ' . $error_msg . '</div>';
+            }
             ?>
             
             <div class="perfil-container">
@@ -170,7 +181,7 @@ $is_mobile = isMobile();
                             <th>Moto</th>
                             <th>Inicio</th>
                             <th>Fin</th>
-                            <th style="text-align: center;">Días</th> 
+                            <th class="text-center">Días</th> 
                             <th>Total</th>
                             <th>Estado</th>
                             <th>Acciones</th>
@@ -192,9 +203,9 @@ $is_mobile = isMobile();
                             <td><?php echo ($moto) ? $moto['marca'] . " " . $moto['modelo'] : "Moto eliminada"; ?></td>
                             <td><?php echo date("d/m/Y", strtotime($alq['fecha_inicio'])); ?></td>
                             <td><?php echo date("d/m/Y", strtotime($alq['fecha_fin'])); ?></td>
-                            <td style="text-align: center;"><?php echo $alq['dias_alquiler']; ?></td> 
+                            <td class="text-center"><?php echo $alq['dias_alquiler']; ?></td> 
                             <td class="precio"><?php echo $alq['precio_total']; ?>€</td>
-                            <td style="text-align: center;">
+                            <td class="text-center">
                                 <span class="etiqueta <?php  
                                     if($alq['estado'] == 'en_curso') { echo 'en-curso'; } // azul
                                     elseif($alq['estado'] == 'finalizado') { echo 'etiqueta-error'; } // rojo
@@ -205,7 +216,7 @@ $is_mobile = isMobile();
                                     <?php echo str_replace('_', ' ', strtoupper($alq['estado'])); ?>
                                 </span>
                             </td>
-                            <td style="text-align: center;">
+                            <td class="text-center">
                                 <a href="detalle_alquiler.php?id=<?php echo $alq['id']; ?>" class="boton boton-pequeño">Ver Detalles</a>
                             </td>
                         </tr>
@@ -213,10 +224,31 @@ $is_mobile = isMobile();
                                 mysqli_stmt_close($stmt_moto);
                             } 
                         } else { ?>
-                            <tr><td colspan='7' style='text-align:center;'>No tienes alquileres registrados.</td></tr>
+                            <tr><td colspan='7' class='text-center'>No tienes alquileres registrados.</td></tr>
                         <?php } ?>
                     </tbody>
                 </table>
+            </div>
+
+            <div class="perfil-container">
+                <h3>Cambiar Contraseña</h3>
+                <form action="procesar_cambio_password.php" method="POST" class="form-grid-3-col">
+                    <div class="form-group">
+                        <label for="current_password">Contraseña Actual</label>
+                        <input type="password" id="current_password" name="current_password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new_password">Nueva Contraseña</label>
+                        <input type="password" id="new_password" name="new_password" required placeholder="Mínimo 8 caracteres, 1 letra, 1 número">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm_new_password">Confirmar Nueva Contraseña</label>
+                        <input type="password" id="confirm_new_password" name="confirm_new_password" required>
+                    </div>
+                    <div class="form-submit-group">
+                        <button type="submit" class="btn">Actualizar Contraseña</button>
+                    </div>
+                </form>
             </div>
         </div>
     </main>

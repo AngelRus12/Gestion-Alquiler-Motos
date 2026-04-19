@@ -19,50 +19,16 @@ $is_mobile = isMobile();
     <?php else: ?>
         <link rel="stylesheet" href="estilos.css">
     <?php endif; ?>
+    <!-- Los estilos <style> se han movido a estilos.css y estilos_mobile.css -->
 </head>
-<style>
-    .registro-body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-    }
-    .registro {
-        width: 100%;
-        max-width: 800px; /* Aumentamos el ancho para las dos columnas */
-        padding: 40px;
-    }
-    .form-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr; /* Dos columnas de igual tamaño */
-        gap: 20px; /* Espacio entre columnas y filas */
-    }
-    .form-group {
-        margin-bottom: 0; /* Quitamos el margen inferior que tenía por defecto */
-    }
-    .full-width {
-        grid-column: 1 / -1; /* Ocupa todo el ancho de la rejilla */
-    }
-    .btn {
-        width: 100%;
-        margin-top: 20px;
-    }
-
-    /* Para dispositivos móviles, volvemos a una columna */
-    @media (max-width: 768px) {
-        .form-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
 <body class="registro-body" >
         
     <div class="registro">
-        <h1 align="center">CREAR CUENTA</h1>
+        <h1 class="titulo-formulario">CREAR CUENTA</h1>
         
         <?php
         if (isset($_GET['error'])) {
-            echo '<div class="error">';
+            echo '<div class="alerta alerta-error">';
             if ($_GET['error'] == 'email_existe') {
                 echo 'El email ya está registrado';
             } else if ($_GET['error'] == 'dni_existe') {
@@ -81,7 +47,7 @@ $is_mobile = isMobile();
         ?>
         
         <form action="procesar_registro.php" method="POST">
-            <div class="form-grid">
+            <div class="form-grid-2-col">
                 <div class="form-group">
                     <label for="nombre">Nombre: *</label>
                     <input type="text" id="nombre" name="nombre" required>
@@ -122,7 +88,7 @@ $is_mobile = isMobile();
                     <input type="password" id="password2" name="password2" required>
                 </div>
             </div>
-            <button type="submit" class="btn">Registrarse</button>
+            <button type="submit" class="btn btn-block">Registrarse</button>
         </form>
         
         <div class="links">

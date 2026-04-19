@@ -30,11 +30,11 @@ if (isset($_SESSION['usuario_id'])) {
 <body class="login-body">
     
     <div class="login-container">
-        <h1 style="text-align: center; margin-bottom: 30px;">Iniciar Sesión</h1>
+        <h1 class="titulo-formulario">Iniciar Sesión</h1>
         
         <?php
         if (isset($_GET['error'])) {
-            echo '<div class="error">';
+            echo '<div class="alerta alerta-error">';
             if 
             ($_GET['error'] == 'credenciales') {
                 echo 'Email o contraseña incorrectos';
@@ -49,7 +49,7 @@ if (isset($_SESSION['usuario_id'])) {
         }
         
         if (isset($_GET['registro']) && $_GET['registro'] == 'exitoso') {
-            echo '<div class="success">Registro exitoso. Ya puede iniciar sesión</div>';
+            echo '<div class="alerta alerta-exito">Registro exitoso. Ya puede iniciar sesión</div>';
         }
         ?>
         
@@ -64,7 +64,7 @@ if (isset($_SESSION['usuario_id'])) {
                 <input type="password" id="password" name="password" required>
             </div>
             
-            <button type="submit" class="btn" style="width: 100%;">Acceder</button>
+            <button type="submit" class="btn btn-block">Acceder</button>
         </form>
         
         <div class="links">

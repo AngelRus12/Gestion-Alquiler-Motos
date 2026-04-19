@@ -83,38 +83,6 @@ $is_mobile = isMobile();
     <?php else: ?>
         <link rel="stylesheet" href="estilos.css">
     <?php endif; ?>
-    <style>
-        .detalle-alquiler-container {
-            display: flex;
-            gap: 30px;
-            margin-top: 40px;
-            align-items: flex-start;
-        }
-        .moto-detalle-card {
-            flex: 1;
-            background: var(--bg-tarjeta);
-            border: 1px solid var(--borde-tarjeta);
-            border-radius: var(--borde-redondeado);
-            padding: 20px;
-            box-shadow: var(--sombre-tarjeta);
-        }
-        .moto-detalle-card img {
-            width: 100%;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-        .resumen-alquiler {
-            flex: 1;
-        }
-        .resumen-alquiler .perfil-container {
-            margin-top: 0;
-        }
-        @media (max-width: 768px) {
-            .detalle-alquiler-container {
-                flex-direction: column;
-            }
-        }
-    </style>
 </head>
 <body>
     <header class="navbar">
@@ -131,8 +99,8 @@ $is_mobile = isMobile();
 
     <main class="main-content">
         <div class="container">
-            <h2 style="margin-top: 40px;">Detalle del Alquiler #<?php echo $alquiler['id']; ?></h2>
-            <a href="perfil_usuario" style="display: inline-block; margin-bottom: 20px; color: var(--naranja-principal);">&larr; Volver a Mi Perfil</a>
+            <h2 class="titulo-pagina" style="text-align: left;">Detalle del Alquiler #<?php echo $alquiler['id']; ?></h2>
+            <a href="perfil_usuario" class="enlace-discreto espaciado-arriba" style="display: inline-block; margin-bottom: 20px;">&larr; Volver a Mi Perfil</a>
 
             <div class="detalle-alquiler-container">
                 <div class="moto-detalle-card">
@@ -166,7 +134,7 @@ $is_mobile = isMobile();
                         <p><strong>Precio por día:</strong> <?php echo number_format($alquiler['precio_dia'], 2); ?>€</p>
                         <p><strong>Días de alquiler:</strong> <?php echo $alquiler['dias_alquiler']; ?></p>
                         <hr style="border-color: #444;">
-                        <p><strong>Precio Total:</strong> <strong class="precio" style="font-size: 1.5em;"><?php echo number_format($alquiler['precio_total'], 2); ?>€</strong></p>
+                        <p><strong>Precio Total:</strong> <strong class="precio precio-total-grande"><?php echo number_format($alquiler['precio_total'], 2); ?>€</strong></p>
                     </div>
                 </div>
             </div>

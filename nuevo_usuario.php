@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $check_email = mysqli_query($conexion, "SELECT id FROM usuarios WHERE email = '$email'");
     
     if (mysqli_num_rows($check_email) > 0) {
-        $mensaje = "<div class='error'>Ese correo ya existe en el sistema.</div>";
+        $mensaje = "<div class='alerta alerta-error'>Ese correo ya existe en el sistema.</div>";
     } else {
         $sql = "INSERT INTO usuarios (nombre, apellidos, email, password, telefono, dni, direccion, rol, estado) 
                 VALUES ('$nombre', '$apellidos', '$email', '$password_hash', '$telefono', '$dni', '$direccion', '$rol', 'activo')";
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Location: admin_dashboard.php?msg=usuario_creado');
             exit();
         } else {
-            $mensaje = "<div class='error'>No se pudo crear el usuario.</div>";
+            $mensaje = "<div class='alerta alerta-error'>No se pudo crear el usuario.</div>";
         }
     }
 }
@@ -59,76 +59,65 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <link rel="stylesheet" href="estilos.css">
     <?php endif; ?>
 </head>
-<body>
-    <div class="navbar">
-        <div class="container">
-            <h1>Nuevo Usuario</h1>
-            <nav><a href="admin_dashboard">Volver al Panel</a></nav>
-            <div class="clear"></div>
-        </div>
-    </div>
-
-    <div class="container">
-        <div class="formulario-admin">
-            <h2 style="text-align: center; margin-bottom: 20px;">Datos del Usuario</h2>
+<body class="registro-body">
+    <div class="registro">
+        <h1 class="titulo-formulario">Añadir Nuevo Usuario</h1>
             
             <?php 
             echo $mensaje; ?>
 
             <form method="POST">
-                <div class="form-group">
-                    <label>Nombre</label>
-                    <input type="text" name="nombre" required>
-                </div>
+                <div class="form-grid-2-col">
+                    <div class="form-group">
+                        <label for="nombre">Nombre</label>
+                        <input type="text" id="nombre" name="nombre" required>
+                    </div>
 
-                <div class="form-group">
-                    <label>Apellidos</label>
-                    <input type="text" name="apellidos" required>
-                </div>
+                    <div class="form-group">
+                        <label for="apellidos">Apellidos</label>
+                        <input type="text" id="apellidos" name="apellidos" required>
+                    </div>
 
-                <div class="form-group">
-                    <label>Correo Electrónico</label>
-                    <input type="email" name="email" required>
-                </div>
+                    <div class="form-group">
+                        <label for="dni">DNI / NIE</label>
+                        <input type="text" id="dni" name="dni">
+                    </div>
 
-                <div class="form-group">
-                    <label>Contraseña Temporal</label>
-                    <input type="password" name="password" placeholder="Mínimo 6 caracteres" required>
-                </div>
+                    <div class="form-group">
+                        <label for="telefono">Teléfono de contacto</label>
+                        <input type="text" id="telefono" name="telefono">
+                    </div>
 
-                <div class="form-group">
-                    <label>Teléfono de contacto</label>
-                    <input type="text" name="telefono">
-                </div>
+                    <div class="form-group full-width">
+                        <label for="email">Correo Electrónico</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
 
-                <div class="form-group">
-                    <label>DNI / NIE</label>
-                    <input type="text" name="dni">
-                </div>
+                    <div class="form-group full-width">
+                        <label for="direccion">Dirección completa</label>
+                        <input type="text" id="direccion" name="direccion">
+                    </div>
 
-                <div class="form-group">
-                    <label>Dirección completa</label>
-                    <input type="text" name="direccion">
-                </div>
+                    <div class="form-group">
+                        <label for="password">Contraseña Temporal</label>
+                        <input type="password" id="password" name="password" placeholder="Mínimo 8 caracteres, 1 letra y 1 número" required>
+                    </div>
 
-                <div class="form-group">
-                    <label>Tipo de Usuario (Rol)</label>
-                    <select name="rol">
-                        <option value="cliente">Cliente</option>
-                        <option value="admin">Administrador</option>
-                    </select>
+                    <div class="form-group">
+                        <label for="rol">Tipo de Usuario (Rol)</label>
+                        <select name="rol" id="rol">
+                            <option value="cliente">Cliente</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
                 </div>
-
-                <div style="text-align: center; margin-top: 25px;">
-                    <button type="submit" class="btn">Registrar Usuario</button>
-                </div>
+                <button type="submit" class="btn btn-block espaciado-arriba-20">Registrar Usuario</button>
             </form>
+            <div class="links">
+                <p><a href="admin_dashboard">Volver al Panel</a></p>
+            </div>
         </div>
     </div>
-
-    <footer>
-        <p>&copy; 2026 ARUSLAT - Alquiler de Motos</p>
-    </footer>
 </body>
 </html>
 <?php mysqli_close($conexion); ?>

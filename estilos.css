@@ -497,6 +497,7 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
 
 /* Utilidades varias */
 .espaciado-arriba { margin-top: 25px; }
+.espaciado-arriba-20 { margin-top: 20px; }
 .clear { clear: both; }
 .separador-admin { border: 0; border-top: 1px solid var(--borde-tarjeta); margin: 40px 0; }
 
@@ -506,3 +507,111 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
     font-weight: 600;
 }
 .enlace-discreto:hover { color: var(--texto-blanco); }
+
+/* ==========================================================
+   ESTILOS EXTRAÍDOS DE ARCHIVOS PHP
+   ========================================================== */
+
+/* Clases de texto y alineación */
+.text-center { text-align: center; }
+.titulo-pagina { margin-top: 40px; text-align: center; }
+.titulo-formulario { text-align: center; margin-bottom: 30px; }
+
+/* Clases para formularios */
+.form-grid-3-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+}
+.form-submit-group {
+    grid-column: 1 / -1;
+    text-align: center;
+    margin-top: 10px;
+}
+.form-grid-2-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+/* Componentes de Perfil de Usuario */
+.stats-badge {
+    display: inline-block;
+    background: var(--naranja-principal);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    margin-right: 10px;
+    margin-top: 10px;
+}
+
+/* Componentes de Registro y Login */
+.registro-body, .login-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+.registro {
+    width: 100%;
+    max-width: 800px;
+    padding: 40px;
+}
+.links {
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Componentes de Detalle de Alquiler */
+.detalle-alquiler-container {
+    display: flex;
+    gap: 30px;
+    margin-top: 40px;
+    align-items: flex-start;
+}
+.moto-detalle-card {
+    flex: 1;
+    background: var(--bg-tarjeta);
+    border: 1px solid var(--borde-tarjeta);
+    border-radius: var(--borde-redondeado);
+    padding: 20px;
+    box-shadow: var(--sombre-tarjeta);
+}
+.moto-detalle-card img {
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+.resumen-alquiler {
+    flex: 1;
+}
+.resumen-alquiler .perfil-container {
+    margin-top: 0;
+}
+.precio-total-grande {
+    font-size: 1.5em;
+}
+
+/* Componentes de Detalle de Moto */
+.detalle-info-specs {
+    margin-top: 20px;
+    padding: 25px;
+}
+.titulo-detalle-moto {
+    text-align: left;
+    margin-top: 20px;
+    margin-bottom: 15px;
+}
+
+.pago-metodo-select {
+    width: 100%;
+    padding: 10px;
+    background: #2a1e1a;
+    color: white;
+    border-radius: 6px;
+    border: 1px solid #2d1f1b;
+}

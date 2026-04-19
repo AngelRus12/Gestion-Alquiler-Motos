@@ -36,143 +36,7 @@ $return_url = 'http://' . $_SERVER['HTTP_HOST'] . '/perfil_usuario.php';
     <?php else: ?>
         <link rel="stylesheet" href="estilos.css">
     <?php endif; ?>
-    <style>
-        /* Estilos para la selección de método de pago */
-        .pago-container {
-            max-width: 600px;
-            margin: 40px auto;
-            padding: 30px;
-            background: var(--bg-tarjeta);
-            border: 1px solid var(--borde-tarjeta);
-            border-radius: var(--borde-redondeado);
-            box-shadow: var(--sombre-tarjeta);
-        }
-
-        .monto-display {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-        }
-
-        .monto-display p {
-            font-size: 0.9em;
-            color: var(--texto-gris);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-        }
-
-        .monto-valor {
-            font-size: 3.2rem;
-            color: var(--naranja-principal);
-            font-weight: 800;
-            display: block;
-        }
-
-        .metodo-pago {
-            margin: 20px 0;
-            border: 1px solid var(--borde-tarjeta);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .metodo-option {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .metodo-option:last-child {
-            border-bottom: none;
-        }
-
-        .metodo-option:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .metodo-option input[type="radio"] {
-            margin-right: 15px;
-            transform: scale(1.2);
-        }
-
-        .metodo-info {
-            flex: 1;
-        }
-
-        .metodo-info h4 {
-            margin: 0 0 5px 0;
-            color: var(--texto-blanco);
-            font-size: 1.1em;
-        }
-
-        .metodo-info p {
-            margin: 0;
-            color: var(--texto-gris);
-            font-size: 0.9em;
-        }
-
-        .metodo-logo {
-            width: 60px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8em;
-            color: var(--texto-gris);
-        }
-
-        .btn-confirmar {
-            width: 100%;
-            padding: 15px;
-            background: var(--naranja-principal);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 20px;
-        }
-
-        .btn-confirmar:hover {
-            background: #e55a00;
-            transform: translateY(-2px);
-        }
-
-        .btn-confirmar:disabled {
-            background: var(--texto-gris);
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-cancelar {
-            display: block;
-            text-align: center;
-            text-decoration: none;
-            padding: 12px;
-            margin-top: 10px;
-            border: 1px solid #44332f;
-            color: var(--texto-gris);
-            border-radius: 8px;
-            font-size: 0.9em;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .btn-cancelar:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--texto-blanco);
-            border-color: var(--texto-gris);
-        }
-    </style>
+    <!-- Los estilos para esta página se han movido a un archivo CSS externo -->
 </head>
 <body>
 
@@ -183,7 +47,7 @@ $return_url = 'http://' . $_SERVER['HTTP_HOST'] . '/perfil_usuario.php';
                 <span class="monto-valor"><?php echo number_format($monto, 2); ?>€</span>
             </div>
 
-            <h3 style="color: white; text-align: center; margin-bottom: 20px;">Selecciona tu método de pago</h3>
+            <h3 class="titulo-formulario" style="color: white;">Selecciona tu método de pago</h3>
 
             <form action="payment/checkout.php" method="POST" id="paymentForm">
                 <!-- Datos ocultos -->

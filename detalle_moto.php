@@ -56,9 +56,7 @@ $is_mobile = isMobile();
             <nav>
                 <a href="index">Inicio</a>
                 <a href="catalogo">Catálogo</a>
-                <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin'): ?>
-                    <a href="admin_dashboard" class="nav-destacado" style="color: #ff9800; font-weight: bold;">Panel Admin</a>
-                <?php endif; ?>
+                <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin'): ?><a href="admin_dashboard" class="nav-destacado">Panel Admin</a><?php endif; ?>
                 <a href="perfil_usuario">Mi Perfil</a> 
                 <a href="logout">Cerrar Sesión</a>
             </nav>
@@ -75,9 +73,9 @@ $is_mobile = isMobile();
                         <img src="imgs/default.jpg" alt="Sin imagen">
                     <?php endif; ?>
                 </div>
-                <h1 class="titulo-seccion" style="text-align: left; margin-top: 20px; margin-bottom: 15px;"><?php echo htmlspecialchars($moto['marca'] . " " . $moto['modelo']); ?></h1>
+                <h1 class="titulo-seccion titulo-detalle-moto"><?php echo htmlspecialchars($moto['marca'] . " " . $moto['modelo']); ?></h1>
                 <p><?php echo htmlspecialchars($moto['descripcion']); ?></p>
-                <div class="perfil-container" style="margin-top: 20px; padding: 25px;">
+                <div class="perfil-container detalle-info-specs">
                     <p>• Matricula: <strong><?php echo $moto['matricula']; ?> </strong></p>
                     <p>• Año: <strong><?php echo $moto['año']; ?> </strong></p>
                     <p>• Cilindrada: <strong><?php echo $moto['cilindrada']; ?> cc</strong></p> 
@@ -103,18 +101,18 @@ $is_mobile = isMobile();
                             </div>
                             <div class="form-group">
                                 <label>Método de Pago:</label>
-                                <select name="metodo_pago" required style="width: 100%; padding: 10px; background: #2a1e1a; color: white; border-radius: 6px; border: 1px solid #2d1f1b;">
+                                <select name="metodo_pago" required class="pago-metodo-select">
                                     <option value="tienda">Pago en Tienda</option>
                                     <option value="web">Pago Online con Tarjeta</option>
                                 </select>
                             </div>
                             <div class="desglose-precio">
-                                <p>Total: <strong id="total_val" class="precio-total-final">0.00</strong> €</p>
+                                <p>Total: <strong id="total_val" class="precio-grande">0.00</strong> €</p>
                             </div>
-                            <button type="submit" class="boton" style="width: 100%; margin-top: 10px;">Reservar</button>
+                            <button type="submit" class="btn btn-block espaciado-arriba">Reservar</button>
                         </form>
                     <?php else: ?>
-                        <p style="color: #f44336; text-align: center; font-weight: bold; font-size: 1.1em;">No disponible actualmente</p>
+                        <p class="alerta-error text-center" style="font-weight: bold; font-size: 1.1em; background: none; border: none;">No disponible actualmente</p>
                         <?php
                         // Si el usuario es admin, mostrar quién la tiene alquilada
                         if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin') {
@@ -130,8 +128,8 @@ $is_mobile = isMobile();
                             $res_alquiler = mysqli_stmt_get_result($stmt_alquiler);
 
                             if ($alquiler_actual = mysqli_fetch_assoc($res_alquiler)) { ?>
-                                <div class="alerta" style="margin-top: 20px; text-align: center; background-color: #2e1a1a; border-color: #c62828;">
-                                    <p style="margin:0; color: white;"><strong>Alquilada por:</strong> <a href="detalle_alquiler.php?id=<?php echo $alquiler_actual['alquiler_id']; ?>" style="color: var(--naranja-principal); text-decoration: underline;"><?php echo htmlspecialchars($alquiler_actual['nombre'] . ' ' . $alquiler_actual['apellidos']); ?></a></p>
+                                <div class="alerta alerta-error text-center espaciado-arriba">
+                                    <p style="margin:0; color: white;"><strong>Alquilada por:</strong> <a href="detalle_alquiler.php?id=<?php echo $alquiler_actual['alquiler_id']; ?>" class="enlace-discreto"><?php echo htmlspecialchars($alquiler_actual['nombre'] . ' ' . $alquiler_actual['apellidos']); ?></a></p>
                                     <p style="margin:5px 0 0 0; font-size: 0.9em;">Del <?php echo date('d/m/Y', strtotime($alquiler_actual['fecha_inicio'])); ?> al <?php echo date('d/m/Y', strtotime($alquiler_actual['fecha_fin'])); ?></p>
                                 </div>
                             <?php }
