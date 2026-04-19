@@ -34,6 +34,29 @@ if ($password !== $password2) {
     exit();
 }
 
+// --- Validación de formato de contraseña ---
+if (strlen($password) < 8 || !preg_match('/[A-Za-z]/', $password) || !preg_match('/[0-9]/', $password)) {
+    header('Location: registro.php?error=password_formato');
+    exit();
+}
+
+// --- Validación de DNI (formato y letra) ---
+function es_dni_valido($dni) {
+    $dni = strtoupper(trim($dni));
+    // 1. Comprobar formato (8 números y 1 letra)
+    if (!preg_match('/^[0-9]{8}[A-Z]$/', $dni)) {
+        return false;
+    }
+    // 2. Comprobar que la letra es correcta
+    $letra = substr($dni, -1);
+    $numeros = substr($dni, 0, -1);
+    return substr("TRWAGMYFPDXBNJZSQVHLCKE", $numeros % 23, 1) === $letra;
+}
+if (!es_dni_valido($dni)) {
+    header('Location: registro.php?error=dni_invalido');
+    exit();
+}
+
 // Comprobar si el email ya existe usando Consultas Preparadas
 $sql_email = "SELECT id FROM usuarios WHERE email = ?";
 $stmt_email = mysqli_prepare($conexion, $sql_email);
