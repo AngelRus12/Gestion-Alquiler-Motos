@@ -153,6 +153,22 @@ $is_mobile = isMobile();
                 }
                 echo '<div class="alerta alerta-error">❌ ' . $error_msg . '</div>';
             }
+
+            // Mensajes para cancelación de reserva
+            if (isset($_GET['cancelacion']) && $_GET['cancelacion'] == 'exitosa') {
+                echo '<div class="alerta alerta-exito">✔️ Tu reserva ha sido cancelada correctamente.</div>';
+            }
+            if (isset($_GET['error'])) {
+                $error_msg = '';
+                if ($_GET['error'] == 'cancelacion_fallida') {
+                    $error_msg = 'No se pudo cancelar la reserva. Por favor, inténtalo de nuevo o contacta a soporte.';
+                } elseif ($_GET['error'] == 'no_id') {
+                    $error_msg = 'No se especificó ninguna reserva para cancelar.';
+                }
+                if ($error_msg) {
+                    echo '<div class="alerta alerta-error">❌ ' . $error_msg . '</div>';
+                }
+            }
             ?>
             
             <div class="perfil-container">
@@ -184,7 +200,7 @@ $is_mobile = isMobile();
                             <th class="text-center">Días</th> 
                             <th>Total</th>
                             <th>Estado</th>
-                            <th>Acciones</th>
+                            <th class="text-center">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>   
@@ -217,7 +233,12 @@ $is_mobile = isMobile();
                                 </span>
                             </td>
                             <td class="text-center">
-                                <a href="detalle_alquiler.php?id=<?php echo $alq['id']; ?>" class="boton boton-pequeño">Ver Detalles</a>
+                                <a href="detalle_alquiler.php?id=<?php echo $alq['id']; ?>" class="boton boton-pequeño">Ver Detalles</a><?php
+                                // Solo mostrar el botón de cancelar si la reserva está pendiente
+                                if ($alq['estado'] == 'pendiente') {
+                                    // Añadimos el botón de cancelar en la misma celda de acciones, con un espacio.
+                                    echo ' <a href="cancelar_reserva.php?id=' . $alq['id'] . '" class="boton boton-pequeño" onclick="return confirm(\'¿Estás seguro de que quieres cancelar esta reserva?\');">Cancelar</a>';
+                                } ?>
                             </td>
                         </tr>
                         <?php 

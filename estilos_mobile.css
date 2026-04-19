@@ -130,6 +130,18 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }}
 }
 .boton-secundario:hover { background-color: #4d3b36; color: white;}
 
+.boton-error {
+    background-color: #dc3545; /* Un tono de rojo */
+    border-color: #dc3545;
+    color: white !important; /* Aseguramos que el texto sea blanco */
+}
+
+.boton-error:hover {
+    background-color: #c82333; /* Un rojo más oscuro para el hover */
+    border-color: #bd2130;
+    transform: translateY(-2px); /* Mantenemos el efecto hover */
+}
+
 .boton-pequeño, .btn-sm { padding: 6px 12px; font-size: 13px; border-radius: 6px;}
 .btn-block { width: 100%; padding: 12px; }
 
