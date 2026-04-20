@@ -1,11 +1,4 @@
 <?php
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-use PHPMailer\PHPMailer\SMTP;
-
-require 'PHPMailer/src/Exception.php';
-require 'PHPMailer/src/PHPMailer.php';
-require 'PHPMailer/src/SMTP.php';
 
 require_once 'loginbd.php';
 
@@ -93,59 +86,66 @@ $insertar = "INSERT INTO usuarios (nombre, apellidos, email, password, telefono,
 
 $stmt_ins = mysqli_prepare($conexion, $insertar);
 mysqli_stmt_bind_param($stmt_ins, "sssssss", $nombre_limpio, $apellidos_limpios, $email, $password_hash, $telefono, $dni, $direccion);
-
 if (mysqli_stmt_execute($stmt_ins)) {
-    // --- Envío de correo con PHPMailer (SMTP Autenticado) ---
-    // --- Envío de correo con PHPMailer (SMTP Autenticado) ---
-    $mail = new PHPMailer(true);
+    // Redirigir inmediatamente al usuario para mejorar la experiencia y evitar timeouts.
+    header('Location: login.php?registro=success');
+    
+    // Asegurarse de que el script siga ejecutándose para enviar el correo en segundo plano.
+    ignore_user_abort(true);
+    set_time_limit(30); // Darle 30 segundos al script para enviar el correo.
+
+    // --- INICIO: Enviar correo de bienvenida con PHPMailer ---
+    require 'PHPMailer/src/Exception.php';
+    require 'PHPMailer/src/PHPMailer.php';
+    require 'PHPMailer/src/SMTP.php';
+
+    $mail = new PHPMailer\PHPMailer\PHPMailer(true);
 
     try {
-        // Desactivamos la depuración para producción. Cambia a 2 para ver logs detallados si vuelve a fallar.
-        $mail->SMTPDebug = 0; 
-
+        // Configuración del servidor SMTP de x10hosting
         $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com'; 
+        $mail->Host       = 'mail.alquilermotos.x10.mx'; // Servidor SMTP
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'angelruslatorre@gmail.com';
-        $mail->Password   = 'mwjq bmlz uiiu tdqa'; 
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; 
-        $mail->Port       = 465;
-        $mail->CharSet    = 'UTF-8';
+        $mail->Username   = 'info@alquilermotos.x10.mx'; // Tu correo completo
+        $mail->Password   = '12345678';                  // La contraseña de tu correo
+        $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS; // O 'ssl'
+        $mail->Port       = 587;                         // Puerto para TLS (o 465 para SSL)
 
-        // Remitente y Destinatario
-        // Es recomendable que el remitente sea la misma cuenta con la que te autenticas.
-        $mail->setFrom('angelruslatorre@gmail.com', 'ARUSLAT Soporte');
-        $mail->addAddress($email, $nombre_limpio);
+        // Remitente y destinatarios
+        $mail->setFrom('info@alquilermotos.x10.mx', 'ARUSLAT');
+        $mail->addAddress($email, $nombre_limpio); // Añadir destinatario
 
-        // Contenido del mensaje
-        $mail->isHTML(false); 
-        $mail->Subject = 'Bienvenido a ARUSLAT - Cuenta Creada';
-        $mail->Body    = "Hola " . $nombre_limpio . ",\n\n" .
-                         "¡Gracias por registrarte en ARUSLAT! Tu cuenta ha sido creada correctamente.\n\n" .
-                         "Ya puedes acceder a nuestro catálogo y reservar la moto que prefieras para tu próxima aventura.\n\n" .
-                         "Accede aquí: http://" . $_SERVER['HTTP_HOST'] . "/login.php\n\n" .
-                         "Atentamente,\nEl equipo de ARUSLAT.";
+        // Contenido del correo
+        $mail->isHTML(true);
+        $mail->CharSet = 'UTF-8';
+        $mail->Subject = '¡Bienvenido a ARUSLAT!';
+        $mail->Body    = "
+        <html>
+        <body style='font-family: Arial, sans-serif; color: #333;'>
+            <h2>¡Hola " . htmlspecialchars($nombre_limpio) . "!</h2>
+            <p>Tu cuenta en ARUSLAT ha sido creada exitosamente.</p>
+            <p>Aquí tienes tus datos para iniciar sesión:</p>
+            <p><strong>Usuario:</strong> " . htmlspecialchars($email) . "<br>
+            <strong>Contraseña:</strong> " . htmlspecialchars($password) . "</p>
+            <p>Puedes iniciar sesión en nuestro sitio web: <a href='http://" . $_SERVER['HTTP_HOST'] . "/login.php'>Iniciar Sesión</a></p>
+            <p>Gracias por unirte a nosotros.</p>
+        </body>
+        </html>";
+        $mail->AltBody = "¡Hola " . $nombre_limpio . "! Tu cuenta en ARUSLAT ha sido creada. Usuario: " . $email . " Contraseña: " . $password;
 
         $mail->send();
-        
-        // Si el correo se envía bien, cerramos y redirigimos
-        mysqli_stmt_close($stmt_ins);
-        mysqli_close($conexion);
-        header('Location: login.php?registro=exitoso');
-        exit();
-
     } catch (Exception $e) {
-        // Si el correo falla, el registro es exitoso igualmente, pero informamos al usuario.
-        // Redirigimos a la página de login con una advertencia.
-        mysqli_stmt_close($stmt_ins);
-        mysqli_close($conexion);
-        header('Location: login.php?registro=exitoso&email_error=1');
-        exit();
+        // No detenemos el registro si el email falla, pero podríamos guardarlo en un log
+        // error_log("El mensaje no se pudo enviar. Mailer Error: {$mail->ErrorInfo}");
     }
+    // --- FIN: Enviar correo de bienvenida con PHPMailer ---
 
 } else {
-    echo "Error al registrar usuario: " . mysqli_error($conexion);
+    header('Location: registro.php?error=sql');
 }
+mysqli_stmt_close($stmt_ins);
+mysqli_close($conexion);
+
 
 mysqli_close($conexion);
 ?>
