@@ -46,12 +46,6 @@ $total_users = mysqli_fetch_assoc($total_users_res)['total'];
 $total_motos = mysqli_fetch_assoc($total_motos_res)['total'];
 $total_pendientes = mysqli_fetch_assoc($res_pendientes_res)['total'];
 
-// Función para detectar dispositivos móviles
-function isMobile() {
-    return preg_match("/(android|avantgo|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino)/i", $_SERVER["HTTP_USER_AGENT"]);
-}
-
-$is_mobile = isMobile();
 ?>
 
 <!DOCTYPE html>
@@ -62,21 +56,7 @@ $is_mobile = isMobile();
     <link rel="icon" href="logo.png" type="image/png">
     <link rel="apple-touch-icon" href="logo.png">
     <title>Panel Administrativo - ARUSLAT</title>
-    <?php if ($is_mobile): ?>
-        <link rel="stylesheet" href="estilos_mobile.css">
-    <?php else: ?>
-        <link rel="stylesheet" href="estilos.css">
-    <?php endif; ?>
-    <?php if (!$is_mobile): ?>
-    <style>
-        .info-alquilada {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 4px;
-        }
-    </style>
-    <?php endif; ?>
+    <link rel="stylesheet" href="estilos.css">
 </head>
 <body>
     

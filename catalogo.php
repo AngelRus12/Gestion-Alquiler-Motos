@@ -32,27 +32,18 @@ $is_mobile = isMobile();
         <div class="container">
             <h1>ARUSLAT</h1>
             <nav>
-                <a href="index">Inicio</a>
-                <a href="catalogo">Catálogo</a>
-                <?php 
-                if (isset($_SESSION['usuario_id'])) { 
-                    if (isset($_SESSION['rol'])) {
-                        if ($_SESSION['rol'] === 'admin') { 
-                ?>
-                            <a href="admin_dashboard" class="nav-destacado">Panel Admin</a>
-                <?php 
-                        }
-                    } 
-                ?>
-                    <a href="perfil_usuario">Mi Perfil</a> 
-                    <a href="logout">Cerrar Sesión</a>
-                <?php 
-                } else { 
-                ?>
-                    <a href="login">Login</a>
-                <?php 
-                } 
-                ?>
+                <a href="index.php">Inicio</a>
+                <a href="catalogo.php">Catálogo</a>
+                <?php if (isset($_SESSION['usuario_id'])): ?>
+                    <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin'): ?>
+                        <a href="admin_dashboard.php" class="nav-destacado">Panel Admin</a>
+                    <?php endif; ?>
+                    <a href="perfil_usuario.php">Mi Perfil</a>
+                    <a href="logout.php">Cerrar Sesión</a>
+                <?php else: ?>
+                    <a href="login.php">Login</a>
+                    <a href="registro.php">Registro</a>
+                <?php endif; ?>
             </nav>
         </div>
     </header>

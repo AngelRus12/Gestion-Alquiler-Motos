@@ -627,3 +627,130 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
     border-radius: 6px;
     border: 1px solid #2d1f1b;
 }
+
+/* ==========================================================
+   ESTILOS RESPONSIVE (Media Queries)
+   ========================================================== */
+
+/* Tablets y pantallas medianas (hasta 992px) */
+@media (max-width: 992px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .form-grid-3-col, .form-grid-2-col {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .detalle-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .reserva-card {
+        position: static; /* El panel de reserva ya no flota */
+        margin-top: 20px;
+    }
+
+    .detalle-alquiler-container {
+        flex-direction: column;
+    }
+
+    .admin-stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+}
+
+/* Tablets pequeñas y móviles grandes (hasta 768px) */
+@media (max-width: 768px) {
+    body {
+        font-size: 15px;
+    }
+
+    .navbar .container {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .navbar nav {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .hero {
+        padding: 60px 20px;
+    }
+
+    .hero h1 {
+        font-size: 36px;
+    }
+
+    .hero p {
+        font-size: 16px;
+    }
+
+    .grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .form-grid-3-col, .form-grid-2-col {
+        grid-template-columns: 1fr;
+    }
+
+    .formulario-admin, .login-container, .registro, .container-formulario, .perfil-container {
+        padding: 25px;
+        margin: 20px auto;
+    }
+
+    .titulo-seccion {
+        font-size: 28px;
+    }
+
+    th, td {
+        padding: 12px 10px;
+        font-size: 14px;
+    }
+
+    .perfil-container .contenedor-tabla {
+        overflow-x: auto; /* Permitir scroll horizontal en tablas si es necesario */
+    }
+
+    .stats-bloque {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .stats-badge {
+        margin-right: 0;
+    }
+}
+
+/* Móviles pequeños (hasta 576px) */
+@media (max-width: 576px) {
+    .container {
+        padding: 0 15px !important;
+    }
+
+    .navbar h1 {
+        font-size: 20px;
+    }
+
+    .navbar nav a {
+        font-size: 14px;
+    }
+
+    .boton, .btn {
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+
+    .card img {
+        height: 200px;
+    }
+
+    footer, .pie-pagina {
+        padding: 30px 20px;
+    }
+}
