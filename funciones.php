@@ -63,9 +63,9 @@ function actualizar_estados_alquileres($conn) {
 function actualizar_sistema_completo($conn) {
     $conn->query("UPDATE alquileres SET estado = 'en_curso' WHERE fecha_inicio <= CURDATE() AND fecha_fin >= CURDATE() AND estado = 'confirmado'");
     $conn->query("UPDATE alquileres SET estado = 'finalizado' WHERE fecha_fin < CURDATE() AND estado IN ('confirmado', 'en_curso')");
-    $conn->query("UPDATE alquileres SET estado = 'cancelado' WHERE fecha_inicio <= CURDATE() AND estado = 'pendiente'");
+    $conn->query("UPDATE alquileres SET estado = 'cancelado' WHERE fecha_inicio < CURDATE() AND estado = 'pendiente'");
     $conn->query("UPDATE motos SET disponible = 1");
-    $conn->query("UPDATE motos SET disponible = 0 WHERE id IN (SELECT moto_id FROM alquileres WHERE estado = 'en_curso')");
+    $conn->query("UPDATE motos SET disponible = 0 WHERE id IN (SELECT DISTINCT moto_id FROM alquileres WHERE estado IN ('confirmado', 'en_curso'))");
 }
 
 // Procedimiento: sp_gestionar_estado_alquiler

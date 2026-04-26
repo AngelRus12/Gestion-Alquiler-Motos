@@ -20,7 +20,7 @@ if (!isset($_POST['payment_method']) || !isset($_POST['amount'])) {
 
 // Capturar datos de la transacción
 $paymentMethod = $_POST['payment_method'];
-$amount = $_POST['amount'];
+$amount = (float)($_POST['amount'] ?? 0); // Asegurar que el monto sea un número flotante
 $orderId = $_POST['order_id'] ?? 'ORD-' . time();
 $description = $_POST['description'] ?? 'Compra en tienda';
 
@@ -205,7 +205,7 @@ $params['return_url'] = $_SESSION['pending_transaction']['return_url'];
                         <div class="alert alert-info">
                             <small>
                                 <strong>Método:</strong> <?php echo ucfirst($paymentMethod); ?><br>
-                                <strong>Monto:</strong> $<?php echo number_format($amount, 2, ',', '.'); ?> €<br>
+                                <strong>Monto:</strong> <?php echo number_format($amount, 2, '.', ''); ?> €<br>
                                 <strong>Orden:</strong> <?php echo $orderId; ?>
                             </small>
                         </div>

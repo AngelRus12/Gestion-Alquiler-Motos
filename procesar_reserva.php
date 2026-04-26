@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once 'loginbd.php';
+require_once 'funciones.php'; // Incluir el archivo de funciones
 
 // 1. Seguridad: Verificar que el usuario ha iniciado sesión
 if (!isset($_SESSION['usuario_id'])) {
@@ -20,11 +21,11 @@ $moto_id  = (int)$_POST['id_moto'];
 $f_inicio = trim($_POST['f_inicio']);
 $f_fin    = trim($_POST['f_fin']);
 $metodo   = trim($_POST['metodo_pago']);
-$precio   = (float)$_POST['precio_dia'];
 
 // 3. Calcular días y precio total en el servidor para mayor seguridad
+// Se usa la función para un cálculo seguro en el servidor
 $dias = (strtotime($f_fin) - strtotime($f_inicio)) / 86400 + 1;
-$total = $dias * $precio;
+$total = calcular_precio_total($conexion, $moto_id, $f_inicio, $f_fin);
 
 // El estado inicial de una reserva siempre es 'pendiente' hasta que se procesa el pago
 $estado = 'pendiente'; 

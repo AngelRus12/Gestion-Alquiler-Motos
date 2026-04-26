@@ -3,12 +3,18 @@ header('Content-Type: text/html; charset=utf-8');
 session_start();
 require_once 'loginbd.php';
 
+// Incluir funciones y actualizar el sistema
+require_once 'funciones.php';
+
 if (!isset($_SESSION['usuario_id'])) {
     header('Location: login.php?error=acceso_denegado');
     exit();
 }
 
 $conexion = mysqli_connect($db_hostname, $db_username, $db_password, $db_database);
+
+// Actualizar el estado de los alquileres y la disponibilidad de las motos
+actualizar_sistema_completo($conexion);
 
 mysqli_set_charset($conexion, "utf8");
 

@@ -384,6 +384,17 @@ tr:hover td {
     line-height: 1.5; /* Asegura una altura de línea consistente */
 }
 
+/* Solución para que el calendario (date picker) sea visible en temas oscuros */
+.form-group input[type="date"] {
+    color-scheme: light;
+}
+
+/* Cambia el color del icono del calendario en el input para que sea visible en fondos oscuros */
+.form-group input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
 .form-group textarea {
     min-height: 120px; /* Altura mínima para el área de texto */
     resize: vertical; /* Permitir solo redimensionamiento vertical */
@@ -688,6 +699,8 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
     .admin-stats-grid {
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     }
+
+    /* No se necesitan cambios para .pago-container en esta vista */
 }
 
 /* Tablets pequeñas y móviles grandes (hasta 768px) */
