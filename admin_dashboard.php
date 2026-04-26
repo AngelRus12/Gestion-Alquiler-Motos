@@ -24,6 +24,9 @@ if (isset($_GET['msg'])) {
     if ($_GET['msg'] == 'actualizado') {
         $mensaje_html = "<div class='alerta alerta-exito'>Operación realizada con éxito.</div>";
     }
+    if ($_GET['msg'] == 'cancelado') {
+        $mensaje_html = "<div class='alerta alerta-exito'>Alquiler cancelado correctamente.</div>";
+    }
 }
 if (isset($_GET['error'])) {
     if ($_GET['error'] == 'autodelecion') {
@@ -272,6 +275,8 @@ $total_pendientes = mysqli_fetch_assoc($res_pendientes_res)['total'];
                                         <button type="submit" class="boton btn-sm etiqueta-exito" style="border: none; cursor: pointer; padding: 10px 15px;">
                                             Confirmar Pago
                                         </button>
+                                    </form><form action="cancelar_reserva.php" method="GET" style="display:inline; margin-left: 5px;">
+                                        <input type="hidden" name="id" value="<?php echo $alquiler['id']; ?>"><button type="submit" class="boton boton-pequeño boton-error">Cancelar</button>
                                     </form>
                                 </td>
                             </tr>
@@ -362,4 +367,9 @@ $total_pendientes = mysqli_fetch_assoc($res_pendientes_res)['total'];
 
 </body>
 </html>
-<?php mysqli_close($conexion); ?>
+<?php 
+// --- CANCELACIÓN AUTOMÁTICA ---
+// Se ejecuta al final para no afectar la visualización de la tabla de pendientes.
+mysqli_query($conexion, "UPDATE alquileres SET estado = 'cancelado' WHERE estado = 'pendiente' AND fecha_inicio < CURDATE()");
+mysqli_close($conexion); 
+?>

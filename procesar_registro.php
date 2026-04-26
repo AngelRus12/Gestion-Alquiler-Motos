@@ -89,6 +89,7 @@ mysqli_stmt_bind_param($stmt_ins, "sssssss", $nombre_limpio, $apellidos_limpios,
 if (mysqli_stmt_execute($stmt_ins)) {
     // Redirigir inmediatamente al usuario para mejorar la experiencia y evitar timeouts.
     header('Location: login.php?registro=success');
+    exit(); // Finalizar el script aquí para asegurar la redirección inmediata.
     
     // Asegurarse de que el script siga ejecutándose para enviar el correo en segundo plano.
     ignore_user_abort(true);
@@ -145,7 +146,3 @@ if (mysqli_stmt_execute($stmt_ins)) {
 }
 mysqli_stmt_close($stmt_ins);
 mysqli_close($conexion);
-
-
-mysqli_close($conexion);
-?>

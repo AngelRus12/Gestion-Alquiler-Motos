@@ -1,0 +1,558 @@
+/* ==========================================================
+   ESTILOS GENERALES Y RESETS - MÓVIL
+   ========================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg-oscuro: #120907; /* Fondo marrón muy oscuro */
+    --bg-tarjeta: #1c110e; /* Fondo de tarjetas y contenedores */
+    --naranja-principal: #e03e00; /* Naranja brillante de botones y acentos */
+    --texto-blanco: #ffffff;
+    --texto-gris: #a0a0a0;
+    --borde-tarjeta: #2d1f1b;
+    --sombre-tarjeta: 0 4px 6px rgba(0,0,0,0.3);
+    --borde-redondeado: 12px;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-oscuro);
+    color: var(--texto-gris);
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.contenedor, .container {
+    max-width: 100% !important;
+    margin: 0 auto;
+    padding: 0 15px !important;
+
+a { text-decoration: none; color: inherit; transition: 0.3s; }}
+
+/* Ajustes para el empuje del footer */
+.contenido-principal, .main-content {
+    flex: 1 0 auto;
+    padding-bottom: 40px;
+}
+
+/* ==========================================================
+   BARRA DE NAVEGACIÓN (Móvil)
+   ========================================================== */
+.barra-navegacion, .navbar {
+    padding: 8px 0; /* Reducido aún más el padding para hacerla más delgada */
+}
+
+.barra-navegacion .contenedor, .navbar .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row; /* Asegura que el título y la navegación estén en la misma fila */
+    gap: 10px; /* Reducido el espacio entre elementos */
+}
+
+.navbar h1, .barra-navegacion h1 {
+    font-size: 15px; /* Reducido ligeramente el tamaño de la fuente del título */
+    font-weight: 800;
+    color: var(--naranja-principal);
+    margin: 0;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    flex-shrink: 0; /* Evita que el título se encoja demasiado */
+}
+
+.navbar nav, .barra-navegacion nav {
+    display: flex;
+    gap: 5px; /* Reducido aún más el espacio entre enlaces */
+    align-items: center;
+    flex-direction: row; /* Los enlaces estarán en fila */
+    flex-wrap: wrap; /* Permite que los enlaces pasen a la siguiente línea si no caben */
+    justify-content: flex-end; /* Alinea los enlaces a la derecha */
+}
+
+.barra-navegacion nav a, .navbar nav a {
+    color: var(--texto-gris);
+    font-size: 12px; /* Reducido el tamaño de la fuente de los enlaces */
+    font-weight: 600;
+    padding: 3px 5px; /* Ajustado el padding para hacerlos más compactos */
+}
+
+.barra-navegacion nav a:hover, .navbar nav a:hover {
+    color: var(--texto-blanco);
+}
+
+.nav-destacado {
+    color: var(--naranja-principal) !important;
+    font-weight: 700;
+}
+
+/* ==========================================================
+   BOTONES (Móvil)
+   ========================================================== */
+.boton, .btn {
+    display: inline-block;
+    padding: 15px 30px;
+    background-color: var(--naranja-principal);
+    color: var(--texto-blanco);
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.boton:hover, .btn:hover {
+    background-color: #ff4500;
+    transform: translateY(-2px);
+}
+
+.boton-secundario, .btn-secondary {
+    background-color: #3d2b26;
+    color: var(--texto-gris);
+}
+.boton-secundario:hover { background-color: #4d3b36; color: white;}
+
+.boton-error {
+    background-color: #dc3545; /* Un tono de rojo */
+    border-color: #dc3545;
+    color: white !important; /* Aseguramos que el texto sea blanco */
+}
+
+.boton-error:hover {
+    background-color: #c82333; /* Un rojo más oscuro para el hover */
+    border-color: #bd2130;
+    transform: translateY(-2px); /* Mantenemos el efecto hover */
+}
+
+.boton-pequeño, .btn-sm { padding: 6px 12px; font-size: 13px; border-radius: 6px;}
+.btn-block { width: 100%; padding: 12px; }
+
+/* ==========================================================
+   ETIQUETAS Y AVISOS (Móvil)
+   ========================================================== */
+.etiqueta, .badge {
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+    display: inline-block;
+    text-transform: uppercase;
+}
+
+.etiqueta-exito, .badge-success, .estado-confirmado {
+    background-color: #213d29;
+    color: #4caf50;
+}
+
+.etiqueta-aviso, .badge-warning, .estado-pendiente {
+    background-color: #4a3e20;
+    color: #ffc107;
+}
+
+.etiqueta-error, .badge-danger, .estado-finalizado {
+    background-color: #4d1c1c;
+    color: #f44336;
+}
+
+.estado-en-curso, .en-curso {
+    background-color: #1c2b4d;
+    color: #47b2e4;
+}
+
+.etiqueta-azul { background-color: #1c2b4d; color: #47b2e4; }
+
+.alerta {
+    padding: 15px;
+    border-radius: var(--borde-redondeado);
+    margin-bottom: 25px;
+    border-width: 1px;
+    border-style: solid;
+}
+.alerta-exito { background-color: #1a2e20; color: #a5d6a7; border-color: #2e7d32; }
+.alerta-error { background-color: #2e1a1a; color: #ef9a9a; border-color: #c62828; }
+
+/* ==========================================================
+   SECCIONES PRINCIPALES Y CABECERAS (Móvil)
+   ========================================================== */
+.hero {
+    background: linear-gradient(rgba(18, 9, 7, 0.7), rgba(18, 9, 7, 0.9)),
+                url('https://www.moto1pro.com/sites/default/files/apertura_3.jpeg') no-repeat center;
+    background-size: cover;
+    color: var(--texto-blanco);
+    text-align: center;
+    padding: 60px 20px;
+    border-bottom: 1px solid var(--borde-tarjeta);
+}
+
+.hero h1 { font-size: 32px; font-weight: 800; margin-bottom: 20px; line-height: 1.2; }
+.hero p { font-size: 16px; color: var(--texto-gris); max-width: 700px; margin: 0 auto 30px; }
+
+.titulo-seccion {
+    text-align: center;
+    color: var(--texto-blanco);
+    font-size: 28px;
+    margin-top: 40px;
+    margin-bottom: 30px;
+    font-weight: 700;
+}
+
+/* ==========================================================
+   CATÁLOGO - GRID Y TARJETAS (Móvil)
+   ========================================================== */
+.grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 30px !important;
+    margin: 20px auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.card {
+    background-color: var(--bg-tarjeta);
+    border: 1px solid var(--borde-tarjeta);
+    border-radius: var(--borde-redondeado);
+    min-width: 0 !important;
+    overflow: hidden;
+    transition: 0.3s;
+    display: flex;
+    flex-direction: column;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    border-color: #4d3b36;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+}
+
+.card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-bottom: 1px solid var(--borde-tarjeta);
+}
+
+.card-body {
+    padding: 20px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.card h3 {
+    color: var(--texto-blanco);
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.card p.descripcion {
+    font-size: 14px;
+    color: var(--texto-gris);
+    margin-bottom: 15px;
+    flex-grow: 1;
+}
+
+.card p.precio {
+    color: var(--naranja-principal);
+    font-weight: bold;
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+.card .btn {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+}
+
+/* ==========================================================
+   TABLAS DE DATOS (Móvil)
+   ========================================================== */
+.contenedor-tabla {
+    background-color: var(--bg-tarjeta);
+    padding: 5px;
+    border-radius: var(--borde-redondeado);
+    border: 1px solid var(--borde-tarjeta);
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+th, td {
+    padding: 12px 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--borde-tarjeta);
+    vertical-align: middle;
+    font-size: 14px;
+}
+
+th {
+    background-color: #1a0f0d;
+    color: var(--texto-blanco);
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+th:first-child { border-top-left-radius: 8px; }
+th:last-child { border-top-right-radius: 8px; }
+
+tr:last-child td { border-bottom: none; }
+
+tr:hover td {
+    background-color: #211613;
+}
+
+.miniatura-admin {
+    width: 70px;
+    height: 55px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--borde-tarjeta);
+}
+
+/* ==========================================================
+   FORMULARIOS (Móvil)
+   ========================================================== */
+.formulario-admin, .login-container, .registro, .container-formulario, .perfil-container {
+    background-color: var(--bg-tarjeta);
+    padding: 20px;
+    border: 1px solid var(--borde-tarjeta);
+    margin: 15px auto;
+    border-radius: var(--borde-redondeado);
+    box-shadow: var(--sombre-tarjeta);
+    max-width: 100%;
+}
+
+/* Ajuste específico para eliminar scroll en perfil */
+.perfil-container {
+    max-width: 100%;
+}
+.perfil-container .contenedor-tabla {
+    overflow-x: hidden;
+}
+
+.titulo-admin, .perfil-container h3 {
+    text-align: center;
+    color: var(--texto-blanco);
+    margin-bottom: 30px;
+    font-weight: 700;
+}
+
+.form-group { margin-bottom: 20px; }
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--texto-blanco);
+    font-size: 14px;
+}
+
+.form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--bg-oscuro);
+    border: 1px solid var(--borde-tarjeta);
+    border-radius: 6px;
+    color: var(--texto-blanco);
+    font-size: 14px;
+}
+
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    border-color: var(--naranja-principal);
+    outline: none;
+}
+
+.form-fila { display: flex; gap: 15px; margin-bottom: 10px; }
+
+.precio, .precio-grande, .precio-final {
+    color: var(--naranja-principal);
+    font-weight: bold;
+}
+.precio-grande { font-size: 28px; }
+
+.estado-alquiler {
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+/* ==========================================================
+   ADMIN DASHBOARD ESPECIAL (Móvil)
+   ========================================================== */
+.admin-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+    margin-bottom: 30px;
+    margin-top: 20px;
+}
+
+.stat-card {
+    background-color: var(--bg-tarjeta);
+    padding: 15px;
+    border-radius: var(--borde-redondeado);
+    border: 1px solid var(--borde-tarjeta);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-card .info h4 { font-size: 14px; color: var(--texto-gris); text-transform: uppercase; margin-bottom: 5px; }
+.stat-card .info .number { font-size: 24px; color: var(--texto-blanco); font-weight: 800; }
+.stat-card .info .number span { font-size: 14px; color: #4caf50; font-weight: 600; margin-left: 5px; }
+
+.stat-icon {
+    font-size: 24px;
+    color: var(--naranja-principal);
+    opacity: 0.7;
+}
+
+.seccion-titulo-admin {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 40px 0 20px 0;
+    color: var(--texto-blanco);
+}
+
+/* ==========================================================
+   NUEVO: DISEÑO DE RESERVA EN DETALLE MOTO (Móvil)
+   ========================================================== */
+.detalle-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    margin: 40px 0;
+}
+.detalle-info {
+    width: 100%; /* Asegura que ocupe todo el ancho disponible */
+}
+
+.detalle-img {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.detalle-img img {
+    width: 100%;
+    max-height: 250px; /* Limita la altura máxima de la imagen */
+    object-fit: cover; /* Asegura que la imagen cubra el área sin distorsionarse */
+    border-radius: var(--borde-redondeado);
+}
+
+.detalle-reserva {
+    order: -1;
+}
+
+.reserva-card {
+    background: var(--bg-tarjeta);
+    border: 1px solid var(--borde-tarjeta);
+    padding: 25px;
+    border-radius: var(--borde-redondeado);
+    position: static;
+    top: 100px;
+    box-shadow: var(--sombre-tarjeta);
+}
+
+.reserva-card h3 { color: var(--texto-blanco); margin-bottom: 25px; font-size: 22px; text-align: center; }
+
+.precio-desglose {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--borde-tarjeta);
+}
+
+.precio-fila { display: flex; justify-content: space-between; margin-bottom: 10px; }
+.precio-total-final {
+    color: var(--naranja-principal);
+    font-size: 26px;
+    font-weight: 800;
+    margin-top: 10px;
+}
+/* ==========================================================
+   Pasarela de pago (BOTONES) (Móvil)
+   ========================================================== */
+
+/* ==========================================================
+   PIE DE PÁGINA (Footer) (Móvil)
+   ========================================================== */
+footer, .pie-pagina {
+    flex-shrink: 0;
+    background-color: #1a0f0d;
+    color: var(--texto-gris);
+    text-align: center;
+    padding: 30px 20px;
+    margin-top: auto;
+    border-top: 1px solid var(--borde-tarjeta);
+}
+
+footer p { margin-bottom: 8px; font-size: 12px; }
+footer p:last-child { margin-bottom: 0; color: #666; font-size: 10px;}
+
+/* Utilidades varias */
+.espaciado-arriba { margin-top: 25px; }
+.clear { clear: both; }
+.separador-admin { border: 0; border-top: 1px solid var(--borde-tarjeta); margin: 40px 0; }
+
+/* ==========================================================
+   ESTILOS EXTRAÍDOS DE ARCHIVOS PHP (Móvil)
+   ========================================================== */
+
+/* Clases de texto y alineación */
+.text-center { text-align: center; }
+.titulo-pagina { margin-top: 40px; text-align: center; }
+.titulo-formulario { text-align: center; margin-bottom: 30px; }
+
+/* Formularios */
+.form-grid-3-col, .form-grid-2-col {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+.form-submit-group {
+    grid-column: 1 / -1;
+    text-align: center;
+    margin-top: 10px;
+}
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+/* Registro y Login */
+.registro-body, .login-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 15px 0;
+}
+.registro {
+    width: 100%;
+    max-width: 100%;
+    padding: 20px;
+}
+
+/* Detalle Alquiler */
+.detalle-alquiler-container {
+    flex-direction: column;
+}

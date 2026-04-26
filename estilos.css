@@ -364,7 +364,16 @@ tr:hover td {
     font-size: 14px;
 }
 
-.form-group input, .form-group select, .form-group textarea {
+.form-group input, 
+.form-group select, 
+.form-group textarea,
+.form-group button {
+    font-family: inherit; /* Heredar la fuente del body */
+}
+
+.form-group input, 
+.form-group select, 
+.form-group textarea {
     width: 100%;
     padding: 12px;
     background-color: var(--bg-oscuro);
@@ -372,6 +381,12 @@ tr:hover td {
     border-radius: 6px;
     color: var(--texto-blanco);
     font-size: 15px;
+    line-height: 1.5; /* Asegura una altura de línea consistente */
+}
+
+.form-group textarea {
+    min-height: 120px; /* Altura mínima para el área de texto */
+    resize: vertical; /* Permitir solo redimensionamiento vertical */
 }
 
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
@@ -379,6 +394,21 @@ tr:hover td {
     outline: none;
 }
 
+/* Estilos específicos para el input de archivo para que coincida */
+.form-group input[type="file"] {
+    padding: 9px 12px; /* Ajuste de padding para alinear verticalmente */
+}
+
+/* Estilos para el botón del selector de archivos en navegadores WebKit/Blink */
+.form-group input[type="file"]::-webkit-file-upload-button {
+    background-color: var(--naranja-principal);
+    color: var(--texto-blanco);
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+}
 .form-fila { display: flex; gap: 15px; margin-bottom: 10px; }
 
 .precio, .precio-grande, .precio-final {

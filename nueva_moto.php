@@ -41,12 +41,12 @@ $is_mobile = isMobile();
         
         <form action="guardar_moto.php" method="POST" enctype="multipart/form-data">
             
-            <div class="form-fila">
+            <div class="form-group">
                 <input type="text" name="marca" placeholder="Marca (Ej: BMW)" required>
                 <input type="text" name="modelo" placeholder="Modelo (Ej: S1000RR)" required>
             </div>
 
-            <div class="form-fila">
+            <div class="form-group">
                 <input type="number" name="año" placeholder="Año" required>
                 <input type="number" name="cilindrada" placeholder="CC" required>
                 <input type="number" name="kilometraje" placeholder="Kilómetros" required>
@@ -79,9 +79,9 @@ $is_mobile = isMobile();
             <button type="submit" class="btn btn-block">Registrar Moto</button>
         </form>
 
-        <div class="link-volver">
-            <a href="catalogo">← Volver al catálogo</a>
-        </div>
+        <div class="links">
+                <p><a href="admin_dashboard">Volver al Panel</a></p>
+            </div>
     </div>
 
     <footer>
