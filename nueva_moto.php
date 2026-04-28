@@ -64,6 +64,10 @@ $is_mobile = isMobile();
             </div>
 
             <div class="form-group">
+                <input type="text" name="matricula" placeholder="Matrícula (Ej: 1234ABC)" required>
+            </div>
+
+            <div class="form-group">
                 <input type="number" step="0.01" name="precio_dia" placeholder="Precio por día (€)" required>
             </div>
             

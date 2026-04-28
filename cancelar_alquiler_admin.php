@@ -25,21 +25,10 @@ $id_alquiler = (int)$_GET['id'];
 $sql = "UPDATE alquileres SET estado = 'cancelado' WHERE id = ? AND estado = 'pendiente'";
 $stmt = mysqli_prepare($conexion, $sql);
 
-if (!$stmt) {
-    header('Location: admin_dashboard.php?error=sql_prepare');
-    exit();
-}
-
 mysqli_stmt_bind_param($stmt, "i", $id_alquiler);
 
 if (mysqli_stmt_execute($stmt)) {
-    // Si se afectó alguna fila, la cancelación fue exitosa
-    if (mysqli_stmt_affected_rows($stmt) > 0) {
-        header('Location: admin_dashboard.php?msg=cancelado');
-    } else {
-        // Si no se afectó ninguna fila, es porque el alquiler no estaba 'pendiente' o no existía
-        header('Location: admin_dashboard.php?error=no_cancelable');
-    }
+    header('Location: admin_dashboard.php?msg=cancelado');
 } else {
     header('Location: admin_dashboard.php?error=sql_execute');
 }
@@ -47,4 +36,3 @@ if (mysqli_stmt_execute($stmt)) {
 mysqli_stmt_close($stmt);
 mysqli_close($conexion);
 exit();
-?>

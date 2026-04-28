@@ -44,17 +44,3 @@ if (isset($_GET['id'])) {
     header('Location: admin_dashboard.php');
 }
 exit();
-    mysqli_stmt_bind_param($stmt, "i", $id_moto);
-
-    if (mysqli_stmt_execute($stmt)) {
-        header('Location: admin_dashboard.php?msg=eliminado');
-    } else {
-        header('Location: admin_dashboard.php?error=error_al_eliminar');
-    }
-    
-    mysqli_stmt_close($stmt);
-    mysqli_close($conexion);
-} else {
-    header('Location: admin_dashboard.php');
-}
-exit();

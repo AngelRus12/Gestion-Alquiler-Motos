@@ -8,53 +8,65 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'admin') {
     exit();
 }
 
+// 2. Verificar que la solicitud sea por método POST
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Location: nueva_moto.php');
+    exit();
+}
+
 $conexion = mysqli_connect($db_hostname, $db_username, $db_password, $db_database);
 if (!$conexion) {
-    die("Error de conexión: " . mysqli_connect_error());
+    // Redirigir con un error si la conexión a la BD falla
+    header('Location: nueva_moto.php?error=db');
+    exit();
 }
 mysqli_set_charset($conexion, "utf8");
 
-// 2. Recoger y validar datos del formulario
-$marca       = trim($_POST['marca']);
-$modelo      = trim($_POST['modelo']);
-$año         = (int)$_POST['año'];
-$tipo        = trim($_POST['tipo']);
-$cilindrada  = (int)$_POST['cilindrada'];
-$km          = (int)$_POST['kilometraje'];
-$precio      = (float)$_POST['precio_dia'];
-$descripcion = trim($_POST['descripcion']);
-$imagen_contenido = null;
+// 3. Recoger y validar los datos del formulario
+$marca = trim($_POST['marca'] ?? '');
+$modelo = trim($_POST['modelo'] ?? '');
+$año = (int)($_POST['año'] ?? 0);
+$cilindrada = (int)($_POST['cilindrada'] ?? 0);
+$kilometraje = (int)($_POST['kilometraje'] ?? 0);
+$tipo = trim($_POST['tipo'] ?? '');
+$matricula = trim($_POST['matricula'] ?? '');
+$precio_dia = (float)($_POST['precio_dia'] ?? 0.0);
+$descripcion = trim($_POST['descripcion'] ?? '');
 
-// 3. Procesar la imagen subida
+// Validar que los campos obligatorios no estén vacíos
+if (empty($marca) || empty($modelo) || $año <= 0 || $cilindrada <= 0 || empty($tipo) || empty($matricula) || $precio_dia <= 0) {
+    header('Location: nueva_moto.php?error=campos_vacios');
+    exit();
+}
+
+// 4. Procesar la imagen
+$imagen_contenido = null;
 if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == UPLOAD_ERR_OK) {
-    // Leer el contenido binario del archivo temporal
+    // file_get_contents lee el archivo binario para guardarlo en el campo BLOB
     $imagen_contenido = file_get_contents($_FILES['imagen']['tmp_name']);
 } else {
-    // Manejar error si no se sube la imagen
+    // Si la imagen es obligatoria y falla la subida
     header('Location: nueva_moto.php?error=imagen');
     exit();
 }
 
-// 4. Usar consultas preparadas para insertar los datos de forma segura
-$sql = "INSERT INTO motos (marca, modelo, año, tipo, cilindrada, kilometraje, precio_dia, descripcion, imagen, disponible) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)";
+// 5. Insertar los datos en la base de datos usando una consulta preparada
+$sql = "INSERT INTO motos (marca, modelo, año, cilindrada, kilometraje, tipo, matricula, precio_dia, descripcion, imagen, disponible) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)";
 
 $stmt = mysqli_prepare($conexion, $sql);
 
-// "sssiidssb" -> s: string, i: integer, d: double, b: blob
-mysqli_stmt_bind_param($stmt, "sssiidssb", $marca, $modelo, $año, $tipo, $cilindrada, $km, $precio, $descripcion, $imagen_contenido);
-
-// El último parámetro para bind_param debe ser la variable que contiene los datos del blob
-// Se necesita enviar los datos del blob con send_long_data
-mysqli_stmt_send_long_data($stmt, 8, $imagen_contenido);
+// "ssiiissdsb" - s: string, i: integer, d: double, b: blob
+mysqli_stmt_bind_param($stmt, "ssiiissdsb", $marca, $modelo, $año, $cilindrada, $kilometraje, $tipo, $matricula, $precio_dia, $descripcion, $imagen_contenido);
 
 if (mysqli_stmt_execute($stmt)) {
+    // Si la inserción es exitosa, redirigir al panel de admin
     header('Location: admin_dashboard.php?msg=moto_creada');
 } else {
-    // Redirigir con un error específico
+    // Si hay un error en la consulta, redirigir con un mensaje de error
     header('Location: nueva_moto.php?error=sql');
 }
 
 mysqli_stmt_close($stmt);
 mysqli_close($conexion);
-?>
+exit();
