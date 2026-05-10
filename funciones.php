@@ -1,10 +1,15 @@
 <?php
-// Funciones PHP equivalentes a las funciones y procedimientos SQL eliminados
+/**
+ * Este archivo contiene funciones de utilidad y de lógica de negocio
+ * que se utilizan en varias partes de la aplicación.
+ */
 
-// Requiere conexión a la BD
-// Asume que $conn es la conexión mysqli
-
-// Función: antiguedad_usuario
+/**
+ * Calcula la antigüedad de un usuario en días desde su fecha de registro.
+ * @param mysqli $conn La conexión a la base de datos.
+ * @param int $usuario_id El ID del usuario.
+ * @return int Los días de antigüedad, o 0 si no se encuentra.
+ */
 function antiguedad_usuario($conn, $usuario_id) {
     $query = "SELECT DATEDIFF(CURDATE(), fecha_registro) AS dias FROM usuarios WHERE id = ?";
     $stmt = $conn->prepare($query);
@@ -17,7 +22,14 @@ function antiguedad_usuario($conn, $usuario_id) {
     return 0;
 }
 
-// Función: calcular_precio_total
+/**
+ * Calcula el precio total de un alquiler de forma segura en el servidor.
+ * @param mysqli $conn La conexión a la base de datos.
+ * @param int $moto_id El ID de la moto a alquilar.
+ * @param string $f_inicio La fecha de inicio del alquiler.
+ * @param string $f_fin La fecha de fin del alquiler.
+ * @return float El precio total calculado.
+ */
 function calcular_precio_total($conn, $moto_id, $f_inicio, $f_fin) {
     $query = "SELECT precio_dia FROM motos WHERE id = ?";
     $stmt = $conn->prepare($query);
@@ -26,13 +38,19 @@ function calcular_precio_total($conn, $moto_id, $f_inicio, $f_fin) {
     $result = $stmt->get_result();
     if ($row = $result->fetch_assoc()) {
         $precio_dia = $row['precio_dia'];
+        // Se calcula la diferencia de días entre las fechas y se suma 1 para incluir el día de inicio.
         $dias = (strtotime($f_fin) - strtotime($f_inicio)) / (60 * 60 * 24) + 1;
         return $precio_dia * $dias;
     }
     return 0.00;
 }
 
-// Función: total_gastadoo
+/**
+ * Calcula el total gastado por un usuario en alquileres confirmados.
+ * @param mysqli $conn La conexión a la base de datos.
+ * @param int $usuario_id El ID del usuario.
+ * @return float El total gastado, o 0.00 si no hay gastos.
+ */
 function total_gastadoo($conn, $usuario_id) {
     $query = "SELECT SUM(precio_total) AS total FROM alquileres WHERE usuario_id = ? AND estado = 'confirmado'";
     $stmt = $conn->prepare($query);
@@ -45,26 +63,25 @@ function total_gastadoo($conn, $usuario_id) {
     return 0.00;
 }
 
-// Procedimiento: actualizar_disponibilidad_motos
-function actualizar_disponibilidad_motos($conn) {
-    // Marcar como no disponible
-    $conn->query("UPDATE motos SET disponible = 0 WHERE id IN (SELECT DISTINCT moto_id FROM alquileres WHERE estado IN ('confirmado', 'en curso') AND CURDATE() <= fecha_fin)");
-    // Marcar como disponible
-    $conn->query("UPDATE motos SET disponible = 1 WHERE id NOT IN (SELECT DISTINCT moto_id FROM alquileres WHERE estado IN ('confirmado', 'en curso') AND CURDATE() <= fecha_fin)");
-}
-
-// Procedimiento: actualizar_estados_alquileres
-function actualizar_estados_alquileres($conn) {
-    $conn->query("UPDATE alquileres SET estado = 'en curso' WHERE fecha_inicio <= CURDATE() AND fecha_fin >= CURDATE() AND estado = 'completado'");
-    $conn->query("UPDATE alquileres SET estado = 'finalizado' WHERE fecha_fin < CURDATE() AND estado IN ('en curso', 'completado')");
-}
-
-// Procedimiento: actualizar_sistema_completo
+/**
+ * Procedimiento principal que actualiza el estado de todo el sistema.
+ * Se ejecuta al cargar páginas clave como el perfil o el panel de admin.
+ * @param mysqli $conn La conexión a la base de datos.
+ */
 function actualizar_sistema_completo($conn) {
+    // 1. Pasa alquileres 'confirmados' a 'en_curso' si la fecha actual está dentro del rango del alquiler.
     $conn->query("UPDATE alquileres SET estado = 'en_curso' WHERE fecha_inicio <= CURDATE() AND fecha_fin >= CURDATE() AND estado = 'confirmado'");
+    
+    // 2. Pasa alquileres 'confirmados' o 'en_curso' a 'finalizado' si su fecha de fin ya pasó.
     $conn->query("UPDATE alquileres SET estado = 'finalizado' WHERE fecha_fin < CURDATE() AND estado IN ('confirmado', 'en_curso')");
+    
+    // 3. Cancela automáticamente alquileres 'pendientes' si su fecha de inicio ya pasó (el cliente no pagó a tiempo).
     $conn->query("UPDATE alquileres SET estado = 'cancelado' WHERE fecha_inicio < CURDATE() AND estado = 'pendiente'");
+    
+    // 4. Resetea todas las motos a 'disponible'.
     $conn->query("UPDATE motos SET disponible = 1");
+    
+    // 5. Marca como 'no disponible' solo aquellas motos que están en un alquiler activo ('confirmado' o 'en_curso').
     $conn->query("UPDATE motos SET disponible = 0 WHERE id IN (SELECT DISTINCT moto_id FROM alquileres WHERE estado IN ('confirmado', 'en_curso'))");
 }
 

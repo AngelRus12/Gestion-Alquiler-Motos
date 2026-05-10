@@ -13,7 +13,8 @@ if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
 
 $conexion = mysqli_connect($db_hostname, $db_username, $db_password, $db_database);
 
-// Actualizar el estado de los alquileres y la disponibilidad de las motos
+// Se llama a una función centralizada que actualiza el estado de todos los alquileres y motos.
+// Por ejemplo, cambia alquileres 'confirmados' a 'en_curso' si su fecha de inicio ya ha llegado.
 actualizar_sistema_completo($conexion);
 
 if (!$conexion) {
@@ -22,6 +23,8 @@ if (!$conexion) {
 
 mysqli_set_charset($conexion, "utf8");
 
+// --- GESTIÓN DE MENSAJES DE FEEDBACK ---
+// Se comprueba la URL para ver si hay mensajes de éxito o error y se prepara el HTML para mostrarlo.
 $mensaje_html = "";
 if (isset($_GET['msg'])) {
     if ($_GET['msg'] == 'eliminado') {
@@ -42,7 +45,7 @@ if (isset($_GET['error'])) {
     }
 }
 
-// Consultas base
+// --- CONSULTAS PARA LAS TABLAS PRINCIPALES ---
 $resultado_usuarios = mysqli_query($conexion, "SELECT id, nombre, apellidos, email, rol, estado FROM usuarios");
 $resultado_motos = mysqli_query($conexion, "SELECT id, marca, modelo, precio_dia, disponible, tipo, imagen FROM motos");
 
@@ -202,22 +205,33 @@ $total_pendientes = mysqli_fetch_assoc($res_pendientes_res)['total'];
                                         <div class="info-alquilada">
                                             <span class="etiqueta etiqueta-aviso">Alquilada</span>
                                             <?php
-                                            // Consulta para encontrar quién la tiene alquilada
-                                            $sql_quien_alquila = "SELECT u.nombre, u.apellidos, a.id as alquiler_id
-                                                                  FROM alquileres a
-                                                                  JOIN usuarios u ON a.usuario_id = u.id
-                                                                  WHERE a.moto_id = ? AND a.estado IN ('confirmado', 'en_curso')
-                                                                  LIMIT 1";
-                                            $stmt_quien = mysqli_prepare($conexion, $sql_quien_alquila);
-                                            mysqli_stmt_bind_param($stmt_quien, "i", $moto['id']);
-                                            mysqli_stmt_execute($stmt_quien);
-                                            $res_quien = mysqli_stmt_get_result($stmt_quien);
-                                            if ($quien_alquila = mysqli_fetch_assoc($res_quien)) {
-                                                // Mostramos el nombre del cliente
-                                                // Creamos un botón que enlaza a los detalles del alquiler
-                                                echo '<a href="detalle_alquiler.php?id=' . $quien_alquila['alquiler_id'] . '" class="boton boton-secundario boton-pequeño" style="margin-top: 5px;">👤 ' . htmlspecialchars($quien_alquila['nombre'] . ' ' . $quien_alquila['apellidos']) . '</a>';
+                                            // --- LÓGICA PARA MOSTRAR QUIÉN ALQUILA UNA MOTO (SIN JOIN) ---
+                                            // Paso 1: Encontrar el alquiler activo ('confirmado' o 'en_curso') para esta moto específica.
+                                            $sql_alquiler_moto = "SELECT usuario_id, id as alquiler_id FROM alquileres WHERE moto_id = ? AND estado IN ('confirmado', 'en_curso') LIMIT 1";
+                                            $stmt_alquiler_moto = mysqli_prepare($conexion, $sql_alquiler_moto);
+                                            mysqli_stmt_bind_param($stmt_alquiler_moto, "i", $moto['id']);
+                                            mysqli_stmt_execute($stmt_alquiler_moto);
+                                            $res_alquiler_moto = mysqli_stmt_get_result($stmt_alquiler_moto);
+
+                                            // Si se encuentra un alquiler activo...
+                                            if ($alquiler_info = mysqli_fetch_assoc($res_alquiler_moto)) {
+                                                $usuario_alquila_id = $alquiler_info['usuario_id'];
+                                                $alquiler_id = $alquiler_info['alquiler_id'];
+
+                                                // Paso 2: Con el ID del usuario obtenido, hacer una segunda consulta para obtener su nombre.
+                                                $sql_usuario_alquila = "SELECT nombre, apellidos FROM usuarios WHERE id = ?";
+                                                $stmt_usuario_alquila = mysqli_prepare($conexion, $sql_usuario_alquila);
+                                                mysqli_stmt_bind_param($stmt_usuario_alquila, "i", $usuario_alquila_id);
+                                                mysqli_stmt_execute($stmt_usuario_alquila);
+                                                $res_usuario_alquila = mysqli_stmt_get_result($stmt_usuario_alquila);
+                                                
+                                                if ($quien_alquila = mysqli_fetch_assoc($res_usuario_alquila)) {
+                                                    // Paso 3: Mostrar el nombre del cliente con un enlace al detalle del alquiler.
+                                                    echo '<a href="detalle_alquiler.php?id=' . $alquiler_id . '" class="boton boton-secundario boton-pequeño" style="margin-top: 5px;">👤 ' . htmlspecialchars($quien_alquila['nombre'] . ' ' . $quien_alquila['apellidos']) . '</a>';
+                                                }
+                                                mysqli_stmt_close($stmt_usuario_alquila);
                                             }
-                                            mysqli_stmt_close($stmt_quien);
+                                            mysqli_stmt_close($stmt_alquiler_moto);
                                             ?>
                                         </div>
                                     <?php } ?>
@@ -253,19 +267,43 @@ $total_pendientes = mysqli_fetch_assoc($res_pendientes_res)['total'];
                         </thead>
                         <tbody>
                             <?php 
-                            // Re-ejecutamos la consulta para la tabla
+                            // --- LÓGICA OPTIMIZADA PARA LA TABLA DE PAGOS PENDIENTES (EVITA PROBLEMA N+1) ---
+
+                            // Paso 1: Obtener todos los alquileres pendientes de una sola vez.
                             $res_pendientes_tabla = mysqli_query($conexion, "SELECT * FROM alquileres WHERE estado = 'pendiente' ORDER BY fecha_reserva DESC");
+                            $alquileres_pendientes = [];
+                            $user_ids_pendientes = [];
+                            $moto_ids_pendientes = [];
 
                             if (mysqli_num_rows($res_pendientes_tabla) > 0) {
-                                while ($alquiler = mysqli_fetch_assoc($res_pendientes_tabla)) { 
-                                    $u_id_alquiler = $alquiler['usuario_id'];
-                                    $m_id_alquiler = $alquiler['moto_id'];
-                                    
-                                    $res_u = mysqli_query($conexion, "SELECT nombre, apellidos FROM usuarios WHERE id = $u_id_alquiler");
-                                    $user_data = mysqli_fetch_assoc($res_u);
+                                // Paso 2: Recorrer los resultados y guardar los IDs de usuario y moto en arrays.
+                                // Esto evita hacer una consulta a la base de datos por cada fila de la tabla (problema N+1).
+                                while ($alquiler = mysqli_fetch_assoc($res_pendientes_tabla)) {
+                                    $alquileres_pendientes[] = $alquiler;
+                                    $user_ids_pendientes[] = $alquiler['usuario_id'];
+                                    $moto_ids_pendientes[] = $alquiler['moto_id'];
+                                }
 
-                                    $res_m = mysqli_query($conexion, "SELECT marca, modelo FROM motos WHERE id = $m_id_alquiler");
-                                    $moto_data = mysqli_fetch_assoc($res_m);
+                                // Paso 3: Obtener todos los datos de los usuarios necesarios con UNA SOLA consulta.
+                                $usuarios_pendientes = [];
+                                if (!empty($user_ids_pendientes)) {
+                                    // Se usa "IN (...)" para traer múltiples usuarios a la vez.
+                                    $res_u = mysqli_query($conexion, "SELECT id, nombre, apellidos FROM usuarios WHERE id IN (" . implode(',', array_unique($user_ids_pendientes)) . ")");
+                                    while ($user_data = mysqli_fetch_assoc($res_u)) { $usuarios_pendientes[$user_data['id']] = $user_data; }
+                                }
+
+                                // Paso 4: Obtener todos los datos de las motos necesarias con UNA SOLA consulta.
+                                $motos_pendientes = [];
+                                if (!empty($moto_ids_pendientes)) {
+                                    $res_m = mysqli_query($conexion, "SELECT id, marca, modelo FROM motos WHERE id IN (" . implode(',', array_unique($moto_ids_pendientes)) . ")");
+                                    while ($moto_data = mysqli_fetch_assoc($res_m)) { $motos_pendientes[$moto_data['id']] = $moto_data; }
+                                }
+
+                                // Paso 5: Ahora sí, recorrer los alquileres y mostrar los datos.
+                                // La información de usuario y moto se obtiene de los arrays que ya tenemos en memoria, no de la BD.
+                                foreach ($alquileres_pendientes as $alquiler) {
+                                    $user_data = $usuarios_pendientes[$alquiler['usuario_id']] ?? ['nombre' => 'Usuario', 'apellidos' => 'Eliminado'];
+                                    $moto_data = $motos_pendientes[$alquiler['moto_id']] ?? ['marca' => 'Moto', 'modelo' => 'Eliminada'];
                             ?>
                             <tr>
                                 <td><?php echo $user_data['nombre'] . " " . $user_data['apellidos']; ?></td>
@@ -321,27 +359,46 @@ $total_pendientes = mysqli_fetch_assoc($res_pendientes_res)['total'];
                         </thead>
                         <tbody>
                             <?php 
-                            // Consulta para obtener todos los alquileres con datos de usuario y moto
-                            $sql_alquileres_full = "
-                                SELECT a.id, a.fecha_inicio, a.fecha_fin, a.precio_total, a.estado,
-                                       u.nombre, u.apellidos,
-                                       m.marca, m.modelo
-                                FROM alquileres a
-                                JOIN usuarios u ON a.usuario_id = u.id
-                                JOIN motos m ON a.moto_id = m.id
-                                ORDER BY a.fecha_reserva DESC
-                            ";
-                            $res_alquileres_full = mysqli_query($conexion, $sql_alquileres_full);
+                            // --- LÓGICA OPTIMIZADA PARA LA TABLA DE TODOS LOS ALQUILERES (EVITA PROBLEMA N+1) ---
+                            // Se sigue la misma estrategia que en la tabla de pagos pendientes para ser más eficientes.
 
-                            if (mysqli_num_rows($res_alquileres_full) > 0) {
-                                while ($alquiler_full = mysqli_fetch_assoc($res_alquileres_full)) { 
+                            // Paso 1: Obtener todos los alquileres.
+                            $res_alquileres_todos = mysqli_query($conexion, "SELECT * FROM alquileres ORDER BY fecha_reserva DESC");
+                            $todos_alquileres = [];
+                            $todos_user_ids = [];
+                            $todos_moto_ids = [];
+
+                            if (mysqli_num_rows($res_alquileres_todos) > 0) {
+                                // Paso 2: Guardar los IDs de usuario y moto en arrays.
+                                while ($alquiler = mysqli_fetch_assoc($res_alquileres_todos)) {
+                                    $todos_alquileres[] = $alquiler;
+                                    $todos_user_ids[] = $alquiler['usuario_id'];
+                                    $todos_moto_ids[] = $alquiler['moto_id'];
+                                }
+
+                                // Paso 3: Obtener todos los usuarios y motos necesarios en solo dos consultas.
+                                $todos_usuarios = [];
+                                if (!empty($todos_user_ids)) {
+                                    $res_u_todos = mysqli_query($conexion, "SELECT id, nombre, apellidos FROM usuarios WHERE id IN (" . implode(',', array_unique($todos_user_ids)) . ")");
+                                    while ($user_data = mysqli_fetch_assoc($res_u_todos)) { $todos_usuarios[$user_data['id']] = $user_data; }
+                                }
+
+                                $todas_motos = [];
+                                if (!empty($todos_moto_ids)) {
+                                    // La función array_unique() es importante para no pedir el mismo ID varias veces.
+                                    $res_m_todos = mysqli_query($conexion, "SELECT id, marca, modelo FROM motos WHERE id IN (" . implode(',', array_unique($todos_moto_ids)) . ")");
+                                    while ($moto_data = mysqli_fetch_assoc($res_m_todos)) { $todas_motos[$moto_data['id']] = $moto_data; }
+                                }
+
+                                // Paso 4: Iterar y mostrar los datos combinados desde la memoria.
+                                foreach ($todos_alquileres as $alquiler_full) {
+                                    $usuario_alquiler = $todos_usuarios[$alquiler_full['usuario_id']] ?? ['nombre' => 'Usuario', 'apellidos' => 'Eliminado'];
+                                    $moto_alquiler = $todas_motos[$alquiler_full['moto_id']] ?? ['marca' => 'Moto', 'modelo' => 'Eliminada'];
                             ?>
                             <tr>
                                 <td>#<?php echo $alquiler_full['id']; ?></td>
-                                <td>
-                                    <?php echo htmlspecialchars($alquiler_full['nombre'] . " " . $alquiler_full['apellidos']); ?>
-                                </td>
-                                <td><?php echo $alquiler_full['marca'] . " " . $alquiler_full['modelo']; ?></td>
+                                <td><?php echo htmlspecialchars($usuario_alquiler['nombre'] . " " . $usuario_alquiler['apellidos']); ?></td>
+                                <td><?php echo $moto_alquiler['marca'] . " " . $moto_alquiler['modelo']; ?></td>
                                 <td>
                                     <?php echo date("d/m/Y", strtotime($alquiler_full['fecha_inicio'])); ?> - 
                                     <?php echo date("d/m/Y", strtotime($alquiler_full['fecha_fin'])); ?>
@@ -370,15 +427,12 @@ $total_pendientes = mysqli_fetch_assoc($res_pendientes_res)['total'];
         <p>Proyecto TFG - Ángel Rus Latorre - ASIR</p>
     </footer>
 
-    <?php if (isset($_SESSION['usuario_id'])): ?>
-    <script src="logout_session.js"></script>
-    <?php endif; ?>
-
 </body>
 </html>
 <?php 
-// --- CANCELACIÓN AUTOMÁTICA ---
-// Se ejecuta al final para no afectar la visualización de la tabla de pendientes.
+// --- TAREA DE MANTENIMIENTO AUTOMÁTICO ---
+// Al final de la carga, se ejecuta una consulta para cancelar automáticamente las reservas pendientes
+// cuya fecha de inicio ya ha pasado, liberando así la moto.
 mysqli_query($conexion, "UPDATE alquileres SET estado = 'cancelado' WHERE estado = 'pendiente' AND fecha_inicio < CURDATE()");
 mysqli_close($conexion); 
 ?>

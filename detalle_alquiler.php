@@ -1,6 +1,7 @@
 <?php
 header('Content-Type: text/html; charset=utf-8');
 session_start();
+// Se incluye el archivo con las credenciales de la base de datos.
 require_once 'loginbd.php';
 
 // 1. Seguridad: Verificar si el usuario está logueado
@@ -25,39 +26,66 @@ mysqli_set_charset($conexion, "utf8");
 $alquiler_id = (int)$_GET['id'];
 $usuario_id = $_SESSION['usuario_id'];
 
-// 3. Consulta para obtener los detalles del alquiler, la moto y el usuario.
-// Se adapta la consulta según el rol del usuario.
+// 3. Consulta inicial para obtener los detalles del alquiler.
+// La consulta se adapta según el rol del usuario para seguridad.
 if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin') {
-    // Si es admin, puede ver cualquier alquiler
-    $sql = "SELECT 
-                a.*, 
-                m.marca, m.modelo, m.tipo, m.precio_dia, m.imagen, m.descripcion as moto_descripcion,
-                u.nombre, u.apellidos, u.email
-            FROM alquileres a
-            JOIN motos m ON a.moto_id = m.id
-            JOIN usuarios u ON a.usuario_id = u.id
-            WHERE a.id = ?";
-    $stmt = mysqli_prepare($conexion, $sql);
-    mysqli_stmt_bind_param($stmt, "i", $alquiler_id);
+    // Si el usuario es administrador, puede ver los detalles de cualquier alquiler.
+    $sql_alquiler = "SELECT * FROM alquileres WHERE id = ?";
+    $stmt_alquiler = mysqli_prepare($conexion, $sql_alquiler);
+    mysqli_stmt_bind_param($stmt_alquiler, "i", $alquiler_id);
 } else {
-    // Si es un usuario normal, solo puede ver sus propios alquileres
-    $sql = "SELECT 
-                a.*, 
-                m.marca, m.modelo, m.tipo, m.precio_dia, m.imagen, m.descripcion as moto_descripcion,
-                u.nombre, u.apellidos, u.email
-            FROM alquileres a
-            JOIN motos m ON a.moto_id = m.id
-            JOIN usuarios u ON a.usuario_id = u.id
-            WHERE a.id = ? AND a.usuario_id = ?";
-    $stmt = mysqli_prepare($conexion, $sql);
-    mysqli_stmt_bind_param($stmt, "ii", $alquiler_id, $usuario_id);
+    // Si es un usuario normal, solo puede ver los alquileres que le pertenecen.
+    // Se añade la condición 'AND usuario_id = ?' para asegurar esto.
+    $sql_alquiler = "SELECT * FROM alquileres WHERE id = ? AND usuario_id = ?";
+    $stmt_alquiler = mysqli_prepare($conexion, $sql_alquiler);
+    mysqli_stmt_bind_param($stmt_alquiler, "ii", $alquiler_id, $usuario_id);
 }
-mysqli_stmt_execute($stmt); // Ejecutamos la consulta preparada
-$resultado = mysqli_stmt_get_result($stmt);
-$alquiler = mysqli_fetch_assoc($resultado);
-mysqli_stmt_close($stmt);
+mysqli_stmt_execute($stmt_alquiler);
+$resultado_alquiler = mysqli_stmt_get_result($stmt_alquiler);
+$alquiler = mysqli_fetch_assoc($resultado_alquiler);
+mysqli_stmt_close($stmt_alquiler);
 
-// 4. Seguridad: Si el alquiler no existe o no pertenece al usuario, redirigir
+// 4. Seguridad: Si la consulta anterior no devolvió ningún alquiler, significa que no existe o no pertenece al usuario.
+if (!$alquiler) {
+    header('Location: perfil_usuario.php?error=no_encontrado');
+    exit();
+}
+
+// 5. OBTENCIÓN DE DATOS RELACIONADOS SIN USAR JOINs.
+// En lugar de una consulta compleja con JOIN, se realizan consultas simples y separadas.
+$moto_data = [];
+$usuario_data = [];
+
+// Consulta 1: Obtener los datos de la moto asociada al alquiler.
+$sql_moto = "SELECT marca, modelo, tipo, precio_dia, imagen, descripcion as moto_descripcion FROM motos WHERE id = ?";
+$stmt_moto = mysqli_prepare($conexion, $sql_moto);
+mysqli_stmt_bind_param($stmt_moto, "i", $alquiler['moto_id']);
+mysqli_stmt_execute($stmt_moto);
+// Se usa mysqli_fetch_assoc porque esperamos solo una fila.
+$moto_data = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt_moto));
+mysqli_stmt_close($stmt_moto);
+
+// Consulta 2: Obtener los datos del usuario asociado al alquiler.
+$sql_usuario = "SELECT nombre, apellidos, email FROM usuarios WHERE id = ?";
+$stmt_usuario = mysqli_prepare($conexion, $sql_usuario);
+mysqli_stmt_bind_param($stmt_usuario, "i", $alquiler['usuario_id']);
+mysqli_stmt_execute($stmt_usuario);
+$usuario_data = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt_usuario));
+mysqli_stmt_close($stmt_usuario);
+
+// 6. SIMULACIÓN DE INNER JOIN.
+// Un INNER JOIN solo devuelve resultados si hay coincidencias en todas las tablas.
+// Aquí replicamos ese comportamiento: si la moto o el usuario del alquiler han sido eliminados
+// de la base de datos, consideramos que el alquiler ya no es válido.
+if (!$moto_data || !$usuario_data) {
+    $alquiler = false; // Se marca el alquiler como falso para que la siguiente comprobación falle.
+} else {
+    // Si todo existe, se combinan los tres arrays ($alquiler, $moto_data, $usuario_data)
+    // en un único array $alquiler para usarlo fácilmente en el HTML.
+    $alquiler = array_merge($alquiler, $moto_data, $usuario_data);
+}
+
+// 7. Seguridad final: Si después de las comprobaciones el alquiler se marcó como falso, se redirige.
 if (!$alquiler) {
     header('Location: perfil_usuario.php?error=no_encontrado');
     exit();
@@ -147,9 +175,6 @@ $is_mobile = isMobile();
         <p>Proyecto TFG - Ángel Rus Latorre - ASIR</p>
     </footer>
 
-    <?php if (isset($_SESSION['usuario_id'])): ?>
-    <script src="logout_session.js"></script>
-    <?php endif; ?>
 </body>
 </html>
 <?php mysqli_close($conexion); ?>

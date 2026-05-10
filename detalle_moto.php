@@ -15,12 +15,19 @@ if (isset($_GET['id'])) {
     $id_moto = (int)$_GET['id'];
 }
 
-$id_moto = mysqli_real_escape_string($conexion, $id_moto);
-
-$consulta = "SELECT * FROM motos WHERE id = $id_moto";
-$resultado = mysqli_query($conexion, $consulta);
+// Se utiliza una consulta preparada para obtener los datos de la moto.
+// Esto previene la inyección SQL, una vulnerabilidad de seguridad crítica donde un atacante
+// podría manipular la consulta para acceder o dañar la base de datos.
+// El '?' es un marcador de posición que será reemplazado de forma segura por el valor de $id_moto.
+$consulta = "SELECT * FROM motos WHERE id = ?";
+$stmt = mysqli_prepare($conexion, $consulta);
+// La "i" indica que el parámetro que se va a vincular es un entero (integer).
+mysqli_stmt_bind_param($stmt, "i", $id_moto);
+mysqli_stmt_execute($stmt);
+$resultado = mysqli_stmt_get_result($stmt);
 $moto = mysqli_fetch_assoc($resultado);
 
+// Si no se encuentra ninguna moto con ese ID, se redirige al catálogo.
 if (!$moto) { 
     header('Location: catalogo.php'); 
     exit(); 
@@ -118,25 +125,38 @@ $is_mobile = isMobile();
                         <p class="alerta-error text-center" style="font-weight: bold; font-size: 1.1em; background: none; border: none;">No disponible actualmente</p>
                         <?php
                         // Si el usuario es admin, mostrar quién la tiene alquilada
+                        // Esta sección utiliza el método de consultas separadas para evitar JOINs.
                         if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin') {
-                            $sql_alquiler_actual = "SELECT u.nombre, u.apellidos, a.fecha_inicio, a.fecha_fin, a.id as alquiler_id
-                                                    FROM alquileres a
-                                                    JOIN usuarios u ON a.usuario_id = u.id
-                                                    WHERE a.moto_id = ? AND a.estado IN ('confirmado', 'en_curso')
-                                                    ORDER BY a.fecha_inicio DESC
-                                                    LIMIT 1";
-                            $stmt_alquiler = mysqli_prepare($conexion, $sql_alquiler_actual);
-                            mysqli_stmt_bind_param($stmt_alquiler, "i", $id_moto);
-                            mysqli_stmt_execute($stmt_alquiler);
-                            $res_alquiler = mysqli_stmt_get_result($stmt_alquiler);
+                            // Paso 1: Obtener el alquiler activo ('confirmado' o 'en_curso') para esta moto.
+                            $sql_alquiler_moto = "SELECT usuario_id, fecha_inicio, fecha_fin, id as alquiler_id FROM alquileres WHERE moto_id = ? AND estado IN ('confirmado', 'en_curso') ORDER BY fecha_inicio DESC LIMIT 1";
+                            $stmt_alquiler_moto = mysqli_prepare($conexion, $sql_alquiler_moto);
+                            mysqli_stmt_bind_param($stmt_alquiler_moto, "i", $id_moto);
+                            mysqli_stmt_execute($stmt_alquiler_moto);
+                            $res_alquiler_moto = mysqli_stmt_get_result($stmt_alquiler_moto);
 
-                            if ($alquiler_actual = mysqli_fetch_assoc($res_alquiler)) { ?>
-                                <div class="alerta alerta-error text-center espaciado-arriba">
-                                    <p style="margin:0; color: white;"><strong>Alquilada por:</strong> <a href="detalle_alquiler.php?id=<?php echo $alquiler_actual['alquiler_id']; ?>" class="enlace-discreto"><?php echo htmlspecialchars($alquiler_actual['nombre'] . ' ' . $alquiler_actual['apellidos']); ?></a></p>
-                                    <p style="margin:5px 0 0 0; font-size: 0.9em;">Del <?php echo date('d/m/Y', strtotime($alquiler_actual['fecha_inicio'])); ?> al <?php echo date('d/m/Y', strtotime($alquiler_actual['fecha_fin'])); ?></p>
-                                </div>
-                            <?php }
-                            mysqli_stmt_close($stmt_alquiler);
+                            // Si se encuentra un alquiler...
+                            if ($alquiler_info = mysqli_fetch_assoc($res_alquiler_moto)) {
+                                // Paso 2: Con el 'usuario_id' del alquiler, obtener los datos de ese usuario.
+                                $sql_usuario_alquila = "SELECT nombre, apellidos FROM usuarios WHERE id = ?";
+                                $stmt_usuario_alquila = mysqli_prepare($conexion, $sql_usuario_alquila);
+                                mysqli_stmt_bind_param($stmt_usuario_alquila, "i", $alquiler_info['usuario_id']);
+                                mysqli_stmt_execute($stmt_usuario_alquila);
+                                $res_usuario_alquila = mysqli_stmt_get_result($stmt_usuario_alquila);
+                                
+                                // Si se encuentran los datos del usuario...
+                                if ($quien_alquila = mysqli_fetch_assoc($res_usuario_alquila)) {
+                                    // Paso 3: Combinar la información del alquiler y del usuario en un solo array.
+                                    $alquiler_actual = array_merge($alquiler_info, $quien_alquila);
+                                    ?>
+                                    <!-- Se muestra la información combinada en el HTML. -->
+                                    <div class="alerta alerta-error text-center espaciado-arriba">
+                                        <p style="margin:0; color: white;"><strong>Alquilada por:</strong> <a href="detalle_alquiler.php?id=<?php echo $alquiler_actual['alquiler_id']; ?>" class="enlace-discreto"><?php echo htmlspecialchars($alquiler_actual['nombre'] . ' ' . $alquiler_actual['apellidos']); ?></a></p>
+                                        <p style="margin:5px 0 0 0; font-size: 0.9em;">Del <?php echo date('d/m/Y', strtotime($alquiler_actual['fecha_inicio'])); ?> al <?php echo date('d/m/Y', strtotime($alquiler_actual['fecha_fin'])); ?></p>
+                                    </div>
+                                <?php }
+                                mysqli_stmt_close($stmt_usuario_alquila);
+                            }
+                            mysqli_stmt_close($stmt_alquiler_moto);
                         } ?>
                     <?php endif; ?>
                 </div>
@@ -187,8 +207,6 @@ $is_mobile = isMobile();
         
             </script>
 
-    <?php if (isset($_SESSION['usuario_id'])): ?>
-    <script src="logout_session.js"></script>
-    <?php endif; ?>
+    <?php mysqli_stmt_close($stmt); // Cerrar la consulta preparada principal ?>
 </body>
 </html>

@@ -604,7 +604,6 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 10px;}
 .registro-body, .login-body {
     display: flex;
     justify-content: center;
-    align-items: center;
     min-height: 100vh;
     padding: 15px 0;
 }

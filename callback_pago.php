@@ -6,7 +6,11 @@
  * el estado del alquiler en la base de datos según el resultado.
  */
 
+// Configurar el tiempo de vida de la sesión (ej. 30 minutos de inactividad)
+ini_set('session.gc_maxlifetime', 1800);
+session_set_cookie_params(1800);
 session_start();
+
 require_once 'loginbd.php';
 
 // Habilitar reporte de errores para depuración (solo en desarrollo)
@@ -21,7 +25,7 @@ if (!$conexion) {
     exit();
 }
 
-// Verificar que tenemos datos de transacción del simulador
+// 1. Seguridad: Verificar que tenemos datos de la transacción en la sesión.
 if (!isset($_SESSION['last_transaction']) || empty($_SESSION['last_transaction'])) {
     error_log("No se encontraron datos de la última transacción en la sesión.");
     header('Location: catalogo.php?error=no_transaction_data');
@@ -32,11 +36,12 @@ $transaction = $_SESSION['last_transaction'];
 $status = $transaction['status'] ?? 'error'; // Default a 'error' si no hay status
 $order_id = $transaction['order_id'] ?? '';
 
-// Extraer el ID del alquiler del order_id (formato: ALQ-{id}-{timestamp})
+// 2. El 'order_id' que generamos tiene el formato "ALQ-ID-TIMESTAMP". Aquí extraemos el ID del alquiler.
 $parts = explode('-', $order_id);
 $id_alquiler = isset($parts[1]) ? (int)$parts[1] : 0;
 
-// Verificar que el usuario está logueado y que se pudo extraer un ID de alquiler válido
+// 3. Seguridad: Verificar que el usuario está logueado y que el ID del alquiler es válido.
+// Esto previene que se procesen pagos sin un alquiler asociado o de usuarios no autenticados.
 if (!isset($_SESSION['usuario_id']) || !$id_alquiler) {
     error_log("Acceso denegado o ID de alquiler inválido. Usuario ID: " . ($_SESSION['usuario_id'] ?? 'N/A') . ", Alquiler ID: " . $id_alquiler);
     header('Location: catalogo.php?error=invalid_access');
@@ -45,7 +50,8 @@ if (!isset($_SESSION['usuario_id']) || !$id_alquiler) {
 
 $u_id = $_SESSION['usuario_id'];
 
-// Necesitamos el moto_id para poder actualizar su estado
+// 4. Seguridad: Verificar que el alquiler pertenece al usuario que está en la sesión.
+// También obtenemos el 'moto_id' que necesitaremos más adelante.
 $sql_check = "SELECT id, moto_id FROM alquileres WHERE id = ? AND usuario_id = ?";
 $stmt_check = mysqli_prepare($conexion, $sql_check);
 
@@ -61,7 +67,7 @@ $result = mysqli_stmt_get_result($stmt_check);
 $alquiler = mysqli_fetch_assoc($result);
 
 if (!$alquiler) {
-    // El alquiler no existe o no pertenece al usuario
+    // Si no se encuentra, el alquiler no existe o no pertenece a este usuario.
     mysqli_stmt_close($stmt_check);
     error_log("Alquiler ID " . $id_alquiler . " no encontrado o no pertenece al usuario " . $u_id);
     mysqli_close($conexion);
@@ -70,12 +76,16 @@ if (!$alquiler) {
 }
 mysqli_stmt_close($stmt_check);
 
-// Iniciar transacción
+// 5. INICIAR TRANSACCIÓN DE BASE DE DATOS.
+// Esto es CRÍTICO. Asegura que todas las operaciones (actualizar alquiler, actualizar moto)
+// se completen con éxito. Si alguna falla, se revierten todos los cambios (rollback).
+// Esto evita inconsistencias, como un alquiler confirmado pero con la moto aún disponible.
 mysqli_begin_transaction($conexion);
 $transaction_successful = true; // Bandera para controlar el commit/rollback
 $mensaje = 'pago=error_procesamiento'; // Mensaje por defecto en caso de fallo
 
-// Procesar según el estado del pago recibido del simulador
+// 6. Procesar según el estado del pago recibido del simulador ('approved', 'rejected', etc.).
+// Se determina el nuevo estado que tendrá el alquiler en la base de datos.
 switch ($status) {
     case 'approved':
         // Pago aprobado - confirmar alquiler
@@ -111,7 +121,7 @@ switch ($status) {
 $sql_update = "UPDATE alquileres SET estado = ? WHERE id = ?";
 $stmt_update = mysqli_prepare($conexion, $sql_update); // Mover la preparación aquí
 
-// Paso 1: Actualizar el estado del alquiler
+// 7. Paso 1 de la transacción: Actualizar el estado del alquiler.
 if (!$stmt_update) {
     error_log("Error al preparar la consulta SQL_UPDATE en callback_pago.php: " . mysqli_error($conexion));
     $transaction_successful = false;
@@ -124,7 +134,8 @@ if (!$stmt_update) {
     mysqli_stmt_close($stmt_update);
 }
 
-// Paso 2: Si el pago fue aprobado y la actualización del alquiler fue exitosa, actualizar la moto
+// 8. Paso 2 de la transacción: Si el pago fue aprobado y el alquiler se actualizó bien,
+//    procedemos a marcar la moto como "no disponible".
 if ($transaction_successful && $nuevo_estado === 'confirmado') {
     $moto_id = $alquiler['moto_id'];
     $sql_update_moto = "UPDATE motos SET disponible = 0 WHERE id = ?";
@@ -143,18 +154,20 @@ if ($transaction_successful && $nuevo_estado === 'confirmado') {
     }
 }
 
-// Finalizar transacción
+// 9. Finalizar la transacción.
 if ($transaction_successful) {
+    // Si todo fue exitoso, se confirman los cambios en la base de datos.
     mysqli_commit($conexion);
-    // Limpiar variables de sesión de pago
+    // Limpiar las variables de sesión relacionadas con el pago para evitar reprocesamientos.
     unset($_SESSION['id_pago_pendiente']);
     unset($_SESSION['monto_pago']);
     unset($_SESSION['last_transaction']);
-    // Redirigir al perfil con el resultado
+    // Redirigir al perfil del usuario con un mensaje de éxito.
     header('Location: perfil_usuario.php?' . $mensaje);
 } else {
+    // Si algo falló, se revierten todos los cambios hechos durante la transacción.
     mysqli_rollback($conexion);
-    // En caso de error, redirigir con un mensaje de error genérico
+    // Redirigir con un mensaje de error genérico.
     header('Location: perfil_usuario.php?pago=error_procesamiento');
 }
 

@@ -1,5 +1,9 @@
 <?php
+// Configurar el tiempo de vida de la sesión (ej. 30 minutos de inactividad)
+ini_set('session.gc_maxlifetime', 1800);
+session_set_cookie_params(1800);
 session_start();
+
 require_once 'loginbd.php';
 require_once 'funciones.php'; // Incluir el archivo de funciones
 
@@ -22,27 +26,30 @@ $f_inicio = trim($_POST['f_inicio']);
 $f_fin    = trim($_POST['f_fin']);
 $metodo   = trim($_POST['metodo_pago']);
 
-// 3. Calcular días y precio total en el servidor para mayor seguridad
-// Se usa la función para un cálculo seguro en el servidor
+// 3. CÁLCULO SEGURO EN EL SERVIDOR.
+// Es fundamental que los cálculos de días y precio total se hagan aquí, en el backend.
+// Si se confiara en los datos enviados desde el formulario del cliente, un usuario malintencionado
+// podría manipularlos para pagar menos. Aquí, se recalcula todo usando los datos de la BD.
 $dias = (strtotime($f_fin) - strtotime($f_inicio)) / 86400 + 1;
 $total = calcular_precio_total($conexion, $moto_id, $f_inicio, $f_fin);
 
-// El estado inicial de una reserva siempre es 'pendiente' hasta que se procesa el pago
+// 4. El estado inicial de cualquier reserva es 'pendiente'.
+// Cambiará a 'confirmado' solo después de que el pago se complete con éxito.
 $estado = 'pendiente'; 
 
-// 4. Usar consultas preparadas para insertar la reserva de forma segura
+// 5. Insertar la nueva reserva en la base de datos usando una consulta preparada para máxima seguridad.
 $sql = "INSERT INTO alquileres (usuario_id, moto_id, fecha_inicio, fecha_fin, dias_alquiler, precio_total, estado) 
         VALUES (?, ?, ?, ?, ?, ?, ?)";
 
 $stmt = mysqli_prepare($conexion, $sql);
-// i: integer, s: string, d: double
+// Se especifican los tipos de datos: i (integer), s (string), d (double).
 mysqli_stmt_bind_param($stmt, "iissids", $u_id, $moto_id, $f_inicio, $f_fin, $dias, $total, $estado);
 
 if (mysqli_stmt_execute($stmt)) {
-    // Si la reserva se inserta correctamente, procedemos según el método de pago
+    // 6. Si la reserva se inserta correctamente, se decide el siguiente paso según el método de pago.
     if ($metodo == 'web') {
-        // Si el pago es online, guardamos el ID del nuevo alquiler y el monto en sesión
-        // y redirigimos a la pasarela de pago.
+        // PAGO ONLINE: Se guarda el ID del alquiler recién creado y el monto total en la sesión del usuario.
+        // Luego, se le redirige a la página de la pasarela de pago (pago.php).
         $_SESSION['id_pago_pendiente'] = mysqli_insert_id($conexion);
         $_SESSION['monto_pago'] = $total;
         header('Location: pago.php');

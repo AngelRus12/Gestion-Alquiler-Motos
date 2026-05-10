@@ -13,13 +13,16 @@ if (!isset($_SESSION['usuario_id'])) {
 
 $conexion = mysqli_connect($db_hostname, $db_username, $db_password, $db_database);
 
-// Actualizar el estado de los alquileres y la disponibilidad de las motos
+// Se llama a la función que actualiza el estado de todo el sistema antes de mostrar la página.
+// Esto asegura que el usuario vea siempre la información más reciente (ej. un alquiler que acaba de finalizar).
 actualizar_sistema_completo($conexion);
 
 mysqli_set_charset($conexion, "utf8");
 
 $u_id = $_SESSION['usuario_id'];
 
+// Se obtienen los datos del usuario y sus estadísticas (antigüedad, total gastado)
+// utilizando las funciones personalizadas creadas en `funciones.php`.
 // Usar consultas preparadas para seguridad y eficiencia
 $sql_usuario = "SELECT *, antiguedad_usuario(?) as dias_antiguedad, total_gastadoo(?) as total_invertido FROM usuarios WHERE id = ?";
 $stmt_usuario = mysqli_prepare($conexion, $sql_usuario);
@@ -29,7 +32,7 @@ $res_stats = mysqli_stmt_get_result($stmt_usuario);
 $usuario = mysqli_fetch_assoc($res_stats);
 mysqli_stmt_close($stmt_usuario);
 
-
+// Se obtienen todos los alquileres del usuario para mostrarlos en la tabla.
 $sql_alquileres = "SELECT * FROM alquileres WHERE usuario_id = ? ORDER BY fecha_reserva DESC";
 $stmt_alquileres = mysqli_prepare($conexion, $sql_alquileres);
 mysqli_stmt_bind_param($stmt_alquileres, "i", $u_id);
@@ -212,8 +215,13 @@ $is_mobile = isMobile();
                     <tbody>   
                         <?php 
                         if (mysqli_num_rows($alquileres) > 0) {
-                            while ($alq = mysqli_fetch_assoc($alquileres)) { 
-                                // Por cada alquiler, consultamos los datos de la moto
+                            while ($alq = mysqli_fetch_assoc($alquileres)) {
+                                // NOTA TÉCNICA (Problema N+1):
+                                // Este código funciona, pero realiza una consulta a la base de datos por cada alquiler en el bucle.
+                                // Si un usuario tiene 50 alquileres, se harán 50 consultas adicionales.
+                                // Una mejor solución (implementada en admin_dashboard.php) sería obtener todos los IDs de las motos
+                                // primero, y luego traer todos sus datos con una única consulta "SELECT ... WHERE id IN (...)".
+                                // Esto es un punto de mejora de rendimiento importante.
                                 $sql_moto = "SELECT marca, modelo FROM motos WHERE id = ?";
                                 $stmt_moto = mysqli_prepare($conexion, $sql_moto);
                                 mysqli_stmt_bind_param($stmt_moto, "i", $alq['moto_id']);
@@ -285,9 +293,6 @@ $is_mobile = isMobile();
         <p>Proyecto TFG - Ángel Rus Latorre - ASIR</p>
     </footer>
 
-    <?php if (isset($_SESSION['usuario_id'])): ?>
-    <script src="logout_session.js"></script>
-    <?php endif; ?>
 </body>
 </html>
 <?php mysqli_close($conexion); ?>

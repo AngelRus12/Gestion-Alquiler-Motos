@@ -1,4 +1,7 @@
 <?php
+// Configurar el tiempo de vida de la sesión (ej. 30 minutos de inactividad)
+ini_set('session.gc_maxlifetime', 1800);
+session_set_cookie_params(1800);
 session_start();
 
 // Función para detectar dispositivos móviles
