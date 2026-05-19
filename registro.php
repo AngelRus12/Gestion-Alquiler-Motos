@@ -1,4 +1,9 @@
 <?php
+session_start();
+
+$old_data = $_SESSION['form_data'] ?? [];
+unset($_SESSION['form_data']);
+
 // Función para detectar dispositivos móviles
 function isMobile() {
     return preg_match("/(android|avantgo|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino)/i", $_SERVER["HTTP_USER_AGENT"]);
@@ -50,32 +55,32 @@ $is_mobile = isMobile();
             <div class="form-grid-2-col">
                 <div class="form-group">
                     <label for="nombre">Nombre: *</label>
-                    <input type="text" id="nombre" name="nombre" required>
+                    <input type="text" id="nombre" name="nombre" required value="<?php echo htmlspecialchars($old_data['nombre'] ?? ''); ?>">
                 </div>
                 
                 <div class="form-group">
                     <label for="apellidos">Apellidos: *</label>
-                    <input type="text" id="apellidos" name="apellidos" required>
+                    <input type="text" id="apellidos" name="apellidos" required value="<?php echo htmlspecialchars($old_data['apellidos'] ?? ''); ?>">
                 </div>
                 
                 <div class="form-group">
                     <label for="dni">DNI: *</label>
-                    <input type="text" id="dni" name="dni" placeholder="12345678A" required pattern="\d{8}[A-Za-z]" title="El DNI debe contener 8 números y una letra.">
+                    <input type="text" id="dni" name="dni" placeholder="12345678A" required pattern="\d{8}[A-Za-z]" title="El DNI debe contener 8 números y una letra." value="<?php echo htmlspecialchars($old_data['dni'] ?? ''); ?>">
                 </div>
 
                 <div class="form-group">
                     <label for="telefono">Teléfono: *</label>
-                    <input type="text" id="telefono" name="telefono" placeholder="666666666" required>
+                    <input type="text" id="telefono" name="telefono" placeholder="666666666" required value="<?php echo htmlspecialchars($old_data['telefono'] ?? ''); ?>">
                 </div>
 
                 <div class="form-group full-width">
                     <label for="email">Email: *</label>
-                    <input type="email" id="email" name="email" required>
+                    <input type="email" id="email" name="email" required value="<?php echo htmlspecialchars($old_data['email'] ?? ''); ?>">
                 </div>
                 
                 <div class="form-group full-width">
                     <label for="direccion">Dirección:</label>
-                    <textarea id="direccion" name="direccion" rows="2"></textarea>
+                    <textarea id="direccion" name="direccion" rows="2"><?php echo htmlspecialchars($old_data['direccion'] ?? ''); ?></textarea>
                 </div>
 
                 <div class="form-group">

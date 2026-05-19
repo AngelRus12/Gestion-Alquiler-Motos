@@ -1,5 +1,5 @@
 <?php
-
+session_start();
 require_once 'loginbd.php';
 
 $conexion = mysqli_connect($db_hostname, $db_username, $db_password, $db_database);
@@ -18,17 +18,23 @@ $password         = trim($_POST['password'] ?? '');
 $password2        = trim($_POST['password2'] ?? '');
 
 if (empty($nombre_limpio) || empty($apellidos_limpios) || empty($email) || empty($dni) || empty($telefono) || empty($password) || empty($password2)) {
+    $_SESSION['form_data'] = $_POST;
+    unset($_SESSION['form_data']['password'], $_SESSION['form_data']['password2']);
     header('Location: registro.php?error=vacio');
     exit();
 }
 
 if ($password !== $password2) {
+    $_SESSION['form_data'] = $_POST;
+    unset($_SESSION['form_data']['password'], $_SESSION['form_data']['password2']);
     header('Location: registro.php?error=password');
     exit();
 }
 
 // --- Validación de formato de contraseña ---
 if (strlen($password) < 8 || !preg_match('/[A-Za-z]/', $password) || !preg_match('/[0-9]/', $password)) {
+    $_SESSION['form_data'] = $_POST;
+    unset($_SESSION['form_data']['password'], $_SESSION['form_data']['password2']);
     header('Location: registro.php?error=password_formato');
     exit();
 }
@@ -46,6 +52,8 @@ function es_dni_valido($dni) {
     return substr("TRWAGMYFPDXBNJZSQVHLCKE", $numeros % 23, 1) === $letra;
 }
 if (!es_dni_valido($dni)) {
+    $_SESSION['form_data'] = $_POST;
+    unset($_SESSION['form_data']['password'], $_SESSION['form_data']['password2']);
     header('Location: registro.php?error=dni_invalido');
     exit();
 }
@@ -59,6 +67,8 @@ mysqli_stmt_store_result($stmt_email);
 
 if (mysqli_stmt_num_rows($stmt_email) > 0) {
     mysqli_stmt_close($stmt_email);
+    $_SESSION['form_data'] = $_POST;
+    unset($_SESSION['form_data']['password'], $_SESSION['form_data']['password2']);
     header('Location: registro.php?error=email_existe');
     exit();
 }
@@ -73,6 +83,8 @@ mysqli_stmt_store_result($stmt_dni);
 
 if (mysqli_stmt_num_rows($stmt_dni) > 0) {
     mysqli_stmt_close($stmt_dni);
+    $_SESSION['form_data'] = $_POST;
+    unset($_SESSION['form_data']['password'], $_SESSION['form_data']['password2']);
     header('Location: registro.php?error=dni_existe');
     exit();
 }
@@ -87,10 +99,13 @@ $insertar = "INSERT INTO usuarios (nombre, apellidos, email, password, telefono,
 $stmt_ins = mysqli_prepare($conexion, $insertar);
 mysqli_stmt_bind_param($stmt_ins, "sssssss", $nombre_limpio, $apellidos_limpios, $email, $password_hash, $telefono, $dni, $direccion);
 if (mysqli_stmt_execute($stmt_ins)) {
+    unset($_SESSION['form_data']);
     // Redirigir al usuario a la página de login con un mensaje de éxito.
-    header('Location: login.php?registro=success');
+    header('Location: login.php?registro=exitoso');
     exit(); // Finalizar el script para asegurar la redirección.
 } else {
+    $_SESSION['form_data'] = $_POST;
+    unset($_SESSION['form_data']['password'], $_SESSION['form_data']['password2']);
     header('Location: registro.php?error=sql');
 }
 mysqli_stmt_close($stmt_ins);
