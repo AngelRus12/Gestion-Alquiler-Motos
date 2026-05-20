@@ -1,6 +1,8 @@
 <?php
 /**
+ * =================================================================
  * SIMULADOR BANCARIO - Funciones de Sesión y Utilidades
+ * =================================================================
  * 
  * Este archivo contiene funciones auxiliares para el simulador.
  * En tu aplicación real, aquí tendrías funciones para:
@@ -11,14 +13,14 @@
  */
 
 /**
- * Inicia una sesión segura
+ * Inicia una sesión de PHP de forma segura, si no está ya iniciada.
  */
 function iniciarSesionSegura() {
     if (session_status() === PHP_SESSION_NONE) {
-        // Configuración de seguridad de sesión (para producción)
+        // Configuración de seguridad para las cookies de sesión.
         ini_set('session.cookie_httponly', 1);
         ini_set('session.use_only_cookies', 1);
-        ini_set('session.cookie_secure', 0); // En producción con HTTPS poner en 1
+        ini_set('session.cookie_secure', 0); // En un entorno de producción con HTTPS, esto debería ser 1.
         
         session_start();
     }
@@ -26,7 +28,7 @@ function iniciarSesionSegura() {
 
 /**
  * Genera un token único y seguro
- * 
+ * Usa `random_bytes` para una alta entropía.
  * @param string $prefix Prefijo para el token
  * @return string Token generado
  */
@@ -36,7 +38,7 @@ function generarToken($prefix = 'TKN') {
 
 /**
  * Genera un ID de transacción único
- * 
+ * `uniqid` con el segundo parámetro a `true` añade más entropía.
  * @return string ID de transacción
  */
 function generarIdTransaccion() {
@@ -45,7 +47,7 @@ function generarIdTransaccion() {
 
 /**
  * Valida el formato de un monto
- * 
+ * Útil para validar montos de pago.
  * @param mixed $monto Monto a validar
  * @return bool True si es válido, false si no
  */
@@ -54,7 +56,7 @@ function validarMonto($monto) {
 }
 
 /**
- * Formatea un monto para mostrar en pantalla
+ * Formatea un monto numérico como una cadena de moneda (ej. €1.234,56).
  * 
  * @param float $monto Monto a formatear
  * @param string $moneda Código de moneda (CLP, USD, etc.)
@@ -72,7 +74,8 @@ function formatearMonto($monto, $moneda = 'EUR') {
 }
 
 /**
- * Registra la transacción en sesión (en producción iría a BD)
+ * Simula el registro de una transacción. En este simulador, se guarda en la sesión.
+ * En una aplicación real, esto insertaría un registro en una tabla de la base de datos.
  * 
  * @param array $datos Datos de la transacción
  * @return bool True si se guardó correctamente
@@ -89,7 +92,7 @@ function registrarTransaccion($datos) {
 }
 
 /**
- * Obtiene el historial de transacciones de la sesión
+ * Obtiene el historial de transacciones guardado en la sesión.
  * 
  * @return array Array de transacciones
  */
@@ -98,7 +101,7 @@ function obtenerHistorialTransacciones() {
 }
 
 /**
- * Limpia los datos temporales de la sesión
+ * Limpia las variables de sesión temporales relacionadas con una transacción.
  */
 function limpiarDatosTemporales() {
     unset($_SESSION['pending_transaction']);
@@ -107,7 +110,7 @@ function limpiarDatosTemporales() {
 }
 
 /**
- * Valida que una transacción tenga todos los datos requeridos
+ * Valida que un array de datos de transacción contenga todos los campos obligatorios.
  * 
  * @param array $datos Datos de la transacción
  * @return array ['valido' => bool, 'errores' => array]
@@ -134,7 +137,8 @@ function validarDatosTransaccion($datos) {
 
 /**
  * Genera una firma para validar la autenticidad de los datos
- * (Simulación - en producción usarías el método del proveedor)
+ * Esto simula cómo las pasarelas de pago firman sus notificaciones (webhooks)
+ * para que el comercio pueda verificar que provienen de una fuente legítima.
  * 
  * @param array $datos Datos a firmar
  * @param string $secretKey Clave secreta
@@ -147,7 +151,7 @@ function generarFirma($datos, $secretKey = 'tu_clave_secreta_aqui') {
 }
 
 /**
- * Valida una firma
+ * Valida una firma comparándola con una firma calculada localmente.
  * 
  * @param array $datos Datos originales
  * @param string $firma Firma a validar
@@ -160,7 +164,8 @@ function validarFirma($datos, $firma, $secretKey = 'tu_clave_secreta_aqui') {
 }
 
 /**
- * Sanitiza los datos de entrada
+ * Sanitiza los datos de entrada para prevenir ataques XSS (Cross-Site Scripting).
+ * Elimina etiquetas HTML y convierte caracteres especiales.
  * 
  * @param mixed $data Datos a sanitizar
  * @return mixed Datos sanitizados
@@ -173,7 +178,7 @@ function sanitizarDatos($data) {
 }
 
 /**
- * Genera respuesta JSON para APIs
+ * Genera una respuesta en formato JSON y la imprime, finalizando el script.
  * 
  * @param array $data Datos a devolver
  * @param int $statusCode Código de estado HTTP
@@ -186,7 +191,8 @@ function respuestaJSON($data, $statusCode = 200) {
 }
 
 /**
- * Registra log de la transacción (para debugging)
+ * Registra un mensaje de log en un archivo.
+ * Muy útil para depurar problemas en producción sin mostrar errores en pantalla.
  * 
  * @param string $mensaje Mensaje del log
  * @param array $datos Datos adicionales
@@ -207,7 +213,7 @@ function registrarLog($mensaje, $datos = []) {
 }
 
 /**
- * Obtiene la configuración del método de pago
+ * Devuelve un array con la configuración simulada para un método de pago específico.
  * 
  * @param string $metodo Método de pago
  * @return array Configuración del método
@@ -252,7 +258,8 @@ function obtenerConfigMetodoPago($metodo) {
 }
 
 /**
- * Convierte un monto entre monedas (simulado)
+ * Simula la conversión de un monto entre diferentes monedas.
+ * En una aplicación real, se usaría una API de tasas de cambio actualizada.
  * 
  * @param float $monto Monto a convertir
  * @param string $origen Moneda de origen
@@ -275,7 +282,7 @@ function convertirMoneda($monto, $origen = 'EUR', $destino = 'USD') {
 }
 
 /**
- * Verifica si el simulador está en modo debug
+ * Verifica si el simulador está en modo de depuración (debug).
  * 
  * @return bool True si está en modo debug
  */
@@ -284,7 +291,7 @@ function esModoDebug() {
 }
 
 /**
- * Obtiene la URL base del proyecto
+ * Obtiene la URL base del proyecto dinámicamente.
  * 
  * @return string URL base
  */

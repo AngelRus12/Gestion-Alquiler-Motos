@@ -1,71 +1,83 @@
 <?php
+// Establece la codificación de caracteres a UTF-8 para soportar caracteres especiales.
 header('Content-Type: text/html; charset=utf-8');
+// Inicia la sesión para poder acceder a las variables de sesión.
 session_start();
 // Se incluye el archivo con las credenciales de la base de datos.
 require_once 'loginbd.php';
 
-// 1. Seguridad: Verificar si el usuario está logueado
+// --- 1. CONTROL DE ACCESO ---
+// Verifica si el usuario ha iniciado sesión. Si no, lo redirige a la página de login.
 if (!isset($_SESSION['usuario_id'])) {
     header('Location: login.php?error=acceso_denegado');
     exit();
 }
 
-// 2. Validar que se ha proporcionado un ID de alquiler
+// --- 2. VALIDACIÓN DE ENTRADA ---
+// Verifica que se haya proporcionado un ID de alquiler en la URL y que sea un número.
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     header('Location: perfil_usuario.php?error=id_invalido');
     exit();
 }
 
+// --- 3. CONEXIÓN A LA BASE DE DATOS ---
 $conexion = mysqli_connect($db_hostname, $db_username, $db_password, $db_database);
+// Si la conexión falla, se detiene la ejecución y se muestra un error.
 if (!$conexion) {
     die("Error de conexión: " . mysqli_connect_error());
 }
-
+// Establece el conjunto de caracteres a UTF-8 para la conexión.
 mysqli_set_charset($conexion, "utf8");
 
+// Se convierte el ID de la URL a entero para mayor seguridad.
 $alquiler_id = (int)$_GET['id'];
 $usuario_id = $_SESSION['usuario_id'];
 
-// 3. Consulta inicial para obtener los detalles del alquiler.
-// La consulta se adapta según el rol del usuario para seguridad.
+// --- 4. CONSULTA SEGURA DE DATOS DEL ALQUILER ---
+// La consulta se adapta según el rol del usuario para garantizar la seguridad y privacidad.
 if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin') {
     // Si el usuario es administrador, puede ver los detalles de cualquier alquiler.
+    // La consulta solo filtra por el ID del alquiler.
     $sql_alquiler = "SELECT * FROM alquileres WHERE id = ?";
     $stmt_alquiler = mysqli_prepare($conexion, $sql_alquiler);
     mysqli_stmt_bind_param($stmt_alquiler, "i", $alquiler_id);
 } else {
     // Si es un usuario normal, solo puede ver los alquileres que le pertenecen.
-    // Se añade la condición 'AND usuario_id = ?' para asegurar esto.
+    // CRÍTICO: Se añade la condición 'AND usuario_id = ?' para asegurar que un usuario no pueda ver
+    // los datos de otro simplemente cambiando el ID en la URL.
     $sql_alquiler = "SELECT * FROM alquileres WHERE id = ? AND usuario_id = ?";
     $stmt_alquiler = mysqli_prepare($conexion, $sql_alquiler);
     mysqli_stmt_bind_param($stmt_alquiler, "ii", $alquiler_id, $usuario_id);
 }
+// Se ejecuta la consulta y se obtiene el resultado.
 mysqli_stmt_execute($stmt_alquiler);
 $resultado_alquiler = mysqli_stmt_get_result($stmt_alquiler);
 $alquiler = mysqli_fetch_assoc($resultado_alquiler);
 mysqli_stmt_close($stmt_alquiler);
 
-// 4. Seguridad: Si la consulta anterior no devolvió ningún alquiler, significa que no existe o no pertenece al usuario.
+// --- 5. VERIFICACIÓN DE EXISTENCIA ---
+// Si la consulta anterior no devolvió ningún alquiler, significa que no existe o no pertenece al usuario.
 if (!$alquiler) {
     header('Location: perfil_usuario.php?error=no_encontrado');
     exit();
 }
 
-// 5. OBTENCIÓN DE DATOS RELACIONADOS SIN USAR JOINs.
+// --- 6. OBTENCIÓN DE DATOS RELACIONADOS (SIN USAR JOINs) ---
 // En lugar de una consulta compleja con JOIN, se realizan consultas simples y separadas.
+// Esto puede ser más fácil de leer y depurar en algunos casos.
 $moto_data = [];
 $usuario_data = [];
 
-// Consulta 1: Obtener los datos de la moto asociada al alquiler.
+// Consulta para obtener los datos de la moto asociada al alquiler.
 $sql_moto = "SELECT marca, modelo, tipo, precio_dia, imagen, descripcion as moto_descripcion FROM motos WHERE id = ?";
 $stmt_moto = mysqli_prepare($conexion, $sql_moto);
 mysqli_stmt_bind_param($stmt_moto, "i", $alquiler['moto_id']);
 mysqli_stmt_execute($stmt_moto);
-// Se usa mysqli_fetch_assoc porque esperamos solo una fila.
+// Se usa mysqli_fetch_assoc porque esperamos solo una fila (una moto por alquiler).
 $moto_data = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt_moto));
 mysqli_stmt_close($stmt_moto);
 
-// Consulta 2: Obtener los datos del usuario asociado al alquiler.
+// Consulta para obtener los datos del usuario asociado al alquiler.
 $sql_usuario = "SELECT nombre, apellidos, email FROM usuarios WHERE id = ?";
 $stmt_usuario = mysqli_prepare($conexion, $sql_usuario);
 mysqli_stmt_bind_param($stmt_usuario, "i", $alquiler['usuario_id']);
@@ -73,31 +85,34 @@ mysqli_stmt_execute($stmt_usuario);
 $usuario_data = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt_usuario));
 mysqli_stmt_close($stmt_usuario);
 
-// 6. SIMULACIÓN DE INNER JOIN.
+// --- 7. COMBINACIÓN DE DATOS Y VERIFICACIÓN FINAL ---
+// Se simula el comportamiento de un INNER JOIN. Un INNER JOIN solo devuelve resultados si hay coincidencias en todas las tablas.
 // Un INNER JOIN solo devuelve resultados si hay coincidencias en todas las tablas.
 // Aquí replicamos ese comportamiento: si la moto o el usuario del alquiler han sido eliminados
 // de la base de datos, consideramos que el alquiler ya no es válido.
 if (!$moto_data || !$usuario_data) {
     $alquiler = false; // Se marca el alquiler como falso para que la siguiente comprobación falle.
 } else {
-    // Si todo existe, se combinan los tres arrays ($alquiler, $moto_data, $usuario_data)
+    // Si todos los datos existen, se combinan los tres arrays ($alquiler, $moto_data, $usuario_data)
     // en un único array $alquiler para usarlo fácilmente en el HTML.
     $alquiler = array_merge($alquiler, $moto_data, $usuario_data);
 }
 
-// 7. Seguridad final: Si después de las comprobaciones el alquiler se marcó como falso, se redirige.
+// Si después de las comprobaciones el alquiler se marcó como falso (porque la moto o el usuario no existen), se redirige.
 if (!$alquiler) {
     header('Location: perfil_usuario.php?error=no_encontrado');
     exit();
 }
 
-// Función para detectar dispositivos móviles
+// --- 8. DETECCIÓN DE DISPOSITIVO MÓVIL ---
+// Función simple para cargar una hoja de estilos diferente en móviles.
 function isMobile() {
     return preg_match("/(android|avantgo|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino)/i", $_SERVER["HTTP_USER_AGENT"]);
 }
 
 $is_mobile = isMobile();
 ?>
+<!-- El resto del archivo es la estructura HTML que muestra los datos combinados del alquiler. -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -177,4 +192,4 @@ $is_mobile = isMobile();
 
 </body>
 </html>
-<?php mysqli_close($conexion); ?>
+<?php mysqli_close($conexion); // Cierra la conexión a la base de datos. ?>
