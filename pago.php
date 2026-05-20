@@ -125,16 +125,16 @@ $return_url = 'http://' . $_SERVER['HTTP_HOST'] . '/perfil_usuario.php';
                                 <!-- Opciones de métodos de pago simulados. Se usan radio buttons. -->
                                 
                                 <div class="col-6 payment-option">
-                                    <input type="radio" class="btn-check" name="payment_method" id="mercadopago" value="mercadopago">
-                                    <label class="btn btn-outline-secondary w-100 payment-label" for="mercadopago">
-                                        <h5 class="mb-1">Tarjeta Crédito</h5>
+                                    <input type="radio" class="btn-check" name="payment_method" id="webpay" value="webpay" checked>
+                                    <label class="btn btn-outline-secondary w-100 payment-label" for="webpay">
+                                        <h5 class="mb-1">Webpay Plus</h5>
                                         <small class="text-muted">Paga con tu tarjeta de crédito</small>
                                     </label>
                                 </div>
 
                                 <div class="col-6 payment-option">
-                                    <input type="radio" class="btn-check" name="payment_method" id="mercadopago" value="mercadopago">
-                                    <label class="btn btn-outline-secondary w-100 payment-label" for="mercadopago">
+                                    <input type="radio" class="btn-check" name="payment_method" id="paypal" value="paypal">
+                                    <label class="btn btn-outline-secondary w-100 payment-label" for="paypal">
                                         <h5 class="mb-1">Paypal</h5>
                                         <small class="text-muted">Paga con tu cuenta PayPal</small>
                                     </label>

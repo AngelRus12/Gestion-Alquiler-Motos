@@ -2,7 +2,17 @@
 session_start();
 require_once 'loginbd.php';
 require_once 'libs/fpdf/fpdf.php';
-
+?>
+<!DOCTYPE html>
+<html lang="es">
+<HEAD>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="logo.png" type="image/png">
+    <link rel="apple-touch-icon" href="logo.png">
+<title>Factura - ARUSLAT</title>
+</HEAD>
+<?php
 // --- 1. CONTROL DE ACCESO Y VALIDACIÓN ---
 if (!isset($_SESSION['usuario_id'])) {
     die("Acceso denegado. Debes iniciar sesión.");
@@ -64,7 +74,7 @@ class PDF extends FPDF
         // Título de la factura
         $this->SetFont('Arial', 'B', 20);
         $this->SetTextColor(34, 34, 34);
-        $this->Cell(0, 10, 'FACTURA', 0, 1, 'R');
+        $this->Cell(0, 10, 'FACTURA ARUSLAT', 0, 1, 'R');
         
         // Número de factura
         global $alquiler; // Hacemos la variable global para acceder a ella aquí
@@ -115,29 +125,43 @@ $pdf->Ln(15);
 $pdf->SetFont('Arial', 'B', 12);
 $pdf->SetFillColor(52, 58, 64); // Un gris oscuro para la cabecera
 $pdf->SetTextColor(255, 255, 255);
-$pdf->Cell(100, 10, 'Concepto', 1, 0, 'L', true);
-$pdf->Cell(30, 10, 'Periodo', 1, 0, 'C', true);
-$pdf->Cell(30, 10, 'Precio/dia', 1, 0, 'C', true);
+$pdf->Cell(70, 10, 'Concepto', 1, 0, 'L', true);
+$pdf->Cell(20, 10, utf8_decode('Días'), 1, 0, 'C', true);
+$pdf->Cell(40, 10, 'Periodo', 1, 0, 'C', true);
+$pdf->Cell(30, 10, utf8_decode('Precio/Día'), 1, 0, 'C', true);
 $pdf->Cell(30, 10, 'Subtotal', 1, 1, 'C', true);
 
 $pdf->SetFont('Arial', '', 10);
 $pdf->SetTextColor(0, 0, 0);
 
 $concepto = utf8_decode("Alquiler de moto " . $alquiler['marca'] . " " . $alquiler['modelo'] . " (Mat. " . $alquiler['matricula'] . ")");
-$periodo = $alquiler['dias_alquiler'] . utf8_decode(' días');
+$fecha_inicio_formato = date("d/m/Y", strtotime($alquiler['fecha_inicio']));
+$fecha_fin_formato = date("d/m/Y", strtotime($alquiler['fecha_fin']));
+$dias_alquiler_texto = $alquiler['dias_alquiler'];
+$periodo_alquiler_texto = $fecha_inicio_formato . " a\n" . $fecha_fin_formato;
 $precio_dia = number_format($base_imponible / $alquiler['dias_alquiler'], 2) . ' ' . chr(128);
 $subtotal = number_format($base_imponible, 2) . ' ' . chr(128);
 
 // Usamos MultiCell para que el texto del concepto se ajuste automáticamente si es muy largo
 $y_inicial = $pdf->GetY();
-$pdf->MultiCell(100, 8, $concepto, 'LR', 'L');
+$x_inicial = $pdf->GetX();
+
+// Dibujamos la primera celda (Concepto) y calculamos la altura que ocupará
+$pdf->MultiCell(70, 8, $concepto, 'LR', 'L');
 $y_final = $pdf->GetY();
 $altura_fila = $y_final - $y_inicial;
 
-$pdf->SetXY(110, $y_inicial); // Reposicionamos para las siguientes celdas
-$pdf->Cell(30, $altura_fila, $periodo, 'R', 0, 'C');
-$pdf->Cell(30, $altura_fila, $precio_dia, 'R', 0, 'R');
-$pdf->Cell(30, $altura_fila, $subtotal, 'R', 1, 'R');
+// Reposicionamos el cursor a la derecha de la celda anterior, en la misma línea inicial
+$pdf->SetXY($x_inicial + 70, $y_inicial);
+
+// Dibujamos el resto de celdas como MultiCell, usando la altura calculada para que todas tengan el mismo alto
+$pdf->MultiCell(20, $altura_fila, $dias_alquiler_texto, 'R', 'C');
+$pdf->SetXY($x_inicial + 90, $y_inicial);
+$pdf->MultiCell(40, $altura_fila / 2, $periodo_alquiler_texto, 'R', 'C');
+$pdf->SetXY($x_inicial + 130, $y_inicial);
+$pdf->MultiCell(30, $altura_fila, $precio_dia, 'R', 'R');
+$pdf->SetXY($x_inicial + 160, $y_inicial);
+$pdf->MultiCell(30, $altura_fila, $subtotal, 'R', 'R');
 $pdf->Cell(190, 0, '', 'T', 1); // Línea inferior de la tabla
 
 // --- Totales ---

@@ -77,6 +77,9 @@ if (isset($_SESSION['usuario_id'])) {
 
             
             <p><a href="index">Volver al inicio</a></p>
+            <br>
+            <p>Si olvidaste tu contraseña, envie un correo a info@alquilermotos.com</a></p>
+            <p>indicando tu DNI y correo electrónico.</a></p>
         </div>
     </div>
 </body>
