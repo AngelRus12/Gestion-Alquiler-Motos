@@ -142,8 +142,8 @@ $is_mobile = isMobile();
 
     <main class="main-content">
         <div class="container">
-            <h2 class="titulo-pagina" style="text-align: left;">Detalle del Alquiler #<?php echo $alquiler['id']; ?></h2>
-            <a href="perfil_usuario" class="enlace-discreto espaciado-arriba" style="display: inline-block; margin-bottom: 20px;">&larr; Volver a Mi Perfil</a>
+            <h2 class="titulo-pagina text-left">Detalle del Alquiler #<?php echo $alquiler['id']; ?></h2>
+            <a href="perfil_usuario" class="enlace-discreto enlace-volver">&larr; Volver a Mi Perfil</a>
 
             <div class="detalle-alquiler-container">
                 <div class="moto-detalle-card">
@@ -155,7 +155,7 @@ $is_mobile = isMobile();
                     ?>
                     <img src="<?php echo $imagen_src; ?>" alt="Moto">
                     <h3><?php echo $alquiler['marca'] . " " . $alquiler['modelo']; ?></h3>
-                    <p style="color: var(--texto-gris);"><?php echo $alquiler['moto_descripcion']; ?></p>
+                    <p class="texto-gris-claro"><?php echo $alquiler['moto_descripcion']; ?></p>
                     <span class="etiqueta etiqueta-azul"><?php echo strtoupper($alquiler['tipo']); ?></span>
                 </div>
 
@@ -177,12 +177,12 @@ $is_mobile = isMobile();
                         <h3>Detalles del Precio</h3>
                         <p><strong>Precio por día:</strong> <?php echo number_format($alquiler['precio_dia'], 2); ?>€</p>
                         <p><strong>Días de alquiler:</strong> <?php echo $alquiler['dias_alquiler']; ?></p>
-                        <hr style="border-color: #444;">
+                        <hr class="divider-muted">
                         <p><strong>Precio Total:</strong> <strong class="precio precio-total-grande"><?php echo number_format($alquiler['precio_total'], 2); ?>€</strong></p>
                         
                         <?php // Solo mostrar el botón de descarga si el alquiler está confirmado o finalizado ?>
                         <?php if ($alquiler['estado'] === 'confirmado' || $alquiler['estado'] === 'finalizado' || $alquiler['estado'] === 'en_curso'): ?>
-                            <a href="generar_factura.php?id=<?php echo $alquiler['id']; ?>" target="_blank" class="boton espaciado-arriba" style="width: 100%; text-align: center;">
+                            <a href="generar_factura.php?id=<?php echo $alquiler['id']; ?>" target="_blank" class="boton btn-fullwidth espaciado-arriba">
                                 📄 Descargar Factura en PDF
                             </a>
                         <?php endif; ?>

@@ -72,25 +72,6 @@ $config = $paymentConfig[$paymentMethod] ?? $paymentConfig['webpay'];
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="css/bank-style.css">
-    <style>
-        .payment-simulator-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem 0;
-        }
-        .response-option {
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        .response-option:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-        .badge-simulator {
-            font-size: 0.7rem;
-            padding: 0.3rem 0.6rem;
-        }
-    </style>
 </head>
 <body class="bg-light">
     <!-- Header del Banco Simulador -->
@@ -163,7 +144,7 @@ $config = $paymentConfig[$paymentMethod] ?? $paymentConfig['webpay'];
                                     <input type="hidden" name="response_type" value="approved">
                                     <div class="card response-option border-success h-100">
                                         <div class="card-body text-center">
-                                            <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                                            <i class="bi bi-check-circle-fill text-success simulator-icon"></i>
                                             <h5 class="mt-3">Pago Aprobado</h5>
                                             <p class="text-muted small">
                                                 Simula una transacción exitosa.<br>
@@ -183,7 +164,7 @@ $config = $paymentConfig[$paymentMethod] ?? $paymentConfig['webpay'];
                                     <input type="hidden" name="response_type" value="rejected">
                                     <div class="card response-option border-danger h-100">
                                         <div class="card-body text-center">
-                                            <i class="bi bi-x-circle-fill text-danger" style="font-size: 3rem;"></i>
+                                            <i class="bi bi-x-circle-fill text-danger simulator-icon"></i>
                                             <h5 class="mt-3">Pago Rechazado</h5>
                                             <p class="text-muted small">
                                                 Simula fondos insuficientes o tarjeta rechazada.<br>
@@ -203,7 +184,7 @@ $config = $paymentConfig[$paymentMethod] ?? $paymentConfig['webpay'];
                                     <input type="hidden" name="response_type" value="pending">
                                     <div class="card response-option border-warning h-100">
                                         <div class="card-body text-center">
-                                            <i class="bi bi-clock-fill text-warning" style="font-size: 3rem;"></i>
+                                            <i class="bi bi-clock-fill text-warning simulator-icon"></i>
                                             <h5 class="mt-3">Pago Pendiente</h5>
                                             <p class="text-muted small">
                                                 Simula pago en revisión o procesamiento.<br>
@@ -223,7 +204,7 @@ $config = $paymentConfig[$paymentMethod] ?? $paymentConfig['webpay'];
                                     <input type="hidden" name="response_type" value="cancelled">
                                     <div class="card response-option border-secondary h-100">
                                         <div class="card-body text-center">
-                                            <i class="bi bi-arrow-left-circle-fill text-secondary" style="font-size: 3rem;"></i>
+                                            <i class="bi bi-arrow-left-circle-fill text-secondary simulator-icon"></i>
                                             <h5 class="mt-3">Usuario Canceló</h5>
                                             <p class="text-muted small">
                                                 Simula que el usuario abandonó el pago.<br>

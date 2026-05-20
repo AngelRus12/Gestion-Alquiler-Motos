@@ -117,7 +117,7 @@ $is_mobile = isMobile();
                                 break;
                         }
                         if ($mensaje_error) {
-                            echo '<div class="alerta alerta-error" style="margin-bottom: 15px;">' . htmlspecialchars($mensaje_error) . '</div>';
+                            echo '<div class="alerta alerta-error alerta-margen">' . htmlspecialchars($mensaje_error) . '</div>';
                         }
                     }
                     ?>
@@ -147,7 +147,7 @@ $is_mobile = isMobile();
                             <button type="submit" class="btn btn-block espaciado-arriba">Reservar</button>
                         </form>
                     <?php else: ?>
-                        <p class="alerta-error text-center" style="font-weight: bold; font-size: 1.1em; background: none; border: none;">No disponible actualmente</p>
+                        <p class="alerta-error text-center alerta-sin-fondo">No disponible actualmente</p>
                         <?php
                         // Si el usuario es admin, mostrar quién la tiene alquilada
                         // Esta sección utiliza el método de consultas separadas para evitar JOINs.
@@ -175,8 +175,8 @@ $is_mobile = isMobile();
                                     ?>
                                     <!-- Se muestra la información combinada en el HTML. -->
                                     <div class="alerta alerta-error text-center espaciado-arriba">
-                                        <p style="margin:0; color: white;"><strong>Alquilada por:</strong> <a href="detalle_alquiler.php?id=<?php echo $alquiler_actual['alquiler_id']; ?>" class="enlace-discreto"><?php echo htmlspecialchars($alquiler_actual['nombre'] . ' ' . $alquiler_actual['apellidos']); ?></a></p>
-                                        <p style="margin:5px 0 0 0; font-size: 0.9em;">Del <?php echo date('d/m/Y', strtotime($alquiler_actual['fecha_inicio'])); ?> al <?php echo date('d/m/Y', strtotime($alquiler_actual['fecha_fin'])); ?></p>
+                                        <p class="detalle-alquilada-text"><strong>Alquilada por:</strong> <a href="detalle_alquiler.php?id=<?php echo $alquiler_actual['alquiler_id']; ?>" class="enlace-discreto"><?php echo htmlspecialchars($alquiler_actual['nombre'] . ' ' . $alquiler_actual['apellidos']); ?></a></p>
+                                        <p class="detalle-alquiler-periodo">Del <?php echo date('d/m/Y', strtotime($alquiler_actual['fecha_inicio'])); ?> al <?php echo date('d/m/Y', strtotime($alquiler_actual['fecha_fin'])); ?></p>
                                     </div>
                                 <?php }
                                 mysqli_stmt_close($stmt_usuario_alquila);

@@ -189,26 +189,26 @@ function ejemploEnviarEmail($transaction, $clienteEmail) {
     
     $mensaje = "
     <html>
-    <body style='font-family: Arial, sans-serif;'>
+    <body>
         <h2>Hola,</h2>
         <p>Te informamos sobre el estado de tu pago:</p>
         
-        <table style='border-collapse: collapse; width: 100%;'>
+        <table>
             <tr>
-                <td style='padding: 10px; border: 1px solid #ddd;'><strong>Orden:</strong></td>
-                <td style='padding: 10px; border: 1px solid #ddd;'>{$transaction['order_id']}</td>
+                <td><strong>Orden:</strong></td>
+                <td>{$transaction['order_id']}</td>
             </tr>
             <tr>
-                <td style='padding: 10px; border: 1px solid #ddd;'><strong>Monto:</strong></td>
-                <td style='padding: 10px; border: 1px solid #ddd;'>$" . number_format($transaction['amount'], 0, ',', '.') . " CLP</td>
+                <td><strong>Monto:</strong></td>
+                <td>" . number_format($transaction['amount'], 0, ',', '.') . " CLP</td>
             </tr>
             <tr>
-                <td style='padding: 10px; border: 1px solid #ddd;'><strong>Estado:</strong></td>
-                <td style='padding: 10px; border: 1px solid #ddd;'>" . strtoupper($transaction['status']) . "</td>
+                <td><strong>Estado:</strong></td>
+                <td>" . strtoupper($transaction['status']) . "</td>
             </tr>
             <tr>
-                <td style='padding: 10px; border: 1px solid #ddd;'><strong>Fecha:</strong></td>
-                <td style='padding: 10px; border: 1px solid #ddd;'>{$transaction['timestamp']}</td>
+                <td><strong>Fecha:</strong></td>
+                <td>{$transaction['timestamp']}</td>
             </tr>
         </table>
         

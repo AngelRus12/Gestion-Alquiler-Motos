@@ -305,3 +305,67 @@ html {
     background-color: #667eea;
     color: white;
 }
+
+/* ===== PAGINAS DE REDIRECCIÓN Y CONTROLES PERSONALIZADOS ===== */
+.page-redirect-body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+}
+
+.loader {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.payment-simulator-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem 0;
+}
+
+.badge-simulator {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
+}
+
+.simulator-icon {
+    font-size: 3rem;
+}
+
+.payment-logo-small { height: 40px; }
+.payment-logo-medium { height: 50px; }
+.payment-logo-large { height: 60px; }
+
+.btn-primary {
+    background-color: #e03e00;
+    border-color: #e03e00;
+}
+
+.btn-primary:hover {
+    background-color: #ff4500;
+    border-color: #ff4500;
+}
+
+.btn-outline-secondary {
+    color: #a0a0a0;
+    border-color: #2d1f1b;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #3d2b26;
+    border-color: #3d2b26;
+    color: #ffffff;
+}

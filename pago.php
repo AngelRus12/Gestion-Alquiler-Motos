@@ -38,65 +38,6 @@ $return_url = 'http://' . $_SERVER['HTTP_HOST'] . '/perfil_usuario.php';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Estilos personalizados del simulador -->
     <link rel="stylesheet" href="payment/css/bank-style.css">
-
-    <!-- INICIO: Bloque de estilos para adaptar los colores al tema de la aplicación -->
-    <!-- Estos estilos "sobrescriben" los estilos por defecto del simulador de pago
-         para que la interfaz de la pasarela coincida con el tema oscuro de la aplicación. -->
-    <style>
-        :root {
-            --bg-oscuro: #120907;
-            --bg-tarjeta: #1c110e;
-            --naranja-principal: #e03e00;
-            --texto-blanco: #ffffff;
-            --texto-gris: #a0a0a0;
-            --borde-tarjeta: #2d1f1b;
-        }
-
-        body {
-            background-color: var(--bg-oscuro);
-            color: var(--texto-blanco); /* Cambiado a blanco para mejor legibilidad */
-        }
-
-        .card {
-            background-color: var(--bg-tarjeta);
-            border: 1px solid var(--borde-tarjeta);
-        }
-
-        .card-header.bg-gradient-primary {
-            background: var(--bg-oscuro) !important; /* Anula el gradiente */
-            border-bottom: 1px solid var(--borde-tarjeta);
-        }
-
-        .card-header h1, .card-header .display-4 {
-            color: var(--naranja-principal) !important;
-        }
-
-        .card-body, .card-body h4 {
-            color: var(--texto-blanco);
-        }
-
-        .payment-label {
-            background-color: transparent;
-            border-color: var(--borde-tarjeta);
-            color: var(--texto-blanco); /* Cambiado a blanco */
-        }
-        .payment-label h5 { color: var(--texto-blanco); }
-        .payment-label:hover { background-color: #2a1e1a; border-color: #4d3b36; }
-
-        .btn-check:checked + .payment-label {
-            background-color: rgba(224, 62, 0, 0.1);
-            border-color: var(--naranja-principal);
-            box-shadow: 0 5px 20px rgba(224, 62, 0, 0.2);
-        }
-        /* El texto secundario ahora también es blanco */
-        .payment-label .text-muted { color: var(--texto-blanco) !important; opacity: 0.7; }
-
-        .btn-primary { background-color: var(--naranja-principal); border-color: var(--naranja-principal); }
-        .btn-primary:hover { background-color: #ff4500; border-color: #ff4500; }
-        .btn-outline-secondary { color: var(--texto-gris); border-color: var(--borde-tarjeta); }
-        .btn-outline-secondary:hover { background-color: #3d2b26; border-color: #3d2b26; color: var(--texto-blanco); }
-    </style>
-    <!-- FIN: Bloque de estilos -->
 </head>
 <body>
 

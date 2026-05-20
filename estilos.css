@@ -611,6 +611,7 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
 
 /* Clases de texto y alineación */
 .text-center { text-align: center; }
+.text-white { color: #fff; }
 .titulo-pagina { margin-top: 40px; text-align: center; }
 .titulo-formulario { text-align: center; margin-bottom: 30px; }
 
@@ -728,6 +729,200 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
     color: white;
     border-radius: 6px;
     border: 1px solid #2d1f1b;
+}
+
+/* Estilos de promociones en la página de inicio */
+.promo-banner {
+    background: var(--bg-tarjeta);
+    color: var(--texto-blanco);
+    padding: 14px 0;
+    border-bottom: 1px solid var(--borde-tarjeta);
+    box-shadow: var(--sombre-tarjeta);
+}
+.promo-banner .promo-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 10px;
+}
+.promo-banner .promo-text {
+    flex: 1 1 60%;
+    min-width: 0;
+}
+.promo-banner .promo-label {
+    display: inline-block;
+    margin-bottom: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--naranja-principal);
+    color: var(--texto-blanco);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+}
+.promo-banner h2 {
+    margin: 6px 0 8px;
+    font-size: 1.45rem;
+    color: var(--texto-blanco);
+    line-height: 1.15;
+}
+.promo-banner p {
+    margin: 0;
+    color: var(--texto-gris);
+    opacity: 0.95;
+    font-size: 1rem;
+}
+.promo-banner .promo-btn {
+    background: var(--naranja-principal);
+    color: var(--texto-blanco);
+    border-radius: 8px;
+    padding: 10px 18px;
+    text-decoration: none;
+    font-weight: 700;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+.promo-banner .promo-btn:hover {
+    transform: translateY(-2px);
+    background-color: #ff4500;
+    box-shadow: 0 10px 22px rgba(0,0,0,0.32);
+}
+@media (max-width: 700px) {
+    .promo-banner .promo-content { flex-direction: column; align-items: flex-start; gap: 10px; padding: 0 12px; }
+    .promo-banner .promo-btn { width: 100%; text-align: center; }
+    .promo-banner h2 { font-size: 1.1rem; }
+    .promo-banner p { font-size: 0.95rem; }
+}
+
+/* Estilos para el formulario de promociones */
+.promo-form {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 22px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 18px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+}
+.promo-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.96rem;
+    font-weight: 600;
+    color: #f5f5f5;
+}
+.promo-form input[type="text"],
+.promo-form input[type="url"],
+.promo-form input[type="date"],
+.promo-form textarea {
+    width: 100%;
+    min-height: 44px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.08);
+    color: #f9f9f9;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+.promo-form textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+.promo-form input:focus,
+.promo-form textarea:focus {
+    border-color: #f8b94c;
+    outline: none;
+    background: rgba(255, 255, 255, 0.12);
+}
+.promo-grid-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+.promo-grid-row > div {
+    flex: 1 1 180px;
+    min-width: 180px;
+}
+.promo-checkbox-group {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+}
+.promo-checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 0;
+    font-weight: 600;
+    color: #f5f5f5;
+}
+.promo-checkbox-group input[type="checkbox"] {
+    width: auto;
+    height: auto;
+    accent-color: #f8b94c;
+}
+.boton.boton-primario {
+    width: fit-content;
+    padding: 12px 28px;
+    border-radius: 12px;
+    background: #f8b94c;
+    color: #1b1b1b;
+    font-weight: 700;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.boton.boton-primario:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(248, 185, 76, 0.28);
+}
+
+.catalogo-filtros-form {
+    max-width: 1100px;
+    margin: 0 auto 20px;
+}
+.inline-group {
+    display: flex;
+    gap: 8px;
+}
+.ml-10 { margin-left: 10px; }
+.page-label { color: var(--texto-gris); margin: 0 12px; }
+
+.titulo-seccion-left { text-align: left; margin-bottom: 20px; }
+.nowrap { white-space: nowrap; }
+.mt-5 { margin-top: 5px; }
+.inline-form { display: inline; background: none; padding: 0; border: none; box-shadow: none; }
+.text-center-muted { text-align: center; color: var(--texto-gris); }
+.text-left { text-align: left; }
+.enlace-volver { display: inline-block; margin-bottom: 20px; }
+.texto-gris-claro { color: var(--texto-gris); }
+.divider-muted { border-color: #444; }
+.alerta-margen { margin-bottom: 15px; }
+.alerta-sin-fondo { font-weight: bold; font-size: 1.1em; background: none; border: none; }
+.detalle-alquilada-text { margin: 0; color: white; }
+.detalle-alquiler-periodo { margin: 5px 0 0 0; font-size: 0.9em; }
+.btn-fullwidth { width: 100%; text-align: center; }
+
+.legend-badge.pendiente { background: #f1c40f; }
+.legend-badge.confirmado { background: #27ae60; }
+.legend-badge.en_curso { background: #3498db; }
+.legend-badge.finalizado { background: #7f8c8d; }
+.legend-badge.cancelado { background: #e74c3c; }
+
+/* Clases para las tablas de estado y mensajes vacíos */
+.table-empty td { text-align: center; color: var(--texto-gris); }
+
+/* Estilos para campo de formulario doble en catálogo */
+.field-pair { display: flex; gap: 8px; }
+.field-pair input { width: 100%; }
+
+@media (max-width: 760px) {
+    .promo-grid-row {
+        flex-direction: column;
+    }
 }
 
 /* ==========================================================

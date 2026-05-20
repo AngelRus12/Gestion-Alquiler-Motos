@@ -70,7 +70,7 @@ $is_mobile = isMobile();
 
             // Mostrar formulario de filtros (selects dinámicos)
             ?>
-            <form method="get" class="formulario-filtros espaciado-arriba-20" style="max-width:1100px;margin:0 auto 20px;">
+            <form method="get" class="formulario-filtros espaciado-arriba-20 catalogo-filtros-form">
                 <div class="form-grid-3-col">
                     <div class="form-group">
                         <label>Marca</label>
@@ -103,20 +103,20 @@ $is_mobile = isMobile();
                 <div class="form-grid-3-col espaciado-arriba-20">
                     <div class="form-group">
                         <label>Precio día (mín - máx)</label>
-                        <div style="display:flex;gap:8px;"><input type="number" name="precio_min" step="1" placeholder="0" value="<?php echo isset($_GET['precio_min'])?intval($_GET['precio_min']):''; ?>"><input type="number" name="precio_max" step="1" placeholder="999" value="<?php echo isset($_GET['precio_max'])?intval($_GET['precio_max']):''; ?>"></div>
+                        <div class="field-pair"><input type="number" name="precio_min" step="1" placeholder="0" value="<?php echo isset($_GET['precio_min'])?intval($_GET['precio_min']):''; ?>"><input type="number" name="precio_max" step="1" placeholder="999" value="<?php echo isset($_GET['precio_max'])?intval($_GET['precio_max']):''; ?>"></div>
                     </div>
                     <div class="form-group">
                         <label>Cilindrada (mín - máx)</label>
-                        <div style="display:flex;gap:8px;"><input type="number" name="cil_min" step="1" placeholder="125" value="<?php echo isset($_GET['cil_min'])?intval($_GET['cil_min']):''; ?>"><input type="number" name="cil_max" step="1" placeholder="1000" value="<?php echo isset($_GET['cil_max'])?intval($_GET['cil_max']):''; ?>"></div>
+                        <div class="field-pair"><input type="number" name="cil_min" step="1" placeholder="125" value="<?php echo isset($_GET['cil_min'])?intval($_GET['cil_min']):''; ?>"><input type="number" name="cil_max" step="1" placeholder="1000" value="<?php echo isset($_GET['cil_max'])?intval($_GET['cil_max']):''; ?>"></div>
                     </div>
                     <div class="form-group">
                         <label>Año (mín - máx)</label>
-                        <div style="display:flex;gap:8px;"><input type="number" name="ano_min" step="1" placeholder="2000" value="<?php echo isset($_GET['ano_min'])?intval($_GET['ano_min']):''; ?>"><input type="number" name="ano_max" step="1" placeholder="2026" value="<?php echo isset($_GET['ano_max'])?intval($_GET['ano_max']):''; ?>"></div>
+                        <div class="field-pair"><input type="number" name="ano_min" step="1" placeholder="2000" value="<?php echo isset($_GET['ano_min'])?intval($_GET['ano_min']):''; ?>"><input type="number" name="ano_max" step="1" placeholder="2026" value="<?php echo isset($_GET['ano_max'])?intval($_GET['ano_max']):''; ?>"></div>
                     </div>
                 </div>
                 <div class="form-submit-group">
                     <button type="submit" class="btn">Aplicar filtros</button>
-                    <a href="catalogo.php" class="btn boton-secundario" style="margin-left:10px;">Limpiar</a>
+                    <a href="catalogo.php" class="btn boton-secundario ml-10">Limpiar</a>
                 </div>
             </form>
             <?php
@@ -210,7 +210,7 @@ $is_mobile = isMobile();
                             $qs = $_GET; $qs['page'] = $page-1; echo http_build_query($qs);
                         ?>">&laquo; Anterior</a>
                     <?php endif; ?>
-                    <span style="color:var(--texto-gris); margin:0 12px;">Página <?php echo $page; ?> / <?php echo $total_pages; ?></span>
+                    <span class="page-label">Página <?php echo $page; ?> / <?php echo $total_pages; ?></span>
                     <?php if ($page < $total_pages): ?>
                         <a class="btn boton-pequeño" href="?<?php
                             $qs = $_GET; $qs['page'] = $page+1; echo http_build_query($qs);

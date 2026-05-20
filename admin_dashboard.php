@@ -133,29 +133,6 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
     <link rel="apple-touch-icon" href="logo.png">
     <title>Panel Administrativo - ARUSLAT</title>
     <link rel="stylesheet" href="estilos.css">
-    <style>
-        .calendar-panel {margin: 30px 0; padding: 20px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;}
-        .calendar-header {display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;}
-        .calendar-header h2 {margin: 0;}
-        .calendar-nav {display: flex; gap: 10px;}
-        .calendar-nav button {padding: 10px 14px; background: #2d1f1b; color: #fff; border: none; border-radius: 8px; cursor: pointer;}
-        .calendar-grid {display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;}
-        .calendar-day {padding: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; min-height: 120px; display: flex; flex-direction: column;}
-        .calendar-day.disabled {opacity: 0.35;}
-        .calendar-day strong {display: block; margin-bottom: 8px;}
-        .calendar-event {margin-bottom: 6px; padding: 5px 8px; border-radius: 8px; color: #fff; font-size: 0.82rem; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
-        .event-pendiente {background: #f1c40f;}
-        .event-confirmado {background: #27ae60;}
-        .event-en_curso {background: #3498db;}
-        .event-finalizado {background: #7f8c8d;}
-        .event-cancelado {background: #e74c3c;}
-        .calendar-legends {display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px;}
-        .legend-item {display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem;}
-        .legend-badge {width: 14px; height: 14px; border-radius: 4px; display: inline-block;}
-        .calendar-event-list {margin-top: 18px;}
-        .calendar-event-list li {margin-bottom: 10px;}
-        .calendar-event-list small {color: #ccc;}
-    </style>
 </head>
 <body>
     
@@ -177,7 +154,7 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                 <?php echo $mensaje_html; ?>
             </div>
 
-            <h2 class="titulo-seccion" style="text-align: left; margin-bottom: 20px;">Resumen Overview</h2>
+            <h2 class="titulo-seccion titulo-seccion-left">Resumen Overview</h2>
 
             <div class="admin-stats-grid">
                 <div class="stat-card">
@@ -209,33 +186,33 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                     <h2>Ofertas y Promociones</h2>
                 </div>
                 <div class="contenedor-tabla">
-                    <form method="POST" style="display:grid; gap:12px; margin-bottom:24px;">
-                        <div>
+                    <form method="POST" class="promo-form">
+                        <div class="promo-field">
                             <label>Título de la promoción</label>
                             <input type="text" name="titulo" required placeholder="Ej. 20% de descuento este fin de semana" />
                         </div>
-                        <div>
+                        <div class="promo-field">
                             <label>Mensaje</label>
                             <textarea name="mensaje" required rows="3" placeholder="Texto que se mostrará en la página de inicio"></textarea>
                         </div>
-                        <div>
+                        <div class="promo-field">
                             <label>Enlace (opcional)</label>
                             <input type="url" name="enlace" placeholder="https://tusitio.com/oferta" />
                         </div>
-                        <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                            <div style="flex:1; min-width:160px;">
+                        <div class="promo-grid-row">
+                            <div>
                                 <label>Fecha inicio (opcional)</label>
                                 <input type="date" name="fecha_inicio" />
                             </div>
-                            <div style="flex:1; min-width:160px;">
+                            <div>
                                 <label>Fecha fin (opcional)</label>
                                 <input type="date" name="fecha_fin" />
                             </div>
-                            <div style="flex:1; min-width:160px; display:flex; align-items:flex-end;">
-                                <label style="display:block;"><input type="checkbox" name="activo" checked /> Publicar ahora</label>
+                            <div class="promo-checkbox-group">
+                                <label><input type="checkbox" name="activo" checked /> Publicar ahora</label>
                             </div>
                         </div>
-                        <button type="submit" name="guardar_promocion" class="boton">Publicar promoción</button>
+                        <button type="submit" name="guardar_promocion" class="boton boton-primario">Publicar promoción</button>
                     </form>
                     <table>
                         <thead>
@@ -275,11 +252,11 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                 </div>
                 <div id="calendarGrid" class="calendar-grid"></div>
                 <div class="calendar-legends">
-                    <span class="legend-item"><span class="legend-badge" style="background:#f1c40f"></span>Pendiente</span>
-                    <span class="legend-item"><span class="legend-badge" style="background:#27ae60"></span>Confirmado</span>
-                    <span class="legend-item"><span class="legend-badge" style="background:#3498db"></span>En curso</span>
-                    <span class="legend-item"><span class="legend-badge" style="background:#7f8c8d"></span>Finalizado</span>
-                    <span class="legend-item"><span class="legend-badge" style="background:#e74c3c"></span>Cancelado</span>
+                    <span class="legend-item"><span class="legend-badge pendiente"></span>Pendiente</span>
+                    <span class="legend-item"><span class="legend-badge confirmado"></span>Confirmado</span>
+                    <span class="legend-item"><span class="legend-badge en_curso"></span>En curso</span>
+                    <span class="legend-item"><span class="legend-badge finalizado"></span>Finalizado</span>
+                    <span class="legend-item"><span class="legend-badge cancelado"></span>Cancelado</span>
                 </div>
                 <div class="calendar-event-list">
                     <h3>Próximos eventos</h3>
@@ -324,7 +301,7 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                                         <?php echo strtoupper($user['estado']); ?>
                                     </span>
                                 </td>
-                                <td style="white-space: nowrap;">
+                                <td class="nowrap">
                                     <a href="editar_usuario.php?id=<?php echo $user['id']; ?>" class="boton boton-pequeño">Editar</a>
                                     <a href="eliminar_usuario.php?id=<?php echo $user['id']; ?>" class="boton boton-pequeño etiqueta-error">Eliminar</a>
                                 </td>
@@ -369,7 +346,7 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                                     ?>
                                     <img src="<?php echo $imagen_src; ?>" alt="Moto" class="miniatura-admin">
                                 </td>
-                                <td><strong style="color:white;"><?php echo $moto['marca'] . " " . $moto['modelo']; ?></strong></td>
+                                <td><strong class="text-white"><?php echo $moto['marca'] . " " . $moto['modelo']; ?></strong></td>
                                 <td><?php echo strtoupper($moto['tipo']); ?></td>
                                 <td class="precio"><?php echo $moto['precio_dia']; ?>€</td>
                                 <td>
@@ -405,7 +382,7 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                                                 
                                                 if ($quien_alquila = mysqli_fetch_assoc($res_usuario_alquila)) {
                                                     // Paso 3: Mostrar el nombre del cliente con un enlace al detalle del alquiler.
-                                                    echo '<a href="detalle_alquiler.php?id=' . $alquiler_id . '" class="boton boton-secundario boton-pequeño" style="margin-top: 5px;">👤 ' . htmlspecialchars($quien_alquila['nombre'] . ' ' . $quien_alquila['apellidos']) . '</a>';
+                                                    echo '<a href="detalle_alquiler.php?id=' . $alquiler_id . '" class="boton boton-secundario boton-pequeño mt-5">👤 ' . htmlspecialchars($quien_alquila['nombre'] . ' ' . $quien_alquila['apellidos']) . '</a>';
                                                 }
                                                 mysqli_stmt_close($stmt_usuario_alquila);
                                             }
@@ -414,7 +391,7 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                                         </div>
                                     <?php } ?>
                                 </td>
-                                <td style="white-space: nowrap;">
+                                <td class="nowrap">
                                     <a href="editar_moto.php?id=<?php echo $moto['id']; ?>" class="boton boton-pequeño">Editar</a>
                                     <a href="eliminar_moto.php?id=<?php echo $moto['id']; ?>" class="boton boton-pequeño etiqueta-error">Eliminar</a>
                                 </td>
@@ -498,14 +475,14 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                                 <td class="precio"><strong><?php echo $alquiler['precio_total']; ?>€</strong></td>
                                 <td>
                                     <!-- Formulario para confirmar el pago en tienda -->
-                                    <form action="confirmar_pago_tienda.php" method="GET" style="display:inline; background:none; padding:0; border:none; box-shadow:none;">
+                                    <form action="confirmar_pago_tienda.php" method="GET" class="inline-form">
                                         <input type="hidden" name="id" value="<?php echo $alquiler['id']; ?>">
-                                        <button type="submit" class="boton btn-sm etiqueta-exito" style="border: none; cursor: pointer; padding: 10px 15px;">
+                                        <button type="submit" class="boton btn-sm etiqueta-exito">
                                             Confirmar Pago
                                         </button>
                                     </form>
                                     <!-- Formulario para que el admin cancele el alquiler -->
-                                    <form action="cancelar_alquiler_admin.php" method="GET" style="display:inline; margin-left: 5px;">
+                                    <form action="cancelar_alquiler_admin.php" method="GET" class="inline-form ml-10">
                                         <input type="hidden" name="id" value="<?php echo $alquiler['id']; ?>">
                                         <button type="submit" class="boton boton-pequeño boton-error">Cancelar</button>
                                     </form>
@@ -515,7 +492,7 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                                 } 
                             } else { ?>
                                 <!-- Mensaje que se muestra si no hay alquileres pendientes. -->
-                                <tr><td colspan="5" style="text-align:center; color: var(--texto-gris);">No hay pagos pendientes de confirmación.</td></tr>
+                                <tr><td colspan="5" class="table-empty">No hay pagos pendientes de confirmación.</td></tr>
                             <?php } ?>
                         </tbody>
                     </table>
@@ -598,7 +575,7 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                                 } 
                             } else { ?>
                                 <!-- Mensaje que se muestra si no hay ningún alquiler en el sistema. -->
-                                <tr><td colspan="6" style="text-align:center; color: var(--texto-gris);">No hay alquileres registrados en el sistema.</td></tr>
+                                <tr><td colspan="6" class="table-empty">No hay alquileres registrados en el sistema.</td></tr>
                             <?php } ?>
                         </tbody>
                     </table>

@@ -23,29 +23,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['amount'])) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Redirigiendo al Portal de Pago...</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <style>
-            body {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                min-height: 100vh;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .loader {
-                width: 50px;
-                height: 50px;
-                border: 5px solid #f3f3f3;
-                border-top: 5px solid #667eea;
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
-            }
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-        </style>
+        <link rel="stylesheet" href="css/bank-style.css">
     </head>
-    <body onload="document.getElementById('redirect_form').submit();">
+    <body class="page-redirect-body" onload="document.getElementById('redirect_form').submit();">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-md-6">
@@ -67,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['amount'])) {
         </div>
 
         <!-- Formulario automático de redirección -->
-        <form id="redirect_form" action="simulator.php" method="POST" style="display: none;">
+        <form id="redirect_form" action="simulator.php" method="POST" class="d-none">
             <?php foreach ($_POST as $key => $value): ?>
                 <input type="hidden" name="<?php echo htmlspecialchars($key); ?>" value="<?php echo htmlspecialchars($value); ?>">
             <?php endforeach; ?>
@@ -162,7 +142,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['amount'])) {
                                                 <br>
                                                 <small class="text-muted ms-5">Transbank Chile - Tarjetas de crédito y débito</small>
                                             </div>
-                                            <img src="/img/webpay.png" alt="Webpay" style="height: 40px;">
+                                            <img src="/img/webpay.png" alt="Webpay" class="payment-logo-small">
                                         </div>
                                     </label>
                                 </div>
@@ -179,7 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['amount'])) {
                                                 <small class="text-muted ms-5">Tarjetas, efectivo y más opciones</small>
                                             </div>
                                              <span class="badge bg-info">Popular</span>
-                                            <img src="/img/mercado-pago.png" alt="Mercado Pago" style="height: 60px;">
+                                            <img src="/img/mercado-pago.png" alt="Mercado Pago" class="payment-logo-large">
                                         </div>
                                     </label>
                                 </div>
@@ -195,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['amount'])) {
                                                 <br>
                                                 <small class="text-muted ms-5">Paga con tu cuenta PayPal</small>
                                             </div>
-                                            <img src="/img/paypal.png" alt="PayPal" style="height: 30px;">
+                                            <img src="/img/paypal.png" alt="PayPal" class="payment-logo-small">
                                         </div>
                                     </label>
                                 </div>
@@ -211,7 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['amount'])) {
                                                 <br>
                                                 <small class="text-muted ms-5">Transferencia manual o automática</small>
                                             </div>
-                                            <img src="/img/transferencia.png" alt="Transferencia Bancaria" style="height: 50px;">
+                                            <img src="/img/transferencia.png" alt="Transferencia Bancaria" class="payment-logo-medium">
                                         </div>
                                     </label>
                                 </div>
