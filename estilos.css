@@ -835,7 +835,7 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
 }
 .promo-form input:focus,
 .promo-form textarea:focus {
-    border-color: #e03e00;
+    border-color: #f8b94c;
     outline: none;
     background: rgba(255, 255, 255, 0.12);
 }
@@ -870,7 +870,7 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
     width: fit-content;
     padding: 12px 28px;
     border-radius: 12px;
-    background: #f8b94c;
+    background: #e03e00;
     color: #1b1b1b;
     font-weight: 700;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
