@@ -1,4 +1,10 @@
 <?php
+/**
+ * perfil_usuario.php
+ * Panel personal del usuario autenticado.
+ * - Muestra datos personales, historial de alquileres y mensajes de estado.
+ * - Emplea funciones centralizadas como actualizar_sistema_completo() para mantener la consistencia.
+ */
 header('Content-Type: text/html; charset=utf-8');
 session_start();
 require_once 'loginbd.php';

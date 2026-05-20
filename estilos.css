@@ -653,6 +653,23 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
     min-height: 100vh;
     padding: 40px 0; /* Añadido para dar espacio y evitar cortes */
 }
+
+/* Estilos para formulario de filtros en el catálogo */
+.formulario-filtros {
+    background: transparent;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--borde-tarjeta);
+}
+.formulario-filtros .form-group input,
+.formulario-filtros .form-group select {
+    background: #241613;
+    border: 1px solid var(--borde-tarjeta);
+    color: var(--texto-blanco);
+}
+.formulario-filtros .form-submit-group { text-align: left; margin-top: 12px; }
+.formulario-filtros .btn { margin-right: 8px; }
+
 .registro {
     width: 100%;
     max-width: 800px;

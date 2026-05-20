@@ -1,4 +1,10 @@
 <?php
+/**
+ * catalogo.php
+ * Lista de motos disponibles para alquilar y filtro dinámico.
+ * - Usa paginación y consultas preparadas para evitar inyecciones SQL.
+ * - Mejora la experiencia de usuario con filtros por marca, modelo, tipo y rango de precio.
+ */
 header('Content-Type: text/html; charset=utf-8');
 session_start();
 require_once 'loginbd.php';
@@ -51,10 +57,131 @@ $is_mobile = isMobile();
     <main class="main-content">
         <div class="container">
             <h2 class="titulo-seccion">Nuestro Catálogo de Motos</h2>
-            <div class="grid">
-                <?php
-                $resultado = mysqli_query($conexion, "SELECT * FROM motos order by marca ");
-                while ($fila = mysqli_fetch_assoc($resultado)) {
+
+            <!-- Filtros de búsqueda avanzada (selects dinámicos y prepared statements) -->
+            <?php
+            // Obtener valores distintos para selects
+            $marcas_res = mysqli_query($conexion, "SELECT DISTINCT marca FROM motos WHERE marca IS NOT NULL AND marca <> '' ORDER BY marca");
+            $marcas = mysqli_fetch_all($marcas_res, MYSQLI_ASSOC);
+            $modelos_res = mysqli_query($conexion, "SELECT DISTINCT modelo FROM motos WHERE modelo IS NOT NULL AND modelo <> '' ORDER BY modelo");
+            $modelos = mysqli_fetch_all($modelos_res, MYSQLI_ASSOC);
+            $tipos_res = mysqli_query($conexion, "SELECT DISTINCT tipo FROM motos WHERE tipo IS NOT NULL AND tipo <> '' ORDER BY tipo");
+            $tipos = mysqli_fetch_all($tipos_res, MYSQLI_ASSOC);
+
+            // Mostrar formulario de filtros (selects dinámicos)
+            ?>
+            <form method="get" class="formulario-filtros espaciado-arriba-20" style="max-width:1100px;margin:0 auto 20px;">
+                <div class="form-grid-3-col">
+                    <div class="form-group">
+                        <label>Marca</label>
+                        <select name="marca">
+                            <option value="">-- Todas --</option>
+                            <?php foreach ($marcas as $m): ?>
+                                <option value="<?php echo htmlspecialchars($m['marca']); ?>" <?php if(isset($_GET['marca']) && $_GET['marca']==$m['marca']) echo 'selected'; ?>><?php echo htmlspecialchars($m['marca']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Modelo</label>
+                        <select name="modelo">
+                            <option value="">-- Todos --</option>
+                            <?php foreach ($modelos as $mo): ?>
+                                <option value="<?php echo htmlspecialchars($mo['modelo']); ?>" <?php if(isset($_GET['modelo']) && $_GET['modelo']==$mo['modelo']) echo 'selected'; ?>><?php echo htmlspecialchars($mo['modelo']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <select name="tipo">
+                            <option value="">-- Cualquiera --</option>
+                            <?php foreach ($tipos as $t): ?>
+                                <option value="<?php echo htmlspecialchars($t['tipo']); ?>" <?php if(isset($_GET['tipo']) && $_GET['tipo']==$t['tipo']) echo 'selected'; ?>><?php echo htmlspecialchars($t['tipo']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-grid-3-col espaciado-arriba-20">
+                    <div class="form-group">
+                        <label>Precio día (mín - máx)</label>
+                        <div style="display:flex;gap:8px;"><input type="number" name="precio_min" step="1" placeholder="0" value="<?php echo isset($_GET['precio_min'])?intval($_GET['precio_min']):''; ?>"><input type="number" name="precio_max" step="1" placeholder="999" value="<?php echo isset($_GET['precio_max'])?intval($_GET['precio_max']):''; ?>"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Cilindrada (mín - máx)</label>
+                        <div style="display:flex;gap:8px;"><input type="number" name="cil_min" step="1" placeholder="125" value="<?php echo isset($_GET['cil_min'])?intval($_GET['cil_min']):''; ?>"><input type="number" name="cil_max" step="1" placeholder="1000" value="<?php echo isset($_GET['cil_max'])?intval($_GET['cil_max']):''; ?>"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Año (mín - máx)</label>
+                        <div style="display:flex;gap:8px;"><input type="number" name="ano_min" step="1" placeholder="2000" value="<?php echo isset($_GET['ano_min'])?intval($_GET['ano_min']):''; ?>"><input type="number" name="ano_max" step="1" placeholder="2026" value="<?php echo isset($_GET['ano_max'])?intval($_GET['ano_max']):''; ?>"></div>
+                    </div>
+                </div>
+                <div class="form-submit-group">
+                    <button type="submit" class="btn">Aplicar filtros</button>
+                    <a href="catalogo.php" class="btn boton-secundario" style="margin-left:10px;">Limpiar</a>
+                </div>
+            </form>
+            <?php
+
+            // Parámetros de paginación
+            $per_page = 12;
+            $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+            $offset = ($page - 1) * $per_page;
+
+            // Construir WHERE y parámetros para prepared statements
+            $where_clauses = array("(disponible = 1 OR disponible = 'si')");
+            $params = array();
+            $types = '';
+
+            if (!empty($_GET['marca'])) { $where_clauses[] = "marca LIKE ?"; $types .= 's'; $params[] = '%' . trim($_GET['marca']) . '%'; }
+            if (!empty($_GET['modelo'])) { $where_clauses[] = "modelo LIKE ?"; $types .= 's'; $params[] = '%' . trim($_GET['modelo']) . '%'; }
+            if (!empty($_GET['tipo'])) { $where_clauses[] = "tipo = ?"; $types .= 's'; $params[] = trim($_GET['tipo']); }
+            if (isset($_GET['precio_min']) && $_GET['precio_min'] !== '') { $where_clauses[] = "precio_dia >= ?"; $types .= 'i'; $params[] = intval($_GET['precio_min']); }
+            if (isset($_GET['precio_max']) && $_GET['precio_max'] !== '') { $where_clauses[] = "precio_dia <= ?"; $types .= 'i'; $params[] = intval($_GET['precio_max']); }
+            if (isset($_GET['cil_min']) && $_GET['cil_min'] !== '') { $where_clauses[] = "cilindrada >= ?"; $types .= 'i'; $params[] = intval($_GET['cil_min']); }
+            if (isset($_GET['cil_max']) && $_GET['cil_max'] !== '') { $where_clauses[] = "cilindrada <= ?"; $types .= 'i'; $params[] = intval($_GET['cil_max']); }
+            if (isset($_GET['ano_min']) && $_GET['ano_min'] !== '') { $where_clauses[] = "ano >= ?"; $types .= 'i'; $params[] = intval($_GET['ano_min']); }
+            if (isset($_GET['ano_max']) && $_GET['ano_max'] !== '') { $where_clauses[] = "ano <= ?"; $types .= 'i'; $params[] = intval($_GET['ano_max']); }
+
+            $where_sql = '';
+            if (count($where_clauses) > 0) { $where_sql = ' WHERE ' . implode(' AND ', $where_clauses); }
+
+            // Contar resultados totales
+            $count_sql = "SELECT COUNT(*) as total FROM motos " . $where_sql;
+            $count_stmt = mysqli_prepare($conexion, $count_sql);
+            if ($types !== '') {
+                // bind params by reference
+                $bind_names = array();
+                $bind_names[] = $types;
+                for ($i=0; $i<count($params); $i++) { $bind_names[] = & $params[$i]; }
+                call_user_func_array(array($count_stmt, 'bind_param'), $bind_names);
+            }
+            mysqli_stmt_execute($count_stmt);
+            $count_res = mysqli_stmt_get_result($count_stmt);
+            $count_row = mysqli_fetch_assoc($count_res);
+            $total = intval($count_row['total']);
+            mysqli_stmt_close($count_stmt);
+
+            $total_pages = max(1, ceil($total / $per_page));
+
+            // Consulta principal con LIMIT
+            $sql = "SELECT * FROM motos " . $where_sql . " ORDER BY marca, modelo LIMIT ? OFFSET ?";
+            $stmt = mysqli_prepare($conexion, $sql);
+            // bind params including pagination integers
+            $params_with_limit = $params;
+            $types_with_limit = $types . 'ii';
+            $params_with_limit[] = $per_page;
+            $params_with_limit[] = $offset;
+            if ($types_with_limit !== '') {
+                $bind_names = array();
+                $bind_names[] = $types_with_limit;
+                for ($i=0; $i<count($params_with_limit); $i++) { $bind_names[] = & $params_with_limit[$i]; }
+                call_user_func_array(array($stmt, 'bind_param'), $bind_names);
+            }
+            mysqli_stmt_execute($stmt);
+            $resultado = mysqli_stmt_get_result($stmt);
+            
+            // Mostrar resultados
+            echo '<div class="grid">';
+            while ($fila = mysqli_fetch_assoc($resultado)) {
                     // Estructura de la tarjeta actualizada para coincidir con .card y .card-body
                     echo '<div class="card">';
                     if (!empty($fila['imagen'])) {
@@ -70,9 +197,28 @@ $is_mobile = isMobile();
                     echo '<a href="detalle_moto?id=' . $fila['id'] . '" class="btn">Reservar Ahora</a>';
                     echo '</div></div>';
                 }
-                mysqli_close($conexion);
-                ?>
+            echo '</div>';
+            mysqli_close($conexion);
+            ?>
+
+            <!-- Paginación -->
+            <?php if ($total > $per_page): ?>
+            <div class="container espaciado-arriba-20 text-center">
+                <nav class="paginacion" aria-label="Paginación">
+                    <?php if ($page > 1): ?>
+                        <a class="btn boton-pequeño" href="?<?php
+                            $qs = $_GET; $qs['page'] = $page-1; echo http_build_query($qs);
+                        ?>">&laquo; Anterior</a>
+                    <?php endif; ?>
+                    <span style="color:var(--texto-gris); margin:0 12px;">Página <?php echo $page; ?> / <?php echo $total_pages; ?></span>
+                    <?php if ($page < $total_pages): ?>
+                        <a class="btn boton-pequeño" href="?<?php
+                            $qs = $_GET; $qs['page'] = $page+1; echo http_build_query($qs);
+                        ?>">Siguiente &raquo;</a>
+                    <?php endif; ?>
+                </nav>
             </div>
+            <?php endif; ?>
         </div>
     </main>
     <footer>

@@ -1,4 +1,10 @@
 <?php
+/**
+ * cancelar_reserva.php
+ * Script para cancelar una reserva hecha por el usuario autenticado.
+ * - Verifica la sesión y el propietario del alquiler.
+ * - Cambia el estado de la reserva a 'cancelado' de forma segura.
+ */
 // Inicia la sesión para acceder a las variables de sesión, como el ID del usuario.
 session_start();
 // Incluye el archivo con las credenciales de la base de datos.

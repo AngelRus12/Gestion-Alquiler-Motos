@@ -1,4 +1,11 @@
 <?php
+/**
+ * admin_dashboard.php
+ * Panel administrativo para gestionar usuarios, motos, reservas y promociones.
+ * - Solo accesible por admin.
+ * - Actualiza estados de alquiler automáticamente y muestra estadísticas clave.
+ * - Permite publicar promociones con fechas y estado activo.
+ */
 // Establece la codificación de caracteres a UTF-8 para soportar caracteres especiales.
 header('Content-Type: text/html; charset=utf-8');
 // Inicia la sesión para poder acceder a las variables de sesión.

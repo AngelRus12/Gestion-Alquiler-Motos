@@ -1,4 +1,11 @@
 <?php
+/**
+ * procesar_registro.php
+ * Script que procesa el formulario de registro de usuario.
+ * - Valida contraseña, DNI, email y campos obligatorios.
+ * - Comprueba unicidad de email y DNI en la base de datos.
+ * - Hashea la contraseña antes de guardarla.
+ */
 session_start();
 require_once 'loginbd.php';
 

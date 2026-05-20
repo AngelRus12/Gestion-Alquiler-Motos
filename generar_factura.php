@@ -1,4 +1,10 @@
 <?php
+/**
+ * generar_factura.php
+ * Genera y muestra una factura PDF para un alquiler concreto.
+ * - Usa la librería FPDF para crear un PDF dinámico.
+ * - Verifica que el usuario sea el dueño del alquiler o administrador.
+ */
 session_start();
 require_once 'loginbd.php';
 require_once 'libs/fpdf/fpdf.php';

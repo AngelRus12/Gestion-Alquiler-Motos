@@ -1,4 +1,11 @@
 <?php
+/**
+ * procesar_login.php
+ * Script que procesa el formulario de inicio de sesión.
+ * - Usa consultas preparadas para autenticar al usuario.
+ * - Verifica la contraseña con password_verify().
+ * - Redirige según el rol de usuario (admin o cliente).
+ */
 session_start();
 require_once 'loginbd.php';
 

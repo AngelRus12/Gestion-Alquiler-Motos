@@ -1,4 +1,10 @@
 <?php
+/**
+ * registro.php
+ * Página de registro de nuevos usuarios.
+ * - Guarda temporalmente los datos inválidos en sesión para reinsertarlos en el formulario.
+ * - Utiliza validación HTML y mensajes de error claros para facilitar la experiencia.
+ */
 session_start();
 
 $old_data = $_SESSION['form_data'] ?? [];

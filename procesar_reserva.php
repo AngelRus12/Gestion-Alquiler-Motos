@@ -1,4 +1,11 @@
 <?php
+/**
+ * procesar_reserva.php
+ * Script que procesa una petición de reserva desde detalle_moto.php.
+ * - Verifica sesión, fechas válidas y disponibilidad.
+ * - Calcula el precio en el servidor para evitar manipulaciones.
+ * - Inserta la reserva con estado 'pendiente' y redirige según el método de pago.
+ */
 // --- CONFIGURACIÓN DE LA SESIÓN ---
 // Se establece un tiempo de vida de 30 minutos para la sesión.
 ini_set('session.gc_maxlifetime', 1800);

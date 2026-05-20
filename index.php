@@ -1,4 +1,10 @@
 <?php
+/**
+ * index.php
+ * Página de entrada del sitio.
+ * - Muestra navegación, promociones y enlaces a catálogo, login y registro.
+ * - Detecta si el usuario está autenticado para ajustar las opciones de menú.
+ */
 header('Content-Type: text/html; charset=utf-8');
 session_start();
 require_once 'loginbd.php';

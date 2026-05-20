@@ -1,4 +1,10 @@
 <?php
+/**
+ * detalle_moto.php
+ * Página que muestra la información completa de una moto y permite reservarla.
+ * - Usa consultas preparadas para obtener datos explorando el ID seguro.
+ * - Incluye validaciones de disponibilidad y mensajes de error para el usuario.
+ */
 header('Content-Type: text/html; charset=utf-8');
 session_start();
 require_once 'loginbd.php';
