@@ -2,17 +2,7 @@
 session_start();
 require_once 'loginbd.php';
 require_once 'libs/fpdf/fpdf.php';
-?>
-<!DOCTYPE html>
-<html lang="es">
-<HEAD>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="logo.png" type="image/png">
-    <link rel="apple-touch-icon" href="logo.png">
-<title>Factura - ARUSLAT</title>
-</HEAD>
-<?php
+
 // --- 1. CONTROL DE ACCESO Y VALIDACIÓN ---
 if (!isset($_SESSION['usuario_id'])) {
     die("Acceso denegado. Debes iniciar sesión.");
@@ -97,6 +87,7 @@ class PDF extends FPDF
 $pdf = new PDF();
 $pdf->AliasNbPages();
 $pdf->AddPage();
+$pdf->SetTitle('Factura Alquiler #' . $alquiler['id'] . ' - ARUSLAT');
 $pdf->SetMargins(10, 10, 10);
 $pdf->SetAutoPageBreak(true, 20);
 $pdf->SetFont('Arial', '', 11);
