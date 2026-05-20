@@ -103,6 +103,32 @@ function total_gastadoo($conn, $usuario_id) {
 }
 
 /**
+ * Comprueba si existe un solapamiento de fechas para una moto concreta.
+ * Devuelve true si ya hay una reserva o alquiler activo en ese rango.
+ * @param mysqli $conn La conexión a la base de datos.
+ * @param int $moto_id El ID de la moto.
+ * @param string $f_inicio Fecha de inicio solicitada.
+ * @param string $f_fin Fecha de fin solicitada.
+ * @return bool True si hay solapamiento, false en caso contrario.
+ */
+function existe_solapamiento_reserva($conn, $moto_id, $f_inicio, $f_fin) {
+    $query = "SELECT COUNT(*) AS total FROM alquileres
+              WHERE moto_id = ?
+                AND estado IN ('pendiente','confirmado','en_curso')
+                AND NOT (fecha_fin < ? OR fecha_inicio > ?)";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("iss", $moto_id, $f_inicio, $f_fin);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $solapamiento = false;
+    if ($row = $result->fetch_assoc()) {
+        $solapamiento = $row['total'] > 0;
+    }
+    $stmt->close();
+    return $solapamiento;
+}
+
+/**
  * Procedimiento principal que actualiza el estado de todo el sistema.
  * Se ejecuta al cargar páginas clave como el perfil o el panel de admin.
  * @param mysqli $conn La conexión a la base de datos.
@@ -166,5 +192,43 @@ function insertar_usuario($conn, $nombre, $apellidos, $email, $password, $telefo
  */
 function cancelar_reservas_antiguas($conn) {
     $conn->query("UPDATE alquileres SET estado = 'cancelado' WHERE estado = 'pendiente' AND fecha_reserva < (NOW() - INTERVAL 24 HOUR)");
+}
+
+/**
+ * Crea la tabla de promociones si no existe.
+ * @param mysqli $conn La conexión a la base de datos.
+ */
+function crear_tabla_promociones_si_no_existe($conn) {
+    $sql = "CREATE TABLE IF NOT EXISTS promociones (
+        id INT NOT NULL AUTO_INCREMENT,
+        titulo VARCHAR(100) NOT NULL,
+        mensaje TEXT NOT NULL,
+        enlace VARCHAR(255) DEFAULT NULL,
+        fecha_inicio DATE DEFAULT NULL,
+        fecha_fin DATE DEFAULT NULL,
+        activo TINYINT(1) DEFAULT 1,
+        fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+    $conn->query($sql);
+}
+
+/**
+ * Obtiene la promoción activa para mostrar en el inicio.
+ * @param mysqli $conn La conexión a la base de datos.
+ * @return array|null
+ */
+function obtener_promocion_activa($conn) {
+    $query = "SELECT * FROM promociones
+              WHERE activo = 1
+                AND (fecha_inicio IS NULL OR fecha_inicio <= CURDATE())
+                AND (fecha_fin IS NULL OR fecha_fin >= CURDATE())
+              ORDER BY fecha_inicio DESC, fecha_creacion DESC
+              LIMIT 1";
+    $result = $conn->query($query);
+    if ($result && $row = $result->fetch_assoc()) {
+        return $row;
+    }
+    return null;
 }
 ?>

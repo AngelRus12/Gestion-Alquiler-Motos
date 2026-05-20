@@ -272,6 +272,22 @@ end
 $$
 DELIMITER ;
 
+-- --------------------------------------------------------
+-- Estructura de tabla para la tabla `promociones`
+--
+DROP TABLE IF EXISTS `promociones`;
+CREATE TABLE IF NOT EXISTS `promociones` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `titulo` varchar(100) NOT NULL,
+  `mensaje` text NOT NULL,
+  `enlace` varchar(255) DEFAULT NULL,
+  `fecha_inicio` date DEFAULT NULL,
+  `fecha_fin` date DEFAULT NULL,
+  `activo` tinyint(1) DEFAULT '1',
+  `fecha_creacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 --
 -- Restricciones para tablas volcadas
 --

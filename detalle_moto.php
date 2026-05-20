@@ -96,6 +96,25 @@ $is_mobile = isMobile();
             <div class="detalle-reserva">
                 <div class="reserva-card">
                     <h3>Reserva tu Moto</h3>
+                    <?php
+                    if (isset($_GET['error'])) {
+                        $mensaje_error = '';
+                        switch ($_GET['error']) {
+                            case 'fecha_invalida':
+                                $mensaje_error = 'Las fechas seleccionadas no son válidas. Comprueba el intervalo y evita fechas pasadas.';
+                                break;
+                            case 'fechas_solapadas':
+                                $mensaje_error = 'Las fechas elegidas ya están ocupadas para esta moto. Selecciona otro rango o comprueba disponibilidad.';
+                                break;
+                            case 'reserva':
+                                $mensaje_error = 'No se pudo completar la reserva. Intenta nuevamente más tarde.';
+                                break;
+                        }
+                        if ($mensaje_error) {
+                            echo '<div class="alerta alerta-error" style="margin-bottom: 15px;">' . htmlspecialchars($mensaje_error) . '</div>';
+                        }
+                    }
+                    ?>
                     <?php if ($esta_disponible): ?>
                         <form action="procesar_reserva.php" method="POST">
                             <input type="hidden" name="id_moto" value="<?php echo $moto['id']; ?>">

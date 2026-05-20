@@ -62,6 +62,58 @@ $total_users = mysqli_fetch_assoc($total_users_res)['total'];
 $total_motos = mysqli_fetch_assoc($total_motos_res)['total'];
 $total_pendientes = mysqli_fetch_assoc($res_pendientes_res)['total'];
 
+// Asegura que la tabla de promociones exista.
+crear_tabla_promociones_si_no_existe($conexion);
+
+$mensaje_promocion_html = "";
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['guardar_promocion'])) {
+    $titulo = trim($_POST['titulo']);
+    $mensaje = trim($_POST['mensaje']);
+    $enlace = trim($_POST['enlace']);
+    $fecha_inicio = trim($_POST['fecha_inicio']);
+    $fecha_fin = trim($_POST['fecha_fin']);
+    $activo = isset($_POST['activo']) ? 1 : 0;
+
+    if (empty($titulo) || empty($mensaje)) {
+        $mensaje_promocion_html = "<div class='alerta alerta-error'>El título y el mensaje son obligatorios para publicar una promoción.</div>";
+    } else {
+        if ($activo) {
+            mysqli_query($conexion, "UPDATE promociones SET activo = 0");
+        }
+        $sql_promocion = "INSERT INTO promociones (titulo, mensaje, enlace, fecha_inicio, fecha_fin, activo)
+                          VALUES (?, ?, ?, NULLIF(?,''), NULLIF(?,''), ?)";
+        $stmt_promocion = mysqli_prepare($conexion, $sql_promocion);
+        mysqli_stmt_bind_param($stmt_promocion, "sssssi", $titulo, $mensaje, $enlace, $fecha_inicio, $fecha_fin, $activo);
+        if (mysqli_stmt_execute($stmt_promocion)) {
+            $mensaje_promocion_html = "<div class='alerta alerta-exito'>Promoción guardada correctamente y publicada en la página de inicio.</div>";
+        } else {
+            $mensaje_promocion_html = "<div class='alerta alerta-error'>No se pudo guardar la promoción. Intenta de nuevo.</div>";
+        }
+        mysqli_stmt_close($stmt_promocion);
+    }
+}
+
+$res_promociones = mysqli_query($conexion, "SELECT * FROM promociones ORDER BY activo DESC, fecha_inicio DESC, fecha_creacion DESC");
+
+// --- 6. DATOS PARA EL CALENDARIO DE RESERVAS ---
+$consulta_eventos = "SELECT a.id, a.fecha_inicio, a.fecha_fin, a.estado, u.nombre, u.apellidos, m.marca, m.modelo
+                     FROM alquileres a
+                     LEFT JOIN usuarios u ON a.usuario_id = u.id
+                     LEFT JOIN motos m ON a.moto_id = m.id
+                     ORDER BY a.fecha_inicio ASC";
+$resultado_eventos = mysqli_query($conexion, $consulta_eventos);
+$eventos_calendario = [];
+while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
+    $eventos_calendario[] = [
+        'id' => $evento['id'],
+        'fecha_inicio' => $evento['fecha_inicio'],
+        'fecha_fin' => $evento['fecha_fin'],
+        'estado' => $evento['estado'],
+        'cliente' => trim($evento['nombre'] . ' ' . $evento['apellidos']),
+        'moto' => trim($evento['marca'] . ' ' . $evento['modelo']),
+    ];
+}
+
 ?>
 <!-- El resto del archivo es la estructura HTML que muestra los datos obtenidos. -->
 
@@ -74,6 +126,29 @@ $total_pendientes = mysqli_fetch_assoc($res_pendientes_res)['total'];
     <link rel="apple-touch-icon" href="logo.png">
     <title>Panel Administrativo - ARUSLAT</title>
     <link rel="stylesheet" href="estilos.css">
+    <style>
+        .calendar-panel {margin: 30px 0; padding: 20px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;}
+        .calendar-header {display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;}
+        .calendar-header h2 {margin: 0;}
+        .calendar-nav {display: flex; gap: 10px;}
+        .calendar-nav button {padding: 10px 14px; background: #2d1f1b; color: #fff; border: none; border-radius: 8px; cursor: pointer;}
+        .calendar-grid {display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;}
+        .calendar-day {padding: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; min-height: 120px; display: flex; flex-direction: column;}
+        .calendar-day.disabled {opacity: 0.35;}
+        .calendar-day strong {display: block; margin-bottom: 8px;}
+        .calendar-event {margin-bottom: 6px; padding: 5px 8px; border-radius: 8px; color: #fff; font-size: 0.82rem; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+        .event-pendiente {background: #f1c40f;}
+        .event-confirmado {background: #27ae60;}
+        .event-en_curso {background: #3498db;}
+        .event-finalizado {background: #7f8c8d;}
+        .event-cancelado {background: #e74c3c;}
+        .calendar-legends {display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px;}
+        .legend-item {display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem;}
+        .legend-badge {width: 14px; height: 14px; border-radius: 4px; display: inline-block;}
+        .calendar-event-list {margin-top: 18px;}
+        .calendar-event-list li {margin-bottom: 10px;}
+        .calendar-event-list small {color: #ccc;}
+    </style>
 </head>
 <body>
     
@@ -120,6 +195,90 @@ $total_pendientes = mysqli_fetch_assoc($res_pendientes_res)['total'];
                     <div class="stat-icon">💰</div>
                 </div>
             </div>
+
+            <?php echo $mensaje_promocion_html; ?>
+            <section>
+                <div class="seccion-titulo-admin">
+                    <h2>Ofertas y Promociones</h2>
+                </div>
+                <div class="contenedor-tabla">
+                    <form method="POST" style="display:grid; gap:12px; margin-bottom:24px;">
+                        <div>
+                            <label>Título de la promoción</label>
+                            <input type="text" name="titulo" required placeholder="Ej. 20% de descuento este fin de semana" />
+                        </div>
+                        <div>
+                            <label>Mensaje</label>
+                            <textarea name="mensaje" required rows="3" placeholder="Texto que se mostrará en la página de inicio"></textarea>
+                        </div>
+                        <div>
+                            <label>Enlace (opcional)</label>
+                            <input type="url" name="enlace" placeholder="https://tusitio.com/oferta" />
+                        </div>
+                        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                            <div style="flex:1; min-width:160px;">
+                                <label>Fecha inicio (opcional)</label>
+                                <input type="date" name="fecha_inicio" />
+                            </div>
+                            <div style="flex:1; min-width:160px;">
+                                <label>Fecha fin (opcional)</label>
+                                <input type="date" name="fecha_fin" />
+                            </div>
+                            <div style="flex:1; min-width:160px; display:flex; align-items:flex-end;">
+                                <label style="display:block;"><input type="checkbox" name="activo" checked /> Publicar ahora</label>
+                            </div>
+                        </div>
+                        <button type="submit" name="guardar_promocion" class="boton">Publicar promoción</button>
+                    </form>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Título</th>
+                                <th>Mensaje</th>
+                                <th>Fechas</th>
+                                <th>Activo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while ($promo = mysqli_fetch_assoc($res_promociones)) { ?>
+                                <tr>
+                                    <td><?php echo $promo['id']; ?></td>
+                                    <td><?php echo htmlspecialchars($promo['titulo']); ?></td>
+                                    <td><?php echo htmlspecialchars($promo['mensaje']); ?></td>
+                                    <td><?php echo $promo['fecha_inicio'] ?: '-'; ?> - <?php echo $promo['fecha_fin'] ?: '-'; ?></td>
+                                    <td><?php echo $promo['activo'] ? '<span class="etiqueta etiqueta-exito">Sí</span>' : '<span class="etiqueta etiqueta-aviso">No</span>'; ?></td>
+                                </tr>
+                            <?php } ?>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="calendar-panel">
+                <div class="calendar-header">
+                    <div>
+                        <h2>Calendario de Reservas</h2>
+                        <p>Visualiza todas las reservas y eventos de entrega/recogida por mes.</p>
+                    </div>
+                    <div class="calendar-nav">
+                        <button id="prevMonth">‹ Mes anterior</button>
+                        <button id="nextMonth">Mes siguiente ›</button>
+                    </div>
+                </div>
+                <div id="calendarGrid" class="calendar-grid"></div>
+                <div class="calendar-legends">
+                    <span class="legend-item"><span class="legend-badge" style="background:#f1c40f"></span>Pendiente</span>
+                    <span class="legend-item"><span class="legend-badge" style="background:#27ae60"></span>Confirmado</span>
+                    <span class="legend-item"><span class="legend-badge" style="background:#3498db"></span>En curso</span>
+                    <span class="legend-item"><span class="legend-badge" style="background:#7f8c8d"></span>Finalizado</span>
+                    <span class="legend-item"><span class="legend-badge" style="background:#e74c3c"></span>Cancelado</span>
+                </div>
+                <div class="calendar-event-list">
+                    <h3>Próximos eventos</h3>
+                    <ul id="calendarEventList"></ul>
+                </div>
+            </section>
 
             <section>
                 <div class="seccion-titulo-admin">
@@ -441,6 +600,122 @@ $total_pendientes = mysqli_fetch_assoc($res_pendientes_res)['total'];
 
         </div>
     </main>
+
+    <script>
+        const calendarEvents = <?php echo json_encode($eventos_calendario, JSON_HEX_TAG); ?>;
+        const calendarGrid = document.getElementById('calendarGrid');
+        const eventList = document.getElementById('calendarEventList');
+        const prevMonthBtn = document.getElementById('prevMonth');
+        const nextMonthBtn = document.getElementById('nextMonth');
+
+        let activeDate = new Date();
+
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        function getDaysInMonth(year, month) {
+            return new Date(year, month + 1, 0).getDate();
+        }
+
+        function renderCalendar() {
+            const year = activeDate.getFullYear();
+            const month = activeDate.getMonth();
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = getDaysInMonth(year, month);
+            const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+            document.querySelector('.calendar-header h2').textContent = `Calendario de Reservas — ${monthNames[month]} ${year}`;
+
+            calendarGrid.innerHTML = '';
+
+            const dayLabels = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+            dayLabels.forEach(label => {
+                const cell = document.createElement('div');
+                cell.className = 'calendar-day disabled';
+                cell.innerHTML = `<strong>${label}</strong>`;
+                calendarGrid.appendChild(cell);
+            });
+
+            let startOffset = firstDay === 0 ? 6 : firstDay - 1;
+            for (let i = 0; i < startOffset; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'calendar-day disabled';
+                calendarGrid.appendChild(emptyCell);
+            }
+
+            const eventMap = {};
+            calendarEvents.forEach(event => {
+                const start = new Date(event.fecha_inicio);
+                const end = new Date(event.fecha_fin);
+                for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                    const key = formatDate(d);
+                    if (!eventMap[key]) eventMap[key] = [];
+                    eventMap[key].push(event);
+                }
+            });
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const formatted = formatDate(date);
+                const cell = document.createElement('div');
+                cell.className = 'calendar-day';
+                cell.innerHTML = `<strong>${day}</strong>`;
+
+                const events = eventMap[formatted] || [];
+                events.slice(0, 3).forEach(event => {
+                    const eventEl = document.createElement('div');
+                    eventEl.className = `calendar-event event-${event.estado}`;
+                    eventEl.title = `${event.estado.toUpperCase()}: ${event.moto} (${event.cliente})`;
+                    eventEl.textContent = `${event.moto}`;
+                    cell.appendChild(eventEl);
+                });
+                if (events.length > 3) {
+                    const moreEl = document.createElement('div');
+                    moreEl.className = 'calendar-event';
+                    moreEl.style.background = 'rgba(255,255,255,0.12)';
+                    moreEl.textContent = `+${events.length - 3} más`;
+                    cell.appendChild(moreEl);
+                }
+                calendarGrid.appendChild(cell);
+            }
+
+            renderEventList();
+        }
+
+        function renderEventList() {
+            const today = new Date();
+            const nextEvents = calendarEvents
+                .filter(event => new Date(event.fecha_fin) >= today)
+                .sort((a, b) => new Date(a.fecha_inicio) - new Date(b.fecha_inicio))
+                .slice(0, 8);
+
+            eventList.innerHTML = '';
+            if (nextEvents.length === 0) {
+                const noEvents = document.createElement('li');
+                noEvents.textContent = 'No hay eventos próximos.';
+                eventList.appendChild(noEvents);
+                return;
+            }
+
+            nextEvents.forEach(event => {
+                const item = document.createElement('li');
+                item.innerHTML = `<strong>${event.moto}</strong> (<em>${event.cliente}</em>)<br><small>${event.fecha_inicio} → ${event.fecha_fin} • ${event.estado.replace('_', ' ')}</small>`;
+                eventList.appendChild(item);
+            });
+        }
+
+        prevMonthBtn.addEventListener('click', () => {
+            activeDate.setMonth(activeDate.getMonth() - 1);
+            renderCalendar();
+        });
+        nextMonthBtn.addEventListener('click', () => {
+            activeDate.setMonth(activeDate.getMonth() + 1);
+            renderCalendar();
+        });
+
+        document.addEventListener('DOMContentLoaded', renderCalendar);
+    </script>
 
     <footer class="pie-pagina">
         <p>&copy; 2026 ARUSLAT - Alquiler de Motos</p>

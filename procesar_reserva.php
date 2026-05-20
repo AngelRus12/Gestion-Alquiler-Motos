@@ -33,7 +33,22 @@ $f_inicio = trim($_POST['f_inicio']);
 $f_fin    = trim($_POST['f_fin']);
 $metodo   = trim($_POST['metodo_pago']);
 
-// --- 4. CÁLCULO SEGURO DEL PRECIO EN EL SERVIDOR ---
+// --- 4. VALIDACIÓN DE FECHAS Y DISPONIBILIDAD ---
+$fecha_inicio_ts = strtotime($f_inicio);
+$fecha_fin_ts = strtotime($f_fin);
+$hoy_ts = strtotime(date('Y-m-d'));
+
+if ($fecha_inicio_ts === false || $fecha_fin_ts === false || $fecha_inicio_ts > $fecha_fin_ts || $fecha_inicio_ts < $hoy_ts) {
+    header('Location: detalle_moto.php?id=' . $moto_id . '&error=fecha_invalida');
+    exit();
+}
+
+if (existe_solapamiento_reserva($conexion, $moto_id, $f_inicio, $f_fin)) {
+    header('Location: detalle_moto.php?id=' . $moto_id . '&error=fechas_solapadas');
+    exit();
+}
+
+// --- 5. CÁLCULO SEGURO DEL PRECIO EN EL SERVIDOR ---
 // CRÍTICO: Es fundamental que los cálculos de días y, sobre todo, el precio total, se hagan aquí, en el backend.
 // Si se confiara en un precio enviado desde el formulario del cliente (frontend), un usuario malintencionado
 // podría manipularlo fácilmente para pagar menos. Aquí, se recalcula todo de forma segura.

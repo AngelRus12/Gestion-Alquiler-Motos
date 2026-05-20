@@ -2,6 +2,7 @@
 header('Content-Type: text/html; charset=utf-8');
 session_start();
 require_once 'loginbd.php';
+require_once 'funciones.php';
 $conexion = mysqli_connect($db_hostname, $db_username, $db_password, $db_database);
 
 if (!$conexion) { 
@@ -9,6 +10,10 @@ if (!$conexion) {
 }
 
 mysqli_set_charset($conexion, "utf8");
+
+// Asegura que la tabla de promociones exista antes de intentar leerla.
+crear_tabla_promociones_si_no_existe($conexion);
+$promocion_activa = obtener_promocion_activa($conexion);
 
 // Función para detectar dispositivos móviles
 function isMobile() {
@@ -30,8 +35,28 @@ $is_mobile = isMobile();
     <?php else: ?>
         <link rel="stylesheet" href="estilos.css">
     <?php endif; ?>
+    <style>
+        .promo-banner {background: #2d1f1b; color: #fff; padding: 18px 0;}
+        .promo-banner .promo-content {display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: center;}
+        .promo-banner h2 {margin: 0; font-size: 1.3rem;}
+        .promo-banner p {margin: 0; max-width: 720px;}
+        .promo-banner .btn {background: #fff; color: #2d1f1b; border: none; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 700;}
+    </style>
 </head>
 <body>
+    <?php if (!empty($promocion_activa)): ?>
+    <section class="promo-banner">
+        <div class="container">
+            <div class="promo-content">
+                <h2><?php echo htmlspecialchars($promocion_activa['titulo']); ?></h2>
+                <p><?php echo htmlspecialchars($promocion_activa['mensaje']); ?></p>
+                <?php if (!empty($promocion_activa['enlace'])): ?>
+                    <a href="<?php echo htmlspecialchars($promocion_activa['enlace']); ?>" class="btn">Ver oferta</a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </section>
+    <?php endif; ?>
     <header class="navbar">
         <div class="container">
             <h1>ARUSLAT</h1>
