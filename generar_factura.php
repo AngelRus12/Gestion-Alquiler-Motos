@@ -100,9 +100,9 @@ $pdf->Cell(95, 6, 'ARUSLAT Motos S.L.', 0, 1);
 $pdf->Cell(95, 6, 'DNI: ' . $alquiler['dni'], 0, 0);
 $pdf->Cell(95, 6, 'CIF: B-12345678', 0, 1);
 $pdf->Cell(95, 6, utf8_decode($alquiler['direccion']), 0, 0);
-$pdf->Cell(95, 6, 'Calle Ficticia 123, Valencia', 0, 1);
+$pdf->Cell(95, 6, 'Calle Maria Lejarrega 3', 0, 1);
 $pdf->Cell(95, 6, $alquiler['email'], 0, 0);
-$pdf->Cell(95, 6, 'contacto@aruslat.com', 0, 1);
+$pdf->Cell(95, 6, 'info@alquilermotos.com', 0, 1);
 $pdf->Ln(15);
 
 // --- Tabla de Detalles del Alquiler ---
