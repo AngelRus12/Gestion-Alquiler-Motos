@@ -123,11 +123,12 @@ $config = $paymentConfig[$paymentMethod] ?? $paymentConfig['webpay'];
                             <div class="col-md-8">
                                 <h6 class="mb-2">Alquiler de Motos ARUSLAT</h6>
                                 <p class="mb-1">
-                                    <strong>Comercio:</strong> Mi Tienda Demo<br>
+                                    <strong>Comercio:</strong>TFG Ángel Rus Latorre<br>
                                     <strong>Orden:</strong> <code><?php echo htmlspecialchars($orderId); ?></code><br>
                                     <strong>Token:</strong> <code class="small"><?php echo substr($token, 0, 20); ?>...</code>
                                 </p>
                             </div>
+
                         </div>
                     </div>
                 </div>

@@ -173,7 +173,7 @@ switch ($paymentMethod) {
 }
 
 // Se añade la URL de retorno a los parámetros que se enviarán.
-$params['return_url'] = $_SESSION['pending_transaction']['return_url'];
+$params['return_url'] = $_SESSION['last_transaction']['return_url'];
 ?>
 <!-- Esta página muestra un mensaje de "Redirigiendo..." y envía automáticamente
      un formulario oculto a `simulator.php` con todos los parámetros de la transacción. -->
