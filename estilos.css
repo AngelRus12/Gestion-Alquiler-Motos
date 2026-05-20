@@ -835,7 +835,7 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
 }
 .promo-form input:focus,
 .promo-form textarea:focus {
-    border-color: #f8b94c;
+    border-color: #e03e00;
     outline: none;
     background: rgba(255, 255, 255, 0.12);
 }
