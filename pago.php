@@ -1,28 +1,31 @@
 <?php
+// Inicia la sesión para acceder a las variables de sesión.
 session_start();
 
-// Seguridad: Si no hay un pago pendiente, redirigir al catálogo
+// --- 1. CONTROL DE ACCESO ---
+// Si un usuario llega a esta página sin haber iniciado un proceso de reserva
+// (es decir, sin que exista `id_pago_pendiente` en su sesión), se le redirige al catálogo.
 if (!isset($_SESSION['id_pago_pendiente'])) {
     header('Location: catalogo.php');
     exit();
 }
 
+// --- 2. RECOLECCIÓN DE DATOS DE LA SESIÓN ---
+// Se recupera el monto a pagar y el ID del alquiler desde las variables de sesión.
 $monto = $_SESSION['monto_pago'];
-
-// Función para detectar dispositivos móviles
-function isMobile() {
-    return preg_match("/(android|avantgo|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino)/i", $_SERVER["HTTP_USER_AGENT"]);
-}
-
-$is_mobile = isMobile();
 $id_alquiler = $_SESSION['id_pago_pendiente'];
 
-// Preparar datos para el simulador de pago
+// --- 3. PREPARACIÓN DE DATOS PARA LA PASARELA DE PAGO ---
+// Se preparan los datos que se enviarán al simulador de la pasarela de pago.
 $amount = $monto; // Monto en euros
+
+// Se crea un ID de orden único para esta transacción, combinando el ID del alquiler y una marca de tiempo.
+// Esto es útil para el seguimiento y para evitar procesar la misma orden dos veces.
 $order_id = 'ALQ-' . $id_alquiler . '-' . time();
 $description = 'Alquiler de motocicleta - ID: ' . $id_alquiler;
 
-// URL de retorno después del pago
+// Se construye la URL a la que la pasarela de pago debe redirigir al usuario después de completar el pago.
+// En este caso, es el script `callback_pago.php` que procesará el resultado.
 $return_url = 'http://' . $_SERVER['HTTP_HOST'] . '/perfil_usuario.php';
 ?>
 <!DOCTYPE html>
@@ -37,6 +40,8 @@ $return_url = 'http://' . $_SERVER['HTTP_HOST'] . '/perfil_usuario.php';
     <link rel="stylesheet" href="payment/css/bank-style.css">
 
     <!-- INICIO: Bloque de estilos para adaptar los colores al tema de la aplicación -->
+    <!-- Estos estilos "sobrescriben" los estilos por defecto del simulador de pago
+         para que la interfaz de la pasarela coincida con el tema oscuro de la aplicación. -->
     <style>
         :root {
             --bg-oscuro: #120907;
@@ -103,13 +108,13 @@ $return_url = 'http://' . $_SERVER['HTTP_HOST'] . '/perfil_usuario.php';
                         <h2 class="mb-0">Pasarela de Pago</h2>
                         <p class="mb-0">Estás a punto de pagar</p>
                         <h1 class="display-4 fw-bold my-2"><?php echo number_format($monto, 2); ?>€</h1>
-                        <p class="mb-0 opacity-75">Alquiler #<?php echo $id_alquiler; ?></p>
                     </div>
                     <div class="card-body p-4 p-md-5">
                         <h4 class="mb-4 text-center">Selecciona tu método de pago</h4>
 
+                        <!-- El formulario envía los datos al script `checkout.php` del simulador de pago. -->
                         <form action="payment/checkout.php" method="POST" id="paymentForm">
-                            <input type="hidden" name="amount" value="<?php echo htmlspecialchars($amount); ?>">
+                            <input type="hidden" name="amount" value="<?php echo htmlspecialchars(number_format($amount, 2, '.', '')); ?>">
                             <input type="hidden" name="order_id" value="<?php echo $order_id; ?>">
                             <input type="hidden" name="description" value="<?php echo $description; ?>">
                             <input type="hidden" name="return_url" value="<?php echo $return_url; ?>">
@@ -117,13 +122,24 @@ $return_url = 'http://' . $_SERVER['HTTP_HOST'] . '/perfil_usuario.php';
                             <input type="hidden" name="redirect_delay_ms" value="3000">
 
                             <div class="row g-3 mb-4">
+                                <!-- Opciones de métodos de pago simulados. Se usan radio buttons. -->
+                                
                                 <div class="col-6 payment-option">
                                     <input type="radio" class="btn-check" name="payment_method" id="webpay" value="webpay" checked>
                                     <label class="btn btn-outline-secondary w-100 payment-label" for="webpay">
                                         <h5 class="mb-1">Webpay Plus</h5>
-                                        <small class="text-muted">Tarjetas de crédito y débito</small>
+                                        <small class="text-muted">Paga con tu tarjeta de crédito</small>
                                     </label>
                                 </div>
+
+                                <div class="col-6 payment-option">
+                                    <input type="radio" class="btn-check" name="payment_method" id="paypal" value="paypal">
+                                    <label class="btn btn-outline-secondary w-100 payment-label" for="paypal">
+                                        <h5 class="mb-1">Paypal</h5>
+                                        <small class="text-muted">Paga con tu cuenta PayPal</small>
+                                    </label>
+                                </div>
+
                                 <div class="col-6 payment-option">
                                     <input type="radio" class="btn-check" name="payment_method" id="mercadopago" value="mercadopago">
                                     <label class="btn btn-outline-secondary w-100 payment-label" for="mercadopago">
@@ -131,13 +147,7 @@ $return_url = 'http://' . $_SERVER['HTTP_HOST'] . '/perfil_usuario.php';
                                         <small class="text-muted">Varias opciones de pago</small>
                                     </label>
                                 </div>
-                                <div class="col-6 payment-option">
-                                    <input type="radio" class="btn-check" name="payment_method" id="paypal" value="paypal">
-                                    <label class="btn btn-outline-secondary w-100 payment-label" for="paypal">
-                                        <h5 class="mb-1">PayPal</h5>
-                                        <small class="text-muted">Paga con tu cuenta PayPal</small>
-                                    </label>
-                                </div>
+                                
                                 <div class="col-6 payment-option">
                                     <input type="radio" class="btn-check" name="payment_method" id="bank_transfer" value="bank_transfer">
                                     <label class="btn btn-outline-secondary w-100 payment-label" for="bank_transfer">
@@ -157,17 +167,6 @@ $return_url = 'http://' . $_SERVER['HTTP_HOST'] . '/perfil_usuario.php';
             </div>
         </div>
     </main>
-
-    <script>
-        function selectPayment(method) {
-            // La selección ahora es manejada por CSS con :checked
-            // No se necesita JavaScript para el efecto visual
-        }
-    </script>
-
-    <?php if (isset($_SESSION['usuario_id'])): ?>
-    <script src="logout_session.js"></script>
-    <?php endif; ?>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

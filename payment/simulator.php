@@ -123,7 +123,7 @@ $config = $paymentConfig[$paymentMethod] ?? $paymentConfig['webpay'];
                             <div class="col-md-8">
                                 <h6 class="mb-2">Alquiler de Motos ARUSLAT</h6>
                                 <p class="mb-1">
-                                    <strong>Comercio:</strong> Mi Tienda Demo<br>
+                                    <strong>Comercio:</strong>TFG Ángel Rus<br>
                                     <strong>Orden:</strong> <code><?php echo htmlspecialchars($orderId); ?></code><br>
                                     <strong>Token:</strong> <code class="small"><?php echo substr($token, 0, 20); ?>...</code>
                                 </p>
@@ -237,45 +237,7 @@ $config = $paymentConfig[$paymentMethod] ?? $paymentConfig['webpay'];
                                 </form>
                             </div>
 
-                            <!-- ERROR DE RED -->
-                            <div class="col-md-6">
-                                <form action="callback.php" method="POST">
-                                    <input type="hidden" name="response_type" value="error">
-                                    <div class="card response-option border-dark h-100">
-                                        <div class="card-body text-center">
-                                            <i class="bi bi-exclamation-triangle-fill text-dark" style="font-size: 3rem;"></i>
-                                            <h5 class="mt-3">Error del Sistema</h5>
-                                            <p class="text-muted small">
-                                                Simula error técnico o de conexión.<br>
-                                                Estado: <strong>ERROR</strong>
-                                            </p>
-                                            <button type="submit" class="btn btn-dark w-100">
-                                                <i class="bi bi-exclamation-triangle"></i> Error
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-
-                            <!-- TIMEOUT -->
-                            <div class="col-md-6">
-                                <form action="callback.php" method="POST">
-                                    <input type="hidden" name="response_type" value="timeout">
-                                    <div class="card response-option border-info h-100">
-                                        <div class="card-body text-center">
-                                            <i class="bi bi-alarm-fill text-info" style="font-size: 3rem;"></i>
-                                            <h5 class="mt-3">Timeout</h5>
-                                            <p class="text-muted small">
-                                                Simula tiempo de espera agotado.<br>
-                                                Estado: <strong class="text-info">TIMEOUT</strong>
-                                            </p>
-                                            <button type="submit" class="btn btn-info w-100">
-                                                <i class="bi bi-alarm"></i> Timeout
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
+                            
                         </div>
                     </div>
                 </div>

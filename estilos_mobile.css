@@ -1,12 +1,14 @@
 /* ==========================================================
    ESTILOS GENERALES Y RESETS - MÓVIL
    ========================================================== */
+/* Reseteo universal para eliminar márgenes y paddings por defecto del navegador. */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+/* Definición de variables de color y estilo para reutilizar en todo el CSS. */
 :root {
     --bg-oscuro: #120907; /* Fondo marrón muy oscuro */
     --bg-tarjeta: #1c110e; /* Fondo de tarjetas y contenedores */
@@ -18,10 +20,12 @@
     --borde-redondeado: 12px;
 }
 
+/* Asegura que el html y el body ocupen toda la altura de la ventana. */
 html, body {
     height: 100%;
 }
 
+/* Estilos base para el cuerpo de la página en dispositivos móviles. */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--bg-oscuro);
@@ -32,6 +36,7 @@ body {
     min-height: 100vh;
 }
 
+/* El contenedor ocupa el 100% del ancho con un pequeño padding a los lados. */
 .contenedor, .container {
     max-width: 100% !important;
     margin: 0 auto;
@@ -48,11 +53,13 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }}
 /* ==========================================================
    BARRA DE NAVEGACIÓN (Móvil)
    ========================================================== */
+/* Se reduce el padding para que la barra de navegación sea más compacta en móviles. */
 .barra-navegacion, .navbar {
     padding: 8px 0; /* Reducido aún más el padding para hacerla más delgada */
 }
 
 .barra-navegacion .contenedor, .navbar .container {
+    /* Se mantiene en fila para que el logo y los enlaces estén en la misma línea. */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -60,6 +67,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }}
     gap: 10px; /* Reducido el espacio entre elementos */
 }
 
+/* Se reduce el tamaño de la fuente del título. */
 .navbar h1, .barra-navegacion h1 {
     font-size: 15px; /* Reducido ligeramente el tamaño de la fuente del título */
     font-weight: 800;
@@ -70,6 +78,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }}
     flex-shrink: 0; /* Evita que el título se encoja demasiado */
 }
 
+/* Los enlaces de navegación se ajustan para ocupar menos espacio. */
 .navbar nav, .barra-navegacion nav {
     display: flex;
     gap: 5px; /* Reducido aún más el espacio entre enlaces */
@@ -79,6 +88,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }}
     justify-content: flex-end; /* Alinea los enlaces a la derecha */
 }
 
+/* Se reduce el tamaño de la fuente y el padding de los enlaces. */
 .barra-navegacion nav a, .navbar nav a {
     color: var(--texto-gris);
     font-size: 12px; /* Reducido el tamaño de la fuente de los enlaces */
@@ -98,6 +108,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }}
 /* ==========================================================
    BOTONES (Móvil)
    ========================================================== */
+/* Estilos de los botones, optimizados para ser fáciles de tocar en pantallas táctiles. */
 .boton, .btn {
     display: inline-block;
     padding: 15px 30px;
@@ -140,6 +151,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }}
 /* ==========================================================
    ETIQUETAS Y AVISOS (Móvil)
    ========================================================== */
+/* Estilos para las etiquetas de estado, sin cambios significativos respecto a la versión de escritorio. */
 .etiqueta, .badge {
     padding: 5px 10px;
     border-radius: 6px;
@@ -184,6 +196,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }}
 /* ==========================================================
    SECCIONES PRINCIPALES Y CABECERAS (Móvil)
    ========================================================== */
+/* La sección "héroe" tiene un padding reducido en móviles. */
 .hero {
     background: linear-gradient(rgba(18, 9, 7, 0.7), rgba(18, 9, 7, 0.9)),
                 url('https://www.moto1pro.com/sites/default/files/apertura_3.jpeg') no-repeat center;
@@ -197,6 +210,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }}
 .hero h1 { font-size: 32px; font-weight: 800; margin-bottom: 20px; line-height: 1.2; }
 .hero p { font-size: 16px; color: var(--texto-gris); max-width: 700px; margin: 0 auto 30px; }
 
+/* Títulos de sección con tamaño de fuente ajustado para móviles. */
 .titulo-seccion {
     text-align: center;
     color: var(--texto-blanco);
@@ -209,6 +223,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }}
 /* ==========================================================
    CATÁLOGO - GRID Y TARJETAS (Móvil)
    ========================================================== */
+/* En móviles, la cuadrícula muestra una sola columna, apilando las tarjetas verticalmente. */
 .grid {
     display: grid !important;
     grid-template-columns: 1fr !important;
@@ -218,6 +233,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }}
     max-width: 100% !important;
 }
 
+/* Estilos de las tarjetas, que ahora ocupan todo el ancho. */
 .card {
     background-color: var(--bg-tarjeta);
     border: 1px solid var(--borde-tarjeta);
@@ -235,6 +251,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }}
     box-shadow: 0 10px 20px rgba(0,0,0,0.5);
 }
 
+/* La altura de la imagen se ajusta para móviles. */
 .card img {
     width: 100%;
     height: 200px;
@@ -280,6 +297,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }}
 /* ==========================================================
    TABLAS DE DATOS (Móvil)
    ========================================================== */
+/* El contenedor de la tabla permite el desplazamiento horizontal si el contenido es demasiado ancho. */
 .contenedor-tabla {
     background-color: var(--bg-tarjeta);
     padding: 5px;
@@ -295,6 +313,7 @@ table {
     border-spacing: 0;
 }
 
+/* Se reduce el padding y el tamaño de fuente en las celdas para ahorrar espacio. */
 th, td {
     padding: 12px 8px;
     text-align: left;
@@ -332,6 +351,7 @@ tr:hover td {
 /* ==========================================================
    FORMULARIOS (Móvil)
    ========================================================== */
+/* Los contenedores de formularios ocupan el ancho completo en móviles. */
 .formulario-admin, .login-container, .registro, .container-formulario, .perfil-container {
     background-color: var(--bg-tarjeta);
     padding: 20px;
@@ -347,6 +367,7 @@ tr:hover td {
     max-width: 100%;
 }
 .perfil-container .contenedor-tabla {
+    /* Se oculta el scroll horizontal en las tablas del perfil en móvil. */
     overflow-x: hidden;
 }
 
@@ -366,6 +387,7 @@ tr:hover td {
     font-size: 14px;
 }
 
+/* Se reduce el padding y el tamaño de fuente de los campos de entrada. */
 .form-group input, .form-group select, .form-group textarea {
     width: 100%;
     padding: 10px;
@@ -399,6 +421,7 @@ tr:hover td {
 /* ==========================================================
    ADMIN DASHBOARD ESPECIAL (Móvil)
    ========================================================== */
+/* Las tarjetas de estadísticas del admin se apilan verticalmente. */
 .admin-stats-grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -407,6 +430,7 @@ tr:hover td {
     margin-top: 20px;
 }
 
+/* Se reduce el padding y el tamaño de fuente en las tarjetas de estadísticas. */
 .stat-card {
     background-color: var(--bg-tarjeta);
     padding: 15px;
@@ -438,6 +462,7 @@ tr:hover td {
 /* ==========================================================
    NUEVO: DISEÑO DE RESERVA EN DETALLE MOTO (Móvil)
    ========================================================== */
+/* En la página de detalle de la moto, los elementos se apilan verticalmente. */
 .detalle-grid {
     display: flex;
     flex-direction: column;
@@ -460,10 +485,12 @@ tr:hover td {
     border-radius: var(--borde-redondeado);
 }
 
+/* Se cambia el orden para que el formulario de reserva aparezca primero en móviles. */
 .detalle-reserva {
     order: -1;
 }
 
+/* La tarjeta de reserva ya no es "pegajosa" (sticky) en móviles. */
 .reserva-card {
     background: var(--bg-tarjeta);
     border: 1px solid var(--borde-tarjeta);
@@ -496,6 +523,7 @@ tr:hover td {
 /* ==========================================================
    PÁGINA DE PAGO (NUEVO DISEÑO - MÓVIL)
    ========================================================== */
+/* Contenedor principal para la página de la pasarela de pago. */
 .pago-container {
     max-width: 100%;
     margin: 20px auto;
@@ -506,6 +534,7 @@ tr:hover td {
     overflow: hidden;
 }
 
+/* Cabecera de la página de pago donde se muestra el monto. */
 .pago-header {
     background-color: var(--bg-oscuro);
     padding: 25px;
@@ -516,6 +545,7 @@ tr:hover td {
 .pago-header .monto-valor { font-size: 38px; font-weight: 800; color: var(--naranja-principal); line-height: 1.2; }
 .pago-header .info-alquiler { font-size: 12px; color: var(--texto-gris); margin-top: 5px; }
 
+/* Cuerpo de la página de pago donde se seleccionan los métodos. */
 .pago-body {
     padding: 20px;
 }
@@ -528,6 +558,7 @@ tr:hover td {
     margin-bottom: 25px;
 }
 
+/* Cuadrícula para los botones de selección de método de pago. */
 .metodo-pago-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -535,11 +566,13 @@ tr:hover td {
     margin-bottom: 30px;
 }
 
+/* Estilo para la etiqueta que envuelve cada opción de pago. */
 .metodo-option-label {
     border: 2px solid var(--borde-tarjeta);
     border-radius: 8px;
 }
 
+/* Estilo que se aplica cuando se selecciona una opción de pago (radio button). */
 .metodo-option-label input[type="radio"]:checked + .metodo-option-content {
     background-color: rgba(224, 62, 0, 0.1);
     border-color: var(--naranja-principal);
@@ -558,6 +591,7 @@ tr:hover td {
 /* ==========================================================
    PIE DE PÁGINA (Footer) (Móvil)
    ========================================================== */
+/* Estilos del pie de página, con padding y tamaños de fuente reducidos. */
 footer, .pie-pagina {
     flex-shrink: 0;
     background-color: #1a0f0d;
@@ -571,7 +605,7 @@ footer, .pie-pagina {
 footer p { margin-bottom: 8px; font-size: 12px; }
 footer p:last-child { margin-bottom: 0; color: #666; font-size: 10px;}
 
-/* Utilidades varias */
+/* Clases de utilidad. */
 .espaciado-arriba { margin-top: 25px; }
 .clear { clear: both; }
 .separador-admin { border: 0; border-top: 1px solid var(--borde-tarjeta); margin: 40px 0; }
@@ -579,6 +613,7 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 10px;}
 /* ==========================================================
    ESTILOS EXTRAÍDOS DE ARCHIVOS PHP (Móvil)
    ========================================================== */
+/* Clases de utilidad que se usan directamente en el HTML/PHP. */
 
 /* Clases de texto y alineación */
 .text-center { text-align: center; }
@@ -586,6 +621,7 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 10px;}
 .titulo-formulario { text-align: center; margin-bottom: 30px; }
 
 /* Formularios */
+/* En móviles, las cuadrículas de formulario se convierten en una sola columna. */
 .form-grid-3-col, .form-grid-2-col {
     display: grid;
     grid-template-columns: 1fr;
@@ -601,6 +637,7 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 10px;}
 }
 
 /* Registro y Login */
+/* Se ajusta el padding para las páginas de login y registro. */
 .registro-body, .login-body {
     display: flex;
     justify-content: center;
@@ -614,6 +651,7 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 10px;}
 }
 
 /* Detalle Alquiler */
+/* El contenedor de detalle de alquiler se apila verticalmente. */
 .detalle-alquiler-container {
     flex-direction: column;
 }

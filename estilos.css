@@ -1,12 +1,14 @@
 /* ==========================================================
    ESTILOS GENERALES Y RESETS 
    ========================================================== */
+/* Reseteo universal para eliminar márgenes y paddings por defecto del navegador. */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+/* Definición de variables de color y estilo para reutilizar en todo el CSS. Facilita el mantenimiento. */
 :root {
     --bg-oscuro: #120907; /* Fondo marrón muy oscuro */
     --bg-tarjeta: #1c110e; /* Fondo de tarjetas y contenedores */
@@ -18,10 +20,12 @@
     --borde-redondeado: 12px;
 }
 
+/* Asegura que el html y el body ocupen toda la altura de la ventana. */
 html, body {
     height: 100%;
 }
 
+/* Estilos base para el cuerpo de la página. */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--bg-oscuro);
@@ -32,12 +36,14 @@ body {
     min-height: 100vh;
 }
 
+/* Contenedor principal para centrar el contenido y limitar su ancho máximo. */
 .contenedor, .container {
     max-width: 1400px !important; 
     margin: 0 auto;
     padding: 0 10px !important;
 }
 
+/* Estilos base para los enlaces. */
 a { text-decoration: none; color: inherit; transition: 0.3s; }
 
 /* Ajustes para el empuje del footer */
@@ -49,6 +55,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }
 /* ==========================================================
    BARRA DE NAVEGACIÓN (Basada en image_0.png)
    ========================================================== */
+/* Estilos para la barra de navegación superior. `position: sticky` la mantiene fija en la parte superior al hacer scroll. */
 .barra-navegacion, .navbar {
     background-color: #1a0f0d; 
     padding: 20px 0;
@@ -59,12 +66,14 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }
     z-index: 1000;
 }
 
+/* Flexbox para alinear el logo a la izquierda y la navegación a la derecha. */
 .barra-navegacion .contenedor, .navbar .container {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
+/* Estilo del título/logo en la barra de navegación. */
 .navbar h1, .barra-navegacion h1 {
     font-size: 24px;
     font-weight: 800;
@@ -74,6 +83,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }
     text-transform: uppercase;
 }
 
+/* Contenedor para los enlaces de navegación. */
 .navbar nav, .barra-navegacion nav {
     display: flex;
     gap: 25px;
@@ -111,6 +121,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }
     text-align: center;
 }
 
+/* Efecto al pasar el ratón sobre el botón. */
 .boton:hover, .btn:hover { 
     background-color: #ff4500; 
     transform: translateY(-2px);
@@ -122,6 +133,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }
 }
 .boton-secundario:hover { background-color: #4d3b36; color: white;}
 
+/* Modificadores de tamaño y color para los botones. */
 .boton-pequeño, .btn-sm { padding: 6px 12px; font-size: 13px; border-radius: 6px;}
 .boton-error {
     background-color: #dc3545; /* Un tono de rojo */
@@ -140,6 +152,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }
 /* ==========================================================
    ETIQUETAS Y AVISOS 
    ========================================================== */
+/* Estilo base para etiquetas pequeñas (badges) usadas para mostrar estados. */
 .etiqueta, .badge {
     padding: 5px 10px;
     border-radius: 6px;
@@ -149,6 +162,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }
     text-transform: uppercase;
 }
 
+/* Modificadores de color para las etiquetas según el estado (éxito, aviso, error). */
 .etiqueta-exito, .badge-success, .estado-confirmado { 
     background-color: #213d29; 
     color: #4caf50; 
@@ -171,6 +185,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }
 
 .etiqueta-azul { background-color: #1c2b4d; color: #47b2e4; }
 
+/* Estilos para las alertas o mensajes de feedback al usuario. */
 .alerta {
     padding: 15px;
     border-radius: var(--borde-redondeado);
@@ -184,6 +199,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }
 /* ==========================================================
    SECCIONES PRINCIPALES Y CABECERAS 
    ========================================================== */
+/* Estilo para la sección "héroe" (la imagen grande de bienvenida en la página principal). */
 .hero {
     background: linear-gradient(rgba(18, 9, 7, 0.7), rgba(18, 9, 7, 0.9)), 
                 url('https://www.moto1pro.com/sites/default/files/apertura_3.jpeg') no-repeat center;
@@ -197,6 +213,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }
 .hero h1 { font-size: 48px; font-weight: 800; margin-bottom: 20px; line-height: 1.2; }
 .hero p { font-size: 18px; color: var(--texto-gris); max-width: 700px; margin: 0 auto 30px; }
 
+/* Estilo para los títulos de las secciones (ej. "Nuestro Catálogo"). */
 .titulo-seccion {
     text-align: center;
     color: var(--texto-blanco);
@@ -209,6 +226,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }
 /* ==========================================================
    CATÁLOGO - GRID Y TARJETAS 
    ========================================================== */
+/* Contenedor de la cuadrícula (grid) para mostrar las tarjetas de las motos. */
 .grid { 
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
@@ -218,6 +236,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }
     max-width: 1400px !important;
 }
 
+/* Estilo base para cada tarjeta de moto en el catálogo. */
 .card {
     background-color: var(--bg-tarjeta);
     border: 1px solid var(--borde-tarjeta);
@@ -229,6 +248,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }
     flex-direction: column;
 }
 
+/* Efecto al pasar el ratón sobre la tarjeta. */
 .card:hover { 
     transform: translateY(-8px);
     border-color: #4d3b36;
@@ -242,6 +262,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }
     border-bottom: 1px solid var(--borde-tarjeta);
 }
 
+/* Cuerpo de la tarjeta, donde va el texto. */
 .card-body { 
     padding: 20px; 
     text-align: left; 
@@ -279,6 +300,7 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }
 /* ==========================================================
    TABLAS DE DATOS 
    ========================================================== */
+/* Contenedor para las tablas de datos (usado en el panel de admin y perfil de usuario). */
 .contenedor-tabla {
     background-color: var(--bg-tarjeta);
     padding: 10px; 
@@ -288,12 +310,14 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }
     margin-top: 20px;
 }
 
+/* Estilos base para las tablas. */
 table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
 }
 
+/* Estilos para las celdas y encabezados de la tabla. */
 th, td {
     padding: 18px; 
     text-align: left;
@@ -301,6 +325,7 @@ th, td {
     vertical-align: middle;
 }
 
+/* Estilos específicos para los encabezados (th). */
 th { 
     background-color: #1a0f0d; 
     color: var(--texto-blanco); 
@@ -315,10 +340,12 @@ th:last-child { border-top-right-radius: 8px; }
 
 tr:last-child td { border-bottom: none; }
 
+/* Efecto al pasar el ratón sobre una fila de la tabla. */
 tr:hover td {
     background-color: #211613; 
 }
 
+/* Estilo para las imágenes en miniatura en las tablas del admin. */
 .miniatura-admin {
     width: 70px; 
     height: 55px;
@@ -330,6 +357,7 @@ tr:hover td {
 /* ==========================================================
    FORMULARIOS (Admin, Perfil, Login, Registro)
    ========================================================== */
+/* Contenedor principal para todos los formularios de la aplicación. */
 .formulario-admin, .login-container, .registro, .container-formulario, .perfil-container {
     background-color: var(--bg-tarjeta);
     padding: 40px;
@@ -345,6 +373,7 @@ tr:hover td {
     max-width: 850px; 
 }
 .perfil-container .contenedor-tabla {
+    /* Evita el scroll horizontal en las tablas del perfil si no es necesario. */
     overflow-x: hidden;
 }
 
@@ -355,6 +384,7 @@ tr:hover td {
     font-weight: 700;
 }
 
+/* Grupo de formulario (label + input). */
 .form-group { margin-bottom: 20px; }
 .form-group label { 
     display: block; 
@@ -364,6 +394,7 @@ tr:hover td {
     font-size: 14px;
 }
 
+/* Asegura que los elementos de formulario hereden la fuente principal. */
 .form-group input, 
 .form-group select, 
 .form-group textarea,
@@ -371,6 +402,7 @@ tr:hover td {
     font-family: inherit; /* Heredar la fuente del body */
 }
 
+/* Estilos para los campos de entrada, selectores y áreas de texto. */
 .form-group input, 
 .form-group select, 
 .form-group textarea {
@@ -385,6 +417,7 @@ tr:hover td {
 }
 
 /* Solución para que el calendario (date picker) sea visible en temas oscuros */
+/* `color-scheme: light` fuerza al navegador a renderizar el calendario en su tema claro por defecto. */
 .form-group input[type="date"] {
     color-scheme: light;
 }
@@ -400,6 +433,7 @@ tr:hover td {
     resize: vertical; /* Permitir solo redimensionamiento vertical */
 }
 
+/* Efecto de borde al enfocar un campo del formulario. */
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
     border-color: var(--naranja-principal);
     outline: none;
@@ -420,6 +454,7 @@ tr:hover td {
     cursor: pointer;
     margin-right: 10px;
 }
+/* Contenedor flex para poner campos de formulario en la misma línea. */
 .form-fila { display: flex; gap: 15px; margin-bottom: 10px; }
 
 .precio, .precio-grande, .precio-final {
@@ -438,6 +473,7 @@ tr:hover td {
 /* ==========================================================
    ADMIN DASHBOARD ESPECIAL 
    ========================================================== */
+/* Cuadrícula para las tarjetas de estadísticas en el panel de admin. */
 .admin-stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -446,6 +482,7 @@ tr:hover td {
     margin-top: 20px;
 }
 
+/* Estilo para cada tarjeta de estadística. */
 .stat-card {
     background-color: var(--bg-tarjeta);
     padding: 25px;
@@ -466,6 +503,7 @@ tr:hover td {
     opacity: 0.7;
 }
 
+/* Contenedor para los títulos de sección en el panel de admin (ej. "Gestión de Usuarios"). */
 .seccion-titulo-admin {
     display: flex;
     justify-content: space-between;
@@ -477,6 +515,7 @@ tr:hover td {
 /* ==========================================================
    DISEÑO DE DETALLE MOTO (Desktop)
    ========================================================== */
+/* Cuadrícula para la página de detalle de una moto, dividiendo la imagen y el formulario de reserva. */
 .detalle-grid {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -491,6 +530,7 @@ tr:hover td {
     border: 1px solid var(--borde-tarjeta);
 }
 
+/* Tarjeta para el formulario de reserva. `position: sticky` hace que "flote" al hacer scroll. */
 .reserva-card {
     background: var(--bg-tarjeta);
     border: 1px solid var(--borde-tarjeta);
@@ -508,6 +548,7 @@ tr:hover td {
 /* ==========================================================
    Pasarela de pago (BOTONES)
    ========================================================== */
+/* Estilos para el diálogo modal (popup). */
 /* Estilos para el Dialogo Modal */
 dialog.modal-contenido {
     background-color: #2c2c2c;
@@ -520,6 +561,7 @@ dialog.modal-contenido {
     color: var(--texto-blanco);
 }
 
+/* Fondo oscuro y desenfocado detrás del modal. */
 dialog::backdrop {
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(3px);
@@ -535,6 +577,7 @@ dialog::backdrop {
 /* ==========================================================
    PIE DE PÁGINA (Footer) 
    ========================================================== */
+/* Estilos para el pie de página. */
 footer, .pie-pagina {
     flex-shrink: 0;
     background-color: #1a0f0d;
@@ -548,7 +591,7 @@ footer, .pie-pagina {
 footer p { margin-bottom: 8px; font-size: 14px; }
 footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
 
-/* Utilidades varias */
+/* Clases de utilidad para añadir espaciado, etc. */
 .espaciado-arriba { margin-top: 25px; }
 .espaciado-arriba-20 { margin-top: 20px; }
 .clear { clear: both; }
@@ -564,6 +607,7 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
 /* ==========================================================
    ESTILOS EXTRAÍDOS DE ARCHIVOS PHP
    ========================================================== */
+/* Estas clases se usan directamente en el HTML/PHP para tareas comunes. */
 
 /* Clases de texto y alineación */
 .text-center { text-align: center; }
@@ -672,6 +716,7 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
 /* ==========================================================
    ESTILOS RESPONSIVE (Media Queries)
    ========================================================== */
+/* `media queries` para adaptar el diseño a diferentes tamaños de pantalla. */
 
 /* Tablets y pantallas medianas (hasta 992px) */
 @media (max-width: 992px) {

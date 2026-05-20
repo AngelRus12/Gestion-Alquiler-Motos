@@ -1,10 +1,12 @@
 <?php
 /**
- * SIMULADOR BANCARIO - Checkout
+ * =================================================================
+ * SIMULADOR DE PASARELA DE PAGO - CHECKOUT
+ * =================================================================
  * 
  * Este archivo prepara la transacción y redirige al simulador bancario correspondiente.
  * Simula exactamente el flujo que harías con las APIs reales de cada proveedor de pago.
- * 
+ *
  * En tu aplicación real:
  * - Aquí crearías la transacción en la API del proveedor
  * - Obtendrías un token o URL de pago
@@ -13,28 +15,34 @@
 
 session_start();
 
-// Validar que vengan los datos necesarios
+// --- 1. VALIDACIÓN DE DATOS DE ENTRADA ---
+// Se asegura de que los datos mínimos (método de pago y monto) han sido enviados por POST.
 if (!isset($_POST['payment_method']) || !isset($_POST['amount'])) {
     die('Error: Datos de pago incompletos');
 }
 
-// Capturar datos de la transacción
+// --- 2. CAPTURA Y SANITIZACIÓN DE DATOS ---
+// Se capturan los datos de la transacción enviados desde el formulario de `pago.php`.
 $paymentMethod = $_POST['payment_method'];
 $amount = (float)($_POST['amount'] ?? 0); // Asegurar que el monto sea un número flotante
 $orderId = $_POST['order_id'] ?? 'ORD-' . time();
 $description = $_POST['description'] ?? 'Compra en tienda';
 
-// Generar un ID de transacción único
+// Se genera un ID de transacción único para el simulador.
 $transactionId = strtoupper(uniqid('TXN-'));
 
-// Detectar la URL base del proyecto dinámicamente
+// --- 3. GESTIÓN DE LA URL DE RETORNO (CALLBACK) ---
+// Se detecta la URL base del proyecto dinámicamente para construir URLs absolutas.
 $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
 $baseUrl = $protocol . '://' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
 
-// Validar return_url contra una lista blanca de hosts permitidos
+// Se establece una URL de retorno por defecto, que es el script que procesará el pago en nuestra aplicación.
 $defaultReturnUrl = $protocol . '://' . $_SERVER['HTTP_HOST'] . '/callback_pago.php'; // Explicitly set to the correct callback URL
 $rawReturnUrl = trim((string)($_POST['return_url'] ?? ''));
 
+// --- 4. MEDIDA DE SEGURIDAD: LISTA BLANCA DE HOSTS ---
+// Para evitar redirecciones maliciosas (Open Redirect), se valida la URL de retorno
+// contra una lista blanca de dominios permitidos.
 $serverHost = strtolower((string)($_SERVER['HTTP_HOST'] ?? 'localhost'));
 $serverHost = preg_replace('/:\\d+$/', '', $serverHost);
 $allowedReturnHosts = [
@@ -44,6 +52,7 @@ $allowedReturnHosts = [
     'domino9.regline.cl',
 ];
 
+// (Opcional) Permite añadir más hosts permitidos a través de variables de entorno.
 $extraAllowedHosts = trim((string)($_ENV['ALLOWED_RETURN_URL_HOSTS'] ?? ''));
 if ($extraAllowedHosts !== '') {
     foreach (explode(',', $extraAllowedHosts) as $host) {
@@ -58,6 +67,7 @@ if ($extraAllowedHosts !== '') {
 $allowedReturnHosts = array_values(array_unique($allowedReturnHosts));
 $returnUrl = $defaultReturnUrl;
 
+// Se valida la URL de retorno proporcionada. Si es válida, se usa; si no, se usa la de por defecto.
 if ($rawReturnUrl !== '') {
     if (strpos($rawReturnUrl, '/') === 0) {
         $returnUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . $rawReturnUrl;
@@ -81,18 +91,20 @@ if ($rawReturnUrl !== '') {
     }
 }
 
-// Configurar redirección automática en callback (aprobados)
+// --- 5. CONFIGURACIÓN ADICIONAL ---
+// Se configuran opciones para el comportamiento del callback, como la redirección automática.
 $rawAutoRedirectOnApproved = $_POST['auto_redirect_on_approved'] ?? 'true';
 $autoRedirectOnApproved = filter_var($rawAutoRedirectOnApproved, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
 if ($autoRedirectOnApproved === null) {
     $autoRedirectOnApproved = true;
 }
-
 $redirectDelayMs = isset($_POST['redirect_delay_ms']) ? (int)$_POST['redirect_delay_ms'] : 2000;
 $redirectDelayMs = max(0, min($redirectDelayMs, 15000));
 
-// Guardar datos en sesión (en producción esto iría a base de datos)
-$_SESSION['pending_transaction'] = [
+// --- 6. GUARDAR DATOS DE LA TRANSACCIÓN EN SESIÓN ---
+// Se guardan todos los datos de la transacción pendiente en la sesión.
+// En una aplicación real, esto se registraría en una base de datos con estado 'pendiente'. Se usa 'last_transaction' para que callback_pago.php lo pueda leer.
+$_SESSION['last_transaction'] = [
     'transaction_id' => $transactionId,
     'payment_method' => $paymentMethod,
     'amount' => $amount,
@@ -104,11 +116,13 @@ $_SESSION['pending_transaction'] = [
     'redirect_delay_ms' => $redirectDelayMs,
 ];
 
-// Generar token de sesión seguro (en producción usarías un hash criptográfico)
+// Se genera un token de seguridad para la sesión, para verificar la integridad en el siguiente paso.
 $token = hash('sha256', $transactionId . session_id() . time());
 $_SESSION['transaction_token'] = $token;
 
-// Preparar parámetros específicos según el método de pago
+// --- 7. PREPARAR PARÁMETROS PARA EL SIMULADOR ---
+// Se preparan los parámetros que se enviarán al `simulator.php`.
+// Cada método de pago tiene sus propios nombres de parámetros, y aquí se simula esa diferencia.
 switch ($paymentMethod) {
     case 'webpay':
         // Webpay Plus (Transbank) - Parámetros reales
@@ -118,6 +132,7 @@ switch ($paymentMethod) {
             'TBK_ORDEN_COMPRA' => $orderId,
             'TBK_MONTO' => $amount,
             'payment_method' => 'webpay',
+            'amount' => $amount, // Se añade para que el simulador lo muestre correctamente.
         ];
         break;
     
@@ -157,9 +172,11 @@ switch ($paymentMethod) {
         die('Método de pago no soportado');
 }
 
-// Agregar URL de retorno
-$params['return_url'] = $_SESSION['pending_transaction']['return_url'];
+// Se añade la URL de retorno a los parámetros que se enviarán.
+$params['return_url'] = $_SESSION['last_transaction']['return_url'];
 ?>
+<!-- Esta página muestra un mensaje de "Redirigiendo..." y envía automáticamente
+     un formulario oculto a `simulator.php` con todos los parámetros de la transacción. -->
 <!DOCTYPE html>
 <html lang="es">
 <head>

@@ -6,6 +6,9 @@ require_once 'loginbd.php';
 // Incluir funciones y actualizar el sistema
 require_once 'funciones.php';
 
+// ¡SEGURIDAD! Generamos un token CSRF para proteger los formularios de esta página.
+generar_csrf_token();
+
 if (!isset($_SESSION['usuario_id'])) {
     header('Location: login.php?error=acceso_denegado');
     exit();
@@ -268,6 +271,8 @@ $is_mobile = isMobile();
             <div class="perfil-container">
                 <h3>Cambiar Contraseña</h3>
                 <form action="procesar_cambio_password.php" method="POST" class="form-grid-3-col">
+                    <!-- Campo oculto con el token CSRF para proteger contra ataques -->
+                    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                     <div class="form-group">
                         <label for="current_password">Contraseña Actual</label>
                         <input type="password" id="current_password" name="current_password" required>
