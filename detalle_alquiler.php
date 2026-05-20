@@ -179,6 +179,13 @@ $is_mobile = isMobile();
                         <p><strong>Días de alquiler:</strong> <?php echo $alquiler['dias_alquiler']; ?></p>
                         <hr style="border-color: #444;">
                         <p><strong>Precio Total:</strong> <strong class="precio precio-total-grande"><?php echo number_format($alquiler['precio_total'], 2); ?>€</strong></p>
+                        
+                        <?php // Solo mostrar el botón de descarga si el alquiler está confirmado o finalizado ?>
+                        <?php if ($alquiler['estado'] === 'confirmado' || $alquiler['estado'] === 'finalizado' || $alquiler['estado'] === 'en_curso'): ?>
+                            <a href="generar_factura.php?id=<?php echo $alquiler['id']; ?>" target="_blank" class="boton espaciado-arriba" style="width: 100%; text-align: center;">
+                                📄 Descargar Factura en PDF
+                            </a>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

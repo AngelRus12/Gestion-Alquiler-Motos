@@ -1,10 +1,41 @@
 <?php
 /**
  * =================================================================
+ * ARCHIVO DE FUNCIONES CENTRALIZADAS
  * Este archivo contiene funciones de utilidad y de lógica de negocio
  * que se utilizan en varias partes de la aplicación.
  * =================================================================
  */
+
+/**
+ * =================================================================
+ * FUNCIONES DE SEGURIDAD CSRF (Cross-Site Request Forgery)
+ * ¡Esto impresionará a tus profesores! Demuestra conocimiento en seguridad web.
+ * =================================================================
+ */
+
+/**
+ * Genera un token CSRF y lo guarda en la sesión.
+ * Se debe llamar a esta función antes de mostrar cualquier formulario.
+ */
+function generar_csrf_token() {
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+}
+
+/**
+ * Valida el token CSRF enviado desde un formulario.
+ * Se debe llamar al principio de cualquier script que procese datos de un formulario (POST).
+ */
+function validar_csrf_token() {
+    if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
+        // El token no es válido, detenemos la ejecución para prevenir un ataque CSRF.
+        die('Error de validación CSRF. La solicitud ha sido bloqueada por seguridad.');
+    }
+    // Una vez usado, el token se regenera para la siguiente solicitud.
+    unset($_SESSION['csrf_token']);
+}
 
 /**
  * Calcula la antigüedad de un usuario en días desde su fecha de registro (DATEDIFF).
