@@ -52,8 +52,10 @@ if (!isset($_SESSION['last_transaction']) || empty($_SESSION['last_transaction']
 
 // Recuperamos los datos de la transacción que guardamos en `pago.php` antes de redirigir.
 $transaction = $_SESSION['last_transaction'];
-// Se usa el operador de fusión de null (??) para asignar 'error' si el estado no está definido.
-$status = $transaction['status'] ?? 'error'; // Estado del pago (ej: 'approved', 'rejected')
+
+// El estado del pago (approved, rejected, etc.) viene desde el simulador vía POST.
+$status = $_POST['response_type'] ?? 'error';
+
 $order_id = $transaction['order_id'] ?? '';
 
 // --- PASO 2: EXTRACCIÓN DEL ID DEL ALQUILER ---

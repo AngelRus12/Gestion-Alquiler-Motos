@@ -108,14 +108,13 @@ $return_url = 'http://' . $_SERVER['HTTP_HOST'] . '/perfil_usuario.php';
                         <h2 class="mb-0">Pasarela de Pago</h2>
                         <p class="mb-0">Estás a punto de pagar</p>
                         <h1 class="display-4 fw-bold my-2"><?php echo number_format($monto, 2); ?>€</h1>
-                        <p class="mb-0 opacity-75">Alquiler #<?php echo $id_alquiler; ?></p>
                     </div>
                     <div class="card-body p-4 p-md-5">
                         <h4 class="mb-4 text-center">Selecciona tu método de pago</h4>
 
                         <!-- El formulario envía los datos al script `checkout.php` del simulador de pago. -->
                         <form action="payment/checkout.php" method="POST" id="paymentForm">
-                            <input type="hidden" name="amount" value="<?php echo htmlspecialchars($amount); ?>">
+                            <input type="hidden" name="amount" value="<?php echo htmlspecialchars(number_format($amount, 2, '.', '')); ?>">
                             <input type="hidden" name="order_id" value="<?php echo $order_id; ?>">
                             <input type="hidden" name="description" value="<?php echo $description; ?>">
                             <input type="hidden" name="return_url" value="<?php echo $return_url; ?>">

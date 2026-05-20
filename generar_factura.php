@@ -44,6 +44,12 @@ if (!$alquiler || ($alquiler['usuario_id'] != $usuario_id && $_SESSION['rol'] !=
     die("No tienes permiso para ver esta factura.");
 }
 
+// --- 5. CÁLCULOS PARA LA FACTURA (BASE IMPONIBLE, IVA, ETC.) ---
+$precio_total = $alquiler['precio_total'];
+$iva_tasa = 0.21; // 21% de IVA
+$base_imponible = $precio_total / (1 + $iva_tasa);
+$iva_monto = $precio_total - $base_imponible;
+
 // --- 5. CREACIÓN DEL PDF CON FPDF ---
 
 class PDF extends FPDF
@@ -51,14 +57,20 @@ class PDF extends FPDF
     // Cabecera de página
     function Header()
     {
-        // Logo (asegúrate de tener 'logo.png' en la misma carpeta o proporciona la ruta correcta)
+        // Logo
         if (file_exists('logo.png')) {
-            $this->Image('logo.png', 10, 6, 30);
+            $this->Image('logo.png', 10, 10, 40);
         }
+        // Título de la factura
         $this->SetFont('Arial', 'B', 20);
-        $this->Cell(80); // Mover a la derecha
-        $this->Cell(30, 10, 'FACTURA', 1, 0, 'C'); // Título
-        $this->Ln(20); // Salto de línea
+        $this->SetTextColor(34, 34, 34);
+        $this->Cell(0, 10, 'FACTURA', 0, 1, 'R');
+        
+        // Número de factura
+        global $alquiler; // Hacemos la variable global para acceder a ella aquí
+        $this->SetFont('Arial', '', 10);
+        $this->Cell(0, 7, utf8_decode('Nº: FAC-') . date("Y") . '-' . str_pad($alquiler['id'], 6, "0", STR_PAD_LEFT), 0, 1, 'R');
+        $this->Cell(0, 7, 'Fecha: ' . date("d/m/Y"), 0, 1, 'R');
     }
 
     // Pie de página
@@ -67,8 +79,7 @@ class PDF extends FPDF
         $this->SetY(-15); // Posición a 1.5 cm del final
         $this->SetFont('Arial', 'I', 8);
         $this->Cell(0, 10, utf8_decode('Página ') . $this->PageNo() . '/{nb}', 0, 0, 'C');
-        $this->SetX(-90);
-        $this->Cell(0, 10, utf8_decode('ARUSLAT Motos - TFG Ángel Rus Latorre'), 0, 0, 'R');
+        $this->Cell(0, 10, utf8_decode('Gracias por su confianza - ARUSLAT Motos'), 0, 0, 'R');
     }
 }
 
@@ -76,60 +87,76 @@ class PDF extends FPDF
 $pdf = new PDF();
 $pdf->AliasNbPages();
 $pdf->AddPage();
-$pdf->SetFont('Arial', '', 12);
+$pdf->SetMargins(10, 10, 10);
+$pdf->SetAutoPageBreak(true, 20);
+$pdf->SetFont('Arial', '', 11);
+$pdf->SetTextColor(0, 0, 0);
 
-// --- Información de la Factura ---
-$pdf->SetFont('Arial', 'B', 12);
-$pdf->Cell(0, 10, utf8_decode('Información de la Factura'), 0, 1);
-$pdf->SetFont('Arial', '', 12);
-$pdf->Cell(40, 7, utf8_decode('Nº Factura:'), 0, 0);
-$pdf->Cell(0, 7, 'FAC-' . date("Y") . '-' . str_pad($alquiler['id'], 6, "0", STR_PAD_LEFT), 0, 1);
-$pdf->Cell(40, 7, 'Fecha Factura:', 0, 0);
-$pdf->Cell(0, 7, date("d/m/Y"), 0, 1);
-$pdf->Cell(40, 7, 'ID Alquiler:', 0, 0);
-$pdf->Cell(0, 7, $alquiler['id'], 0, 1);
-$pdf->Ln(10);
+$pdf->Ln(30); // Espacio después de la cabecera
 
 // --- Datos del Cliente y Empresa ---
+$pdf->SetFillColor(240, 240, 240);
 $pdf->SetFont('Arial', 'B', 12);
-$pdf->Cell(95, 7, 'Facturado a:', 0, 0);
-$pdf->Cell(95, 7, 'Emitido por:', 0, 1);
+$pdf->Cell(95, 8, 'Emitido por', 0, 0, 'L', true);
+$pdf->Cell(95, 8, 'Facturado a', 0, 1, 'L', true);
+
 $pdf->SetFont('Arial', '', 10);
-$pdf->Cell(95, 6, utf8_decode($alquiler['nombre'] . ' ' . $alquiler['apellidos']), 0, 0);
-$pdf->Cell(95, 6, 'ARUSLAT Motos S.L.', 0, 1);
-$pdf->Cell(95, 6, 'DNI: ' . $alquiler['dni'], 0, 0);
-$pdf->Cell(95, 6, 'CIF: B-12345678', 0, 1);
-$pdf->Cell(95, 6, utf8_decode($alquiler['direccion']), 0, 0);
-$pdf->Cell(95, 6, 'Calle Maria Lejarrega 3', 0, 1);
-$pdf->Cell(95, 6, $alquiler['email'], 0, 0);
-$pdf->Cell(95, 6, 'info@alquilermotos.com', 0, 1);
+$pdf->Cell(95, 6, 'ARUSLAT Motos S.L.', 0, 0, 'L');
+$pdf->Cell(95, 6, utf8_decode($alquiler['nombre'] . ' ' . $alquiler['apellidos']), 0, 1, 'L');
+$pdf->Cell(95, 6, 'CIF: B-12345678', 0, 0, 'L');
+$pdf->Cell(95, 6, 'DNI: ' . $alquiler['dni'], 0, 1, 'L');
+$pdf->Cell(95, 6, 'Calle Maria Lejarrega 3, Torreperogil', 0, 0, 'L');
+$pdf->Cell(95, 6, utf8_decode($alquiler['direccion']), 0, 1, 'L');
+$pdf->Cell(95, 6, 'info@alquilermotos.com', 0, 0, 'L');
+$pdf->Cell(95, 6, $alquiler['email'], 0, 1, 'L');
 $pdf->Ln(15);
 
 // --- Tabla de Detalles del Alquiler ---
 $pdf->SetFont('Arial', 'B', 12);
-$pdf->SetFillColor(224, 224, 224); // Color de fondo para la cabecera
-$pdf->Cell(130, 10, 'Concepto', 1, 0, 'C', true);
-$pdf->Cell(30, 10, 'Cantidad', 1, 0, 'C', true);
-$pdf->Cell(30, 10, 'Total', 1, 1, 'C', true);
+$pdf->SetFillColor(52, 58, 64); // Un gris oscuro para la cabecera
+$pdf->SetTextColor(255, 255, 255);
+$pdf->Cell(100, 10, 'Concepto', 1, 0, 'L', true);
+$pdf->Cell(30, 10, 'Periodo', 1, 0, 'C', true);
+$pdf->Cell(30, 10, 'Precio/dia', 1, 0, 'C', true);
+$pdf->Cell(30, 10, 'Subtotal', 1, 1, 'C', true);
 
-$pdf->SetFont('Arial', '', 11);
+$pdf->SetFont('Arial', '', 10);
+$pdf->SetTextColor(0, 0, 0);
+
 $concepto = utf8_decode("Alquiler de moto " . $alquiler['marca'] . " " . $alquiler['modelo'] . " (Mat. " . $alquiler['matricula'] . ")");
-$periodo = utf8_decode("Periodo: " . date("d/m/Y", strtotime($alquiler['fecha_inicio'])) . " al " . date("d/m/Y", strtotime($alquiler['fecha_fin'])));
+$periodo = $alquiler['dias_alquiler'] . utf8_decode(' días');
+$precio_dia = number_format($base_imponible / $alquiler['dias_alquiler'], 2) . ' ' . chr(128);
+$subtotal = number_format($base_imponible, 2) . ' ' . chr(128);
 
-$pdf->Cell(130, 8, $concepto, 'LR', 0, 'L');
-$pdf->Cell(30, 8, $alquiler['dias_alquiler'] . utf8_decode(' días'), 'R', 0, 'C');
-$pdf->Cell(30, 8, number_format($alquiler['precio_total'], 2) . ' ' . chr(128), 'R', 1, 'R'); // chr(128) es el símbolo €
+// Usamos MultiCell para que el texto del concepto se ajuste automáticamente si es muy largo
+$y_inicial = $pdf->GetY();
+$pdf->MultiCell(100, 8, $concepto, 'LR', 'L');
+$y_final = $pdf->GetY();
+$altura_fila = $y_final - $y_inicial;
 
-$pdf->Cell(130, 8, $periodo, 'LRB', 0, 'L');
-$pdf->Cell(30, 8, '', 'RB', 0, 'C');
-$pdf->Cell(30, 8, '', 'RB', 1, 'R');
+$pdf->SetXY(110, $y_inicial); // Reposicionamos para las siguientes celdas
+$pdf->Cell(30, $altura_fila, $periodo, 'R', 0, 'C');
+$pdf->Cell(30, $altura_fila, $precio_dia, 'R', 0, 'R');
+$pdf->Cell(30, $altura_fila, $subtotal, 'R', 1, 'R');
+$pdf->Cell(190, 0, '', 'T', 1); // Línea inferior de la tabla
 
 // --- Totales ---
-$pdf->Ln(10);
-$pdf->SetFont('Arial', 'B', 14);
+$pdf->Ln(5);
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell(130, 7, '', 0, 0);
+$pdf->Cell(30, 7, 'Base Imponible', 1, 0, 'R');
+$pdf->Cell(30, 7, number_format($base_imponible, 2) . ' ' . chr(128), 1, 1, 'R');
+
+$pdf->Cell(130, 7, '', 0, 0);
+$pdf->Cell(30, 7, 'IVA (21%)', 1, 0, 'R');
+$pdf->Cell(30, 7, number_format($iva_monto, 2) . ' ' . chr(128), 1, 1, 'R');
+
+$pdf->SetFont('Arial', 'B', 12);
+$pdf->SetFillColor(52, 58, 64);
+$pdf->SetTextColor(255, 255, 255);
 $pdf->Cell(130, 10, '', 0, 0);
-$pdf->Cell(30, 10, 'TOTAL', 1, 0, 'C');
-$pdf->Cell(30, 10, number_format($alquiler['precio_total'], 2) . ' ' . chr(128), 1, 1, 'R');
+$pdf->Cell(30, 10, 'TOTAL', 1, 0, 'C', true);
+$pdf->Cell(30, 10, number_format($alquiler['precio_total'], 2) . ' ' . chr(128), 1, 1, 'R', true);
 
 $pdf->Output('I', 'Factura-ALQ' . $alquiler['id'] . '.pdf'); // 'I' para mostrar en navegador, 'D' para forzar descarga
 ?>

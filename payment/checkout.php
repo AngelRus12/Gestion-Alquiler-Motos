@@ -103,8 +103,8 @@ $redirectDelayMs = max(0, min($redirectDelayMs, 15000));
 
 // --- 6. GUARDAR DATOS DE LA TRANSACCIÓN EN SESIÓN ---
 // Se guardan todos los datos de la transacción pendiente en la sesión.
-// En una aplicación real, esto se registraría en una base de datos con estado 'pendiente'.
-$_SESSION['pending_transaction'] = [
+// En una aplicación real, esto se registraría en una base de datos con estado 'pendiente'. Se usa 'last_transaction' para que callback_pago.php lo pueda leer.
+$_SESSION['last_transaction'] = [
     'transaction_id' => $transactionId,
     'payment_method' => $paymentMethod,
     'amount' => $amount,
@@ -132,6 +132,7 @@ switch ($paymentMethod) {
             'TBK_ORDEN_COMPRA' => $orderId,
             'TBK_MONTO' => $amount,
             'payment_method' => 'webpay',
+            'amount' => $amount, // Se añade para que el simulador lo muestre correctamente.
         ];
         break;
     

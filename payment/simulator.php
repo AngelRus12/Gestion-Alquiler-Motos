@@ -128,11 +128,6 @@ $config = $paymentConfig[$paymentMethod] ?? $paymentConfig['webpay'];
                                     <strong>Token:</strong> <code class="small"><?php echo substr($token, 0, 20); ?>...</code>
                                 </p>
                             </div>
-                            <div class="col-md-4 text-md-end">
-                                <small class="text-muted d-block mb-1">Total a pagar:</small>
-                                <h3 class="text-primary mb-0">€<?php echo number_format($amount, 2, ',', '.'); ?></h3>
-                                <small class="text-muted">EUR</small>
-                            </div>
                         </div>
                     </div>
                 </div>
