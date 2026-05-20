@@ -36,27 +36,75 @@ $is_mobile = isMobile();
         <link rel="stylesheet" href="estilos.css">
     <?php endif; ?>
     <style>
-        .promo-banner {background: #2d1f1b; color: #fff; padding: 18px 0;}
-        .promo-banner .promo-content {display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: center;}
-        .promo-banner h2 {margin: 0; font-size: 1.3rem;}
-        .promo-banner p {margin: 0; max-width: 720px;}
-        .promo-banner .btn {background: #fff; color: #2d1f1b; border: none; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 700;}
+        /* Banner de promoción: usa variables globales para coincidir con el sitio */
+        .promo-banner {
+            background: var(--bg-tarjeta);
+            color: var(--texto-blanco);
+            padding: 14px 0;
+            border-bottom: 1px solid var(--borde-tarjeta);
+            box-shadow: var(--sombre-tarjeta);
+        }
+        .promo-banner .promo-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 10px;
+        }
+        .promo-banner .promo-text {
+            flex: 1 1 60%;
+            min-width: 0;
+        }
+        .promo-banner .promo-label {
+            display: inline-block;
+            margin-bottom: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--naranja-principal);
+            color: var(--texto-blanco);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+        }
+        .promo-banner h2 {
+            margin: 6px 0 8px;
+            font-size: 1.45rem;
+            color: var(--texto-blanco);
+            line-height: 1.15;
+        }
+        .promo-banner p {
+            margin: 0;
+            color: var(--texto-gris);
+            opacity: 0.95;
+            font-size: 1rem;
+        }
+        .promo-banner .promo-btn {
+            background: var(--naranja-principal);
+            color: var(--texto-blanco);
+            border-radius: 8px;
+            padding: 10px 18px;
+            text-decoration: none;
+            font-weight: 700;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+        .promo-banner .promo-btn:hover {
+            transform: translateY(-2px);
+            background-color: #ff4500; /* coincide con hover global */
+            box-shadow: 0 10px 22px rgba(0,0,0,0.32);
+        }
+        @media (max-width: 700px) {
+            .promo-banner .promo-content { flex-direction: column; align-items: flex-start; gap: 10px; padding: 0 12px; }
+            .promo-banner .promo-btn { width: 100%; text-align: center; }
+            .promo-banner h2 { font-size: 1.1rem; }
+            .promo-banner p { font-size: 0.95rem; }
+        }
     </style>
 </head>
 <body>
-    <?php if (!empty($promocion_activa)): ?>
-    <section class="promo-banner">
-        <div class="container">
-            <div class="promo-content">
-                <h2><?php echo htmlspecialchars($promocion_activa['titulo']); ?></h2>
-                <p><?php echo htmlspecialchars($promocion_activa['mensaje']); ?></p>
-                <?php if (!empty($promocion_activa['enlace'])): ?>
-                    <a href="<?php echo htmlspecialchars($promocion_activa['enlace']); ?>" class="btn">Ver oferta</a>
-                <?php endif; ?>
-            </div>
-        </div>
-    </section>
-    <?php endif; ?>
     <header class="navbar">
         <div class="container">
             <h1>ARUSLAT</h1>
@@ -79,6 +127,23 @@ $is_mobile = isMobile();
             </nav>
         </div>
     </header>
+
+    <?php if (!empty($promocion_activa)): ?>
+    <section class="promo-banner">
+        <div class="container">
+            <div class="promo-content">
+                <div class="promo-text">
+                    <span class="promo-label">Oferta destacada</span>
+                    <h2><?php echo htmlspecialchars($promocion_activa['titulo']); ?></h2>
+                    <p><?php echo htmlspecialchars($promocion_activa['mensaje']); ?></p>
+                </div>
+                <?php if (!empty($promocion_activa['enlace'])): ?>
+                    <a href="<?php echo htmlspecialchars($promocion_activa['enlace']); ?>" class="btn promo-btn">Ver oferta</a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </section>
+    <?php endif; ?>
 
     <main class="main-content">
         <div class="hero">
