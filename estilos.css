@@ -880,32 +880,57 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
     box-shadow: 0 12px 24px rgba(248, 185, 76, 0.28);
 }
 
+/* ==========================================================
+   CLASES DE UTILIDAD PARA ARCHIVOS PHP
+   ==========================================================
+   Estas clases reemplazan estilos inline en plantillas PHP
+   y se usan en la administración, el catálogo, el detalle y los
+   formularios de usuario.
+*/
+
+/* Catálogo y filtros */
 .catalogo-filtros-form {
     max-width: 1100px;
     margin: 0 auto 20px;
 }
-.inline-group {
-    display: flex;
-    gap: 8px;
-}
-.ml-10 { margin-left: 10px; }
-.page-label { color: var(--texto-gris); margin: 0 12px; }
+.field-pair { display: flex; gap: 8px; }
+.field-pair input { width: 100%; }
 
-.titulo-seccion-left { text-align: left; margin-bottom: 20px; }
-.nowrap { white-space: nowrap; }
+/* Grupos de campos y botones */
+.inline-group { display: flex; gap: 8px; }
+.ml-10 { margin-left: 10px; }
 .mt-5 { margin-top: 5px; }
-.inline-form { display: inline; background: none; padding: 0; border: none; box-shadow: none; }
+
+/* Texto y alineación genéricos */
+.page-label { color: var(--texto-gris); margin: 0 12px; }
+.titulo-seccion-left { text-align: left; margin-bottom: 20px; }
 .text-center-muted { text-align: center; color: var(--texto-gris); }
 .text-left { text-align: left; }
-.enlace-volver { display: inline-block; margin-bottom: 20px; }
 .texto-gris-claro { color: var(--texto-gris); }
+
+/* Formularios y enlaces del panel administrativo */
+.inline-form {
+    display: inline;
+    background: none;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+}
+.enlace-volver { display: inline-block; margin-bottom: 20px; }
 .divider-muted { border-color: #444; }
+
+/* Alertas y mensajes de estado */
 .alerta-margen { margin-bottom: 15px; }
 .alerta-sin-fondo { font-weight: bold; font-size: 1.1em; background: none; border: none; }
+
+/* Detalle de moto y alquiler */
 .detalle-alquilada-text { margin: 0; color: white; }
 .detalle-alquiler-periodo { margin: 5px 0 0 0; font-size: 0.9em; }
+
+/* Botones de ancho completo en vistas de detalle */
 .btn-fullwidth { width: 100%; text-align: center; }
 
+/* Clasificación de leyendas de estado en el calendario admin */
 .legend-badge.pendiente { background: #f1c40f; }
 .legend-badge.confirmado { background: #27ae60; }
 .legend-badge.en_curso { background: #3498db; }
@@ -915,9 +940,137 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
 /* Clases para las tablas de estado y mensajes vacíos */
 .table-empty td { text-align: center; color: var(--texto-gris); }
 
-/* Estilos para campo de formulario doble en catálogo */
-.field-pair { display: flex; gap: 8px; }
-.field-pair input { width: 100%; }
+/* Calendario de reservas en admin */
+.calendar-panel {
+    background-color: var(--bg-tarjeta);
+    border: 1px solid var(--borde-tarjeta);
+    border-radius: var(--borde-redondeado);
+    padding: 28px;
+    box-shadow: var(--sombre-tarjeta);
+    margin-top: 30px;
+}
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+.calendar-header h2 {
+    color: var(--texto-blanco);
+    font-size: 24px;
+    margin: 0;
+}
+.calendar-nav {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.calendar-nav button {
+    background: #2d1f1b;
+    color: var(--texto-blanco);
+    border: 1px solid var(--borde-tarjeta);
+    border-radius: 10px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+.calendar-nav button:hover {
+    background: #3b2720;
+}
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 10px;
+}
+.calendar-day {
+    min-height: 120px;
+    background-color: #181212;
+    border: 1px solid var(--borde-tarjeta);
+    border-radius: 14px;
+    padding: 14px;
+    color: var(--texto-gris);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.calendar-day > strong,
+.calendar-day .day-number {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--texto-blanco);
+    margin-bottom: 10px;
+}
+.calendar-day.disabled {
+    opacity: 0.45;
+    background-color: #111;
+}
+.calendar-day .day-number {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--texto-blanco);
+    margin-bottom: 10px;
+}
+.calendar-event {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--texto-blanco);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-top: 10px;
+}
+.calendar-event.event-pendiente { background: #f1c40f; color: #1a0f0d; }
+.calendar-event.event-confirmado { background: #27ae60; }
+.calendar-event.event-en_curso { background: #3498db; }
+.calendar-event.event-finalizado { background: #7f8c8d; }
+.calendar-event.event-cancelado { background: #e74c3c; }
+.calendar-legends {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 18px;
+}
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--texto-gris);
+    font-size: 13px;
+}
+.legend-badge {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.calendar-event-list {
+    margin-top: 22px;
+    padding: 18px;
+    background-color: #141010;
+    border: 1px solid var(--borde-tarjeta);
+    border-radius: 12px;
+    max-height: 260px;
+    overflow-y: auto;
+}
+.calendar-event-list ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.calendar-event-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.calendar-event-list li:last-child {
+    border-bottom: none;
+}
 
 @media (max-width: 760px) {
     .promo-grid-row {

@@ -41,8 +41,10 @@ body {
     max-width: 100% !important;
     margin: 0 auto;
     padding: 0 15px !important;
+}
 
-a { text-decoration: none; color: inherit; transition: 0.3s; }}
+/* Estilos base para los enlaces. */
+a { text-decoration: none; color: inherit; transition: 0.3s; }
 
 /* Ajustes para el empuje del footer */
 .contenido-principal, .main-content {
@@ -516,6 +518,203 @@ tr:hover td {
     font-weight: 800;
     margin-top: 10px;
 }
+
+/* ==========================================================
+   PROMOCIÓN Y CALENDARIO EN MÓVIL
+   ========================================================== */
+.promo-banner {
+    background-color: var(--bg-tarjeta);
+    border: 1px solid var(--borde-tarjeta);
+    padding: 18px 0;
+    border-radius: var(--borde-redondeado);
+    box-shadow: var(--sombre-tarjeta);
+    margin: 20px 0;
+}
+.promo-banner .promo-content {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+.promo-banner .promo-label {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--naranja-principal);
+    color: var(--texto-blanco);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+}
+.promo-banner h2 {
+    margin: 0 0 8px;
+    color: var(--texto-blanco);
+    font-size: 1.4rem;
+    line-height: 1.15;
+}
+.promo-banner p {
+    margin: 0;
+    color: var(--texto-gris);
+    font-size: 0.96rem;
+}
+.promo-banner .promo-btn {
+    align-self: flex-start;
+    padding: 12px 22px;
+    border-radius: 10px;
+    background: var(--naranja-principal);
+    color: var(--texto-blanco);
+    font-weight: 700;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+}
+.promo-banner .promo-btn:hover {
+    background-color: #ff4500;
+}
+
+.promo-form {
+    background: transparent;
+    padding: 16px;
+    border-radius: 10px;
+    border: 1px solid var(--borde-tarjeta);
+}
+.promo-form .form-group input,
+.promo-form .form-group select,
+.promo-form .form-group textarea {
+    background: #241613;
+    border: 1px solid var(--borde-tarjeta);
+    color: var(--texto-blanco);
+}
+.promo-form .form-submit-group {
+    text-align: left;
+    margin-top: 12px;
+}
+.promo-form .btn {
+    margin-right: 8px;
+}
+
+.calendar-panel {
+    background-color: var(--bg-tarjeta);
+    border: 1px solid var(--borde-tarjeta);
+    border-radius: var(--borde-redondeado);
+    padding: 22px;
+    box-shadow: var(--sombre-tarjeta);
+    margin-top: 24px;
+}
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+.calendar-header h2 {
+    color: var(--texto-blanco);
+    font-size: 20px;
+    margin: 0;
+}
+.calendar-nav {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.calendar-nav button {
+    background: #2d1f1b;
+    color: var(--texto-blanco);
+    border: 1px solid var(--borde-tarjeta);
+    border-radius: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+}
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 8px;
+}
+.calendar-day {
+    min-height: 100px;
+    background-color: #181212;
+    border: 1px solid var(--borde-tarjeta);
+    border-radius: 12px;
+    padding: 12px;
+    color: var(--texto-gris);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.calendar-day.disabled {
+    opacity: 0.45;
+    background-color: #111;
+}
+.calendar-day > strong,
+.calendar-day .day-number {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--texto-blanco);
+    margin-bottom: 8px;
+}
+.calendar-event {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--texto-blanco);
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+    margin-top: 8px;
+}
+.calendar-event.event-pendiente { background: #f1c40f; color: #1a0f0d; }
+.calendar-event.event-confirmado { background: #27ae60; }
+.calendar-event.event-en_curso { background: #3498db; }
+.calendar-event.event-finalizado { background: #7f8c8d; }
+.calendar-event.event-cancelado { background: #e74c3c; }
+.calendar-legends {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+}
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--texto-gris);
+    font-size: 13px;
+}
+.legend-badge {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.calendar-event-list {
+    margin-top: 18px;
+    padding: 16px;
+    background-color: #141010;
+    border: 1px solid var(--borde-tarjeta);
+    border-radius: 12px;
+    max-height: 220px;
+    overflow-y: auto;
+}
+.calendar-event-list ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.calendar-event-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.calendar-event-list li:last-child {
+    border-bottom: none;
+}
+
 /* ==========================================================
    Pasarela de pago (BOTONES) (Móvil)
    ========================================================== */
