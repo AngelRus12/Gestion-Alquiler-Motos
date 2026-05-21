@@ -192,14 +192,14 @@ $is_mobile = isMobile();
             <div class="perfil-container">
                 <h3>Datos Personales</h3>
                 <?php if ($usuario) { ?>
-                    <p><strong>Nombre:</strong> <?php echo $usuario['nombre'] . " " . $usuario['apellidos']; ?></p>
-                    <p><strong>Email:</strong> <?php echo $usuario['email']; ?></p>
-                    <p><strong>Teléfono:</strong> <?php echo $usuario['telefono']; ?></p>
-                    <p><strong>Dirección:</strong> <?php echo $usuario['direccion']; ?></p>
+                    <p><strong>Nombre:</strong> <?php echo htmlspecialchars($usuario['nombre'] . " " . $usuario['apellidos']); ?></p>
+                    <p><strong>Email:</strong> <?php echo htmlspecialchars($usuario['email']); ?></p>
+                    <p><strong>Teléfono:</strong> <?php echo htmlspecialchars($usuario['telefono']); ?></p>
+                    <p><strong>Dirección:</strong> <?php echo htmlspecialchars($usuario['direccion']); ?></p>
                     
                     <div class="stats-bloque">
-                        <span class="stats-badge">📅 <?php echo $usuario['dias_antiguedad']; ?> días con nosotros</span>
-                        <span class="stats-badge">💰 <?php echo $usuario['total_invertido']; ?> € gastados</span>
+                        <span class="stats-badge">📅 <?php echo htmlspecialchars($usuario['dias_antiguedad']); ?> días con nosotros</span>
+                        <span class="stats-badge">💰 <?php echo htmlspecialchars($usuario['total_invertido']); ?> € gastados</span>
                     </div>
 
                 <?php } else { ?>
@@ -239,28 +239,28 @@ $is_mobile = isMobile();
                                 $moto = mysqli_fetch_assoc($res_moto);
                         ?>
                         <tr>
-                            <td><?php echo ($moto) ? $moto['marca'] . " " . $moto['modelo'] : "Moto eliminada"; ?></td>
-                            <td><?php echo date("d/m/Y", strtotime($alq['fecha_inicio'])); ?></td>
-                            <td><?php echo date("d/m/Y", strtotime($alq['fecha_fin'])); ?></td>
-                            <td class="text-center"><?php echo $alq['dias_alquiler']; ?></td> 
-                            <td class="precio"><?php echo $alq['precio_total']; ?>€</td>
+                            <td><?php echo ($moto) ? htmlspecialchars($moto['marca'] . " " . $moto['modelo']) : "Moto eliminada"; ?></td>
+                            <td><?php echo htmlspecialchars(date("d/m/Y", strtotime($alq['fecha_inicio']))); ?></td>
+                            <td><?php echo htmlspecialchars(date("d/m/Y", strtotime($alq['fecha_fin']))); ?></td>
+                            <td class="text-center"><?php echo htmlspecialchars($alq['dias_alquiler']); ?></td> 
+                            <td class="precio"><?php echo htmlspecialchars($alq['precio_total']); ?>€</td>
                             <td class="text-center">
-                                <span class="etiqueta <?php  
+                                <span class="etiqueta <?php
                                     if($alq['estado'] == 'en_curso') { echo 'en-curso'; } // azul
                                     elseif($alq['estado'] == 'finalizado') { echo 'etiqueta-error'; } // rojo
                                     elseif($alq['estado'] == 'confirmado') { echo 'etiqueta-exito'; } // verde
                                     elseif($alq['estado'] == 'cancelado') { echo 'etiqueta-error'; } // rojo
                                     else { echo 'etiqueta-aviso'; } // amarillo para 'pendiente'
                                 ?>">
-                                    <?php echo str_replace('_', ' ', strtoupper($alq['estado'])); ?>
+                                    <?php echo htmlspecialchars(str_replace('_', ' ', strtoupper($alq['estado']))); ?>
                                 </span>
                             </td>
                             <td class="text-center">
-                                <a href="detalle_alquiler.php?id=<?php echo $alq['id']; ?>" class="boton boton-pequeño">Ver Detalles</a><?php
+                                <a href="detalle_alquiler.php?id=<?php echo htmlspecialchars($alq['id']); ?>" class="boton boton-pequeño">Ver Detalles</a><?php
                                 // Solo mostrar el botón de cancelar si la reserva está pendiente
                                 if ($alq['estado'] == 'pendiente') {
                                     // Añadimos el botón de cancelar en la misma celda de acciones, con un espacio.
-                                    echo ' <a href="cancelar_reserva.php?id=' . $alq['id'] . '" class="boton boton-pequeño" onclick="return confirm(\'¿Estás seguro de que quieres cancelar esta reserva?\');">Cancelar</a>';
+                                    echo ' <a href="cancelar_reserva.php?id=' . htmlspecialchars($alq['id']) . '" class="boton boton-pequeño" onclick="return confirm(\'¿Estás seguro de que quieres cancelar esta reserva?\');">Cancelar</a>';
                                 } ?>
                             </td>
                         </tr>
@@ -278,7 +278,7 @@ $is_mobile = isMobile();
                 <h3>Cambiar Contraseña</h3>
                 <form action="procesar_cambio_password.php" method="POST" class="form-grid-3-col">
                     <!-- Campo oculto con el token CSRF para proteger contra ataques -->
-                    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                     <div class="form-group">
                         <label for="current_password">Contraseña Actual</label>
                         <input type="password" id="current_password" name="current_password" required>

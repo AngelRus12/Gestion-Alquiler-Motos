@@ -142,7 +142,7 @@ $is_mobile = isMobile();
 
     <main class="main-content">
         <div class="container">
-            <h2 class="titulo-pagina text-left">Detalle del Alquiler #<?php echo $alquiler['id']; ?></h2>
+            <h2 class="titulo-pagina text-left">Detalle del Alquiler #<?php echo htmlspecialchars($alquiler['id']); ?></h2>
             <a href="perfil_usuario" class="enlace-discreto enlace-volver">&larr; Volver a Mi Perfil</a>
 
             <div class="detalle-alquiler-container">
@@ -153,36 +153,36 @@ $is_mobile = isMobile();
                         $imagen_src = 'data:image/jpeg;base64,' . base64_encode($alquiler['imagen']);
                     }
                     ?>
-                    <img src="<?php echo $imagen_src; ?>" alt="Moto">
-                    <h3><?php echo $alquiler['marca'] . " " . $alquiler['modelo']; ?></h3>
-                    <p class="texto-gris-claro"><?php echo $alquiler['moto_descripcion']; ?></p>
-                    <span class="etiqueta etiqueta-azul"><?php echo strtoupper($alquiler['tipo']); ?></span>
+                    <img src="<?php echo htmlspecialchars($imagen_src); ?>" alt="Moto">
+                    <h3><?php echo htmlspecialchars($alquiler['marca'] . " " . $alquiler['modelo']); ?></h3>
+                    <p class="texto-gris-claro"><?php echo htmlspecialchars($alquiler['moto_descripcion']); ?></p>
+                    <span class="etiqueta etiqueta-azul"><?php echo strtoupper(htmlspecialchars($alquiler['tipo'])); ?></span>
                 </div>
 
                 <div class="resumen-alquiler">
                     <div class="perfil-container">
                         <h3>Resumen de la Reserva</h3>
                         <p><strong>Estado:</strong> 
-                            <span class="estado-alquiler <?php echo $alquiler['estado']; ?>">
-                                <?php echo str_replace('_', ' ', strtoupper($alquiler['estado'])); ?>
+                            <span class="estado-alquiler <?php echo htmlspecialchars($alquiler['estado']); ?>">
+                                <?php echo str_replace('_', ' ', strtoupper(htmlspecialchars($alquiler['estado']))); ?>
                             </span>
                         </p>
-                        <p><strong>Fecha de reserva:</strong> <?php echo date("d/m/Y H:i", strtotime($alquiler['fecha_reserva'])); ?></p>
-                        <p><strong>Fecha de finalización:</strong> <?php echo date("d/m/Y H:i", strtotime($alquiler['fecha_fin'])); ?></p>
-                        <p><strong>Cliente:</strong> <?php echo $alquiler['nombre'] . " " . $alquiler['apellidos']; ?></p>
-                        <p><strong>Email:</strong> <?php echo $alquiler['email']; ?></p>
+                        <p><strong>Fecha de reserva:</strong> <?php echo htmlspecialchars(date("d/m/Y H:i", strtotime($alquiler['fecha_reserva']))); ?></p>
+                        <p><strong>Fecha de finalización:</strong> <?php echo htmlspecialchars(date("d/m/Y H:i", strtotime($alquiler['fecha_fin']))); ?></p>
+                        <p><strong>Cliente:</strong> <?php echo htmlspecialchars($alquiler['nombre'] . " " . $alquiler['apellidos']); ?></p>
+                        <p><strong>Email:</strong> <?php echo htmlspecialchars($alquiler['email']); ?></p>
                     </div>
 
                     <div class="perfil-container">
                         <h3>Detalles del Precio</h3>
-                        <p><strong>Precio por día:</strong> <?php echo number_format($alquiler['precio_dia'], 2); ?>€</p>
-                        <p><strong>Días de alquiler:</strong> <?php echo $alquiler['dias_alquiler']; ?></p>
+                        <p><strong>Precio por día:</strong> <?php echo htmlspecialchars(number_format($alquiler['precio_dia'], 2)); ?>€</p>
+                        <p><strong>Días de alquiler:</strong> <?php echo htmlspecialchars($alquiler['dias_alquiler']); ?></p>
                         <hr class="divider-muted">
-                        <p><strong>Precio Total:</strong> <strong class="precio precio-total-grande"><?php echo number_format($alquiler['precio_total'], 2); ?>€</strong></p>
+                        <p><strong>Precio Total:</strong> <strong class="precio precio-total-grande"><?php echo htmlspecialchars(number_format($alquiler['precio_total'], 2)); ?>€</strong></p>
                         
                         <?php // Solo mostrar el botón de descarga si el alquiler está confirmado o finalizado ?>
                         <?php if ($alquiler['estado'] === 'confirmado' || $alquiler['estado'] === 'finalizado' || $alquiler['estado'] === 'en_curso'): ?>
-                            <a href="generar_factura.php?id=<?php echo $alquiler['id']; ?>" target="_blank" class="boton btn-fullwidth espaciado-arriba">
+                            <a href="generar_factura.php?id=<?php echo htmlspecialchars($alquiler['id']); ?>" target="_blank" class="boton btn-fullwidth espaciado-arriba">
                                 📄 Descargar Factura en PDF
                             </a>
                         <?php endif; ?>

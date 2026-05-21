@@ -160,21 +160,21 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                 <div class="stat-card">
                     <div class="info">
                         <h4>Usuarios Totales</h4>
-                        <p class="number"><?php echo $total_users; ?></p>
+                        <p class="number"><?php echo htmlspecialchars($total_users); ?></p>
                     </div>
                     <div class="stat-icon">👤</div>
                 </div>
                 <div class="stat-card">
                     <div class="info">
                         <h4>Catálogo de Motos</h4>
-                        <p class="number"><?php echo $total_motos; ?></p>
+                        <p class="number"><?php echo htmlspecialchars($total_motos); ?></p>
                     </div>
                     <div class="stat-icon">🏍️</div>
                 </div>
                 <div class="stat-card">
                     <div class="info">
                         <h4>Pagos Pendientes</h4>
-                        <p class="number"><?php echo $total_pendientes; ?></p>
+                        <p class="number"><?php echo htmlspecialchars($total_pendientes); ?></p>
                     </div>
                     <div class="stat-icon">💰</div>
                 </div>
@@ -227,11 +227,11 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                         <tbody>
                             <?php while ($promo = mysqli_fetch_assoc($res_promociones)) { ?>
                                 <tr>
-                                    <td><?php echo $promo['id']; ?></td>
+                                    <td><?php echo htmlspecialchars($promo['id']); ?></td>
                                     <td><?php echo htmlspecialchars($promo['titulo']); ?></td>
                                     <td><?php echo htmlspecialchars($promo['mensaje']); ?></td>
-                                    <td><?php echo $promo['fecha_inicio'] ?: '-'; ?> - <?php echo $promo['fecha_fin'] ?: '-'; ?></td>
-                                    <td><?php echo $promo['activo'] ? '<span class="etiqueta etiqueta-exito">Sí</span>' : '<span class="etiqueta etiqueta-aviso">No</span>'; ?></td>
+                                    <td><?php echo htmlspecialchars($promo['fecha_inicio'] ?: '-'); ?> - <?php echo htmlspecialchars($promo['fecha_fin'] ?: '-'); ?></td>
+                                    <td><?php echo $promo['activo'] ? '<span class="etiqueta etiqueta-exito">Sí</span>' : '<span class="etiqueta-aviso">No</span>'; ?></td>
                                 </tr>
                             <?php } ?>
                         </tbody>
@@ -285,10 +285,10 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                         <tbody>
                             <?php while ($user = mysqli_fetch_assoc($resultado_usuarios)) { ?>
                             <tr>
-                                <td><?php echo $user['id']; ?></td>
-                                <td><?php echo $user['nombre'] . " " . $user['apellidos']; ?></td>
-                                <td><?php echo $user['email']; ?></td>
-                                <td><span class="etiqueta etiqueta-azul"><?php echo strtoupper($user['rol']); ?></span></td>
+                                <td><?php echo htmlspecialchars($user['id']); ?></td>
+                                <td><?php echo htmlspecialchars($user['nombre'] . " " . $user['apellidos']); ?></td>
+                                <td><?php echo htmlspecialchars($user['email']); ?></td>
+                                <td><span class="etiqueta etiqueta-azul"><?php echo strtoupper(htmlspecialchars($user['rol'])); ?></span></td>
                                 <td>
                                     <?php 
                                     // Se asigna una clase CSS diferente según el estado del usuario para darle un color distintivo.
@@ -297,13 +297,13 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                                         $clase_estado = 'etiqueta-exito';
                                     }
                                     ?>
-                                    <span class="etiqueta <?php echo $clase_estado; ?>">
-                                        <?php echo strtoupper($user['estado']); ?>
+                                    <span class="etiqueta <?php echo htmlspecialchars($clase_estado); ?>">
+                                        <?php echo strtoupper(htmlspecialchars($user['estado'])); ?>
                                     </span>
                                 </td>
                                 <td class="nowrap">
-                                    <a href="editar_usuario.php?id=<?php echo $user['id']; ?>" class="boton boton-pequeño">Editar</a>
-                                    <a href="eliminar_usuario.php?id=<?php echo $user['id']; ?>" class="boton boton-pequeño etiqueta-error">Eliminar</a>
+                                    <a href="editar_usuario.php?id=<?php echo htmlspecialchars($user['id']); ?>" class="boton boton-pequeño">Editar</a>
+                                    <a href="eliminar_usuario.php?id=<?php echo htmlspecialchars($user['id']); ?>" class="boton boton-pequeño etiqueta-error">Eliminar</a>
                                 </td>
                             </tr>
                             <?php } ?>
@@ -344,11 +344,11 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                                         $imagen_src = 'data:image/jpeg;base64,' . base64_encode($moto['imagen']);
                                     }
                                     ?>
-                                    <img src="<?php echo $imagen_src; ?>" alt="Moto" class="miniatura-admin">
+                                    <img src="<?php echo htmlspecialchars($imagen_src); ?>" alt="Moto" class="miniatura-admin">
                                 </td>
-                                <td><strong class="text-white"><?php echo $moto['marca'] . " " . $moto['modelo']; ?></strong></td>
-                                <td><?php echo strtoupper($moto['tipo']); ?></td>
-                                <td class="precio"><?php echo $moto['precio_dia']; ?>€</td>
+                                <td><strong class="text-white"><?php echo htmlspecialchars($moto['marca'] . " " . $moto['modelo']); ?></strong></td>
+                                <td><?php echo strtoupper(htmlspecialchars($moto['tipo'])); ?></td>
+                                <td class="precio"><?php echo htmlspecialchars($moto['precio_dia']); ?>€</td>
                                 <td>
                                     <?php // Se muestra un estado diferente si la moto está disponible o alquilada. ?>
                                     <?php if ($moto['disponible'] == 1 || $moto['disponible'] == 'si') { ?>
@@ -382,7 +382,7 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                                                 
                                                 if ($quien_alquila = mysqli_fetch_assoc($res_usuario_alquila)) {
                                                     // Paso 3: Mostrar el nombre del cliente con un enlace al detalle del alquiler.
-                                                    echo '<a href="detalle_alquiler.php?id=' . $alquiler_id . '" class="boton boton-secundario boton-pequeño mt-5">👤 ' . htmlspecialchars($quien_alquila['nombre'] . ' ' . $quien_alquila['apellidos']) . '</a>';
+                                                    echo '<a href="detalle_alquiler.php?id=' . htmlspecialchars($alquiler_id) . '" class="boton boton-secundario boton-pequeño mt-5">👤 ' . htmlspecialchars($quien_alquila['nombre'] . ' ' . $quien_alquila['apellidos']) . '</a>';
                                                 }
                                                 mysqli_stmt_close($stmt_usuario_alquila);
                                             }
@@ -392,8 +392,8 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                                     <?php } ?>
                                 </td>
                                 <td class="nowrap">
-                                    <a href="editar_moto.php?id=<?php echo $moto['id']; ?>" class="boton boton-pequeño">Editar</a>
-                                    <a href="eliminar_moto.php?id=<?php echo $moto['id']; ?>" class="boton boton-pequeño etiqueta-error">Eliminar</a>
+                                    <a href="editar_moto.php?id=<?php echo htmlspecialchars($moto['id']); ?>" class="boton boton-pequeño">Editar</a>
+                                    <a href="eliminar_moto.php?id=<?php echo htmlspecialchars($moto['id']); ?>" class="boton boton-pequeño etiqueta-error">Eliminar</a>
                                 </td>
                             </tr>
                             <?php } ?>
@@ -466,24 +466,24 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                                     $moto_data = $motos_pendientes[$alquiler['moto_id']] ?? ['marca' => 'Moto', 'modelo' => 'Eliminada'];
                             ?>
                             <tr>
-                                <td><?php echo $user_data['nombre'] . " " . $user_data['apellidos']; ?></td>
-                                <td><?php echo $moto_data['marca'] . " " . $moto_data['modelo']; ?></td>
+                                <td><?php echo htmlspecialchars($user_data['nombre'] . " " . $user_data['apellidos']); ?></td>
+                                <td><?php echo htmlspecialchars($moto_data['marca'] . " " . $moto_data['modelo']); ?></td>
                                 <td>
-                                    <?php echo date("d/m/Y", strtotime($alquiler['fecha_inicio'])); ?> - 
-                                    <?php echo date("d/m/Y", strtotime($alquiler['fecha_fin'])); ?>
+                                    <?php echo htmlspecialchars(date("d/m/Y", strtotime($alquiler['fecha_inicio']))); ?> - 
+                                    <?php echo htmlspecialchars(date("d/m/Y", strtotime($alquiler['fecha_fin']))); ?>
                                 </td>
-                                <td class="precio"><strong><?php echo $alquiler['precio_total']; ?>€</strong></td>
+                                <td class="precio"><strong><?php echo htmlspecialchars($alquiler['precio_total']); ?>€</strong></td>
                                 <td>
                                     <!-- Formulario para confirmar el pago en tienda -->
                                     <form action="confirmar_pago_tienda.php" method="GET" class="inline-form">
-                                        <input type="hidden" name="id" value="<?php echo $alquiler['id']; ?>">
+                                        <input type="hidden" name="id" value="<?php echo htmlspecialchars($alquiler['id']); ?>">
                                         <button type="submit" class="boton btn-sm etiqueta-exito">
                                             Confirmar Pago
                                         </button>
                                     </form>
                                     <!-- Formulario para que el admin cancele el alquiler -->
                                     <form action="cancelar_alquiler_admin.php" method="GET" class="inline-form ml-10">
-                                        <input type="hidden" name="id" value="<?php echo $alquiler['id']; ?>">
+                                        <input type="hidden" name="id" value="<?php echo htmlspecialchars($alquiler['id']); ?>">
                                         <button type="submit" class="boton boton-pequeño boton-error">Cancelar</button>
                                     </form>
                                 </td>
@@ -558,17 +558,17 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                                     $moto_alquiler = $todas_motos[$alquiler_full['moto_id']] ?? ['marca' => 'Moto', 'modelo' => 'Eliminada'];
                             ?>
                             <tr>
-                                <td>#<?php echo $alquiler_full['id']; ?></td>
+                                <td>#<?php echo htmlspecialchars($alquiler_full['id']); ?></td>
                                 <td><?php echo htmlspecialchars($usuario_alquiler['nombre'] . " " . $usuario_alquiler['apellidos']); ?></td>
-                                <td><?php echo $moto_alquiler['marca'] . " " . $moto_alquiler['modelo']; ?></td>
+                                <td><?php echo htmlspecialchars($moto_alquiler['marca'] . " " . $moto_alquiler['modelo']); ?></td>
                                 <td>
-                                    <?php echo date("d/m/Y", strtotime($alquiler_full['fecha_inicio'])); ?> - 
-                                    <?php echo date("d/m/Y", strtotime($alquiler_full['fecha_fin'])); ?>
+                                    <?php echo htmlspecialchars(date("d/m/Y", strtotime($alquiler_full['fecha_inicio']))); ?> - 
+                                    <?php echo htmlspecialchars(date("d/m/Y", strtotime($alquiler_full['fecha_fin']))); ?>
                                 </td>
-                                <td class="precio"><strong><?php echo $alquiler_full['precio_total']; ?>€</strong></td>
-                                <td><span class="etiqueta estado-alquiler <?php echo $alquiler_full['estado']; ?>"><?php echo str_replace('_', ' ', strtoupper($alquiler_full['estado'])); ?></span></td>
+                                <td class="precio"><strong><?php echo htmlspecialchars($alquiler_full['precio_total']); ?>€</strong></td>
+                                <td><span class="etiqueta estado-alquiler <?php echo htmlspecialchars($alquiler_full['estado']); ?>"><?php echo htmlspecialchars(str_replace('_', ' ', strtoupper($alquiler_full['estado']))); ?></span></td>
                                 <td>
-                                    <a href="detalle_alquiler.php?id=<?php echo $alquiler_full['id']; ?>" class="boton boton-pequeño">Ver Detalles</a>
+                                    <a href="detalle_alquiler.php?id=<?php echo htmlspecialchars($alquiler_full['id']); ?>" class="boton boton-pequeño">Ver Detalles</a>
                                 </td>
                             </tr>
                             <?php 
