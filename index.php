@@ -45,7 +45,7 @@ $is_mobile = isMobile();
 <body>
     <header class="navbar">
         <div class="container">
-            <h1>ARUSLAT</h1>
+            <h1><a href="index.php">ARUSLAT</a></h1>
             <nav>
                 <a href="index">Inicio</a>
                 <a href="catalogo">Catálogo</a>
