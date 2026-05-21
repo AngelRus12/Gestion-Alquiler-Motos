@@ -523,25 +523,35 @@ tr:hover td {
    PROMOCIÓN Y CALENDARIO EN MÓVIL
    ========================================================== */
 .promo-banner {
-    background-color: var(--bg-tarjeta);
-    border: 1px solid var(--borde-tarjeta);
+    width: 100%;
+    background: var(--bg-tarjeta);
+    border: none;
     padding: 18px 0;
-    border-radius: var(--borde-redondeado);
-    box-shadow: var(--sombre-tarjeta);
     margin: 20px 0;
+    box-shadow: var(--sombre-tarjeta);
 }
 .promo-banner .promo-content {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 16px;
     max-width: 100%;
     margin: 0 auto;
-    padding: 0 15px;
+    padding: 0 16px;
+}
+.promo-banner .promo-description {
+    display: flex;
+    align-items: center;
+}
+.promo-banner .promo-description p {
+    margin: 0;
+    color: var(--texto-gris);
+    font-size: 1rem;
+    line-height: 1.6;
 }
 .promo-banner .promo-label {
     display: inline-block;
-    margin-bottom: 10px;
-    padding: 6px 12px;
+    margin-bottom: 8px;
+    padding: 8px 14px;
     border-radius: 999px;
     background: var(--naranja-principal);
     color: var(--texto-blanco);
@@ -553,25 +563,27 @@ tr:hover td {
 .promo-banner h2 {
     margin: 0 0 8px;
     color: var(--texto-blanco);
-    font-size: 1.4rem;
-    line-height: 1.15;
+    font-size: 1.35rem;
+    line-height: 1.2;
 }
 .promo-banner p {
     margin: 0;
     color: var(--texto-gris);
-    font-size: 0.96rem;
+    font-size: 1rem;
 }
 .promo-banner .promo-btn {
-    align-self: flex-start;
+    align-self: stretch;
+    display: inline-flex;
+    justify-content: center;
     padding: 12px 22px;
-    border-radius: 10px;
+    border-radius: 999px;
     background: var(--naranja-principal);
     color: var(--texto-blanco);
     font-weight: 700;
-    box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.22);
 }
 .promo-banner .promo-btn:hover {
-    background-color: #ff4500;
+    background-color: #ff7f3b;
 }
 
 .promo-form {

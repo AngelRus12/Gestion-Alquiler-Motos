@@ -733,29 +733,50 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
 
 /* Estilos de promociones en la página de inicio */
 .promo-banner {
+    width: 100%;
     background: var(--bg-tarjeta);
     color: var(--texto-blanco);
-    padding: 14px 0;
-    border-bottom: 1px solid var(--borde-tarjeta);
+    padding: 20px 0;
+    margin: 0;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
     box-shadow: var(--sombre-tarjeta);
 }
+.promo-banner > .container {
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 24px;
+}
 .promo-banner .promo-content {
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) minmax(320px, 1.4fr) auto;
+    align-items: center;
+    gap: 24px;
+    width: 100%;
+}
+.promo-banner .promo-summary {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 260px;
+}
+.promo-banner .promo-description {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 18px;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 10px;
+    min-width: 320px;
 }
-.promo-banner .promo-text {
-    flex: 1 1 60%;
-    min-width: 0;
+.promo-banner .promo-description p {
+    margin: 0;
+    color: var(--texto-gris);
+    opacity: 0.9;
+    font-size: 1rem;
+    line-height: 1.6;
 }
 .promo-banner .promo-label {
     display: inline-block;
-    margin-bottom: 8px;
-    padding: 6px 12px;
+    margin-bottom: 10px;
+    padding: 8px 14px;
     border-radius: 999px;
     background: var(--naranja-principal);
     color: var(--texto-blanco);
@@ -765,37 +786,49 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
     text-transform: uppercase;
 }
 .promo-banner h2 {
-    margin: 6px 0 8px;
-    font-size: 1.45rem;
+    margin: 0 0 10px;
+    font-size: 1.55rem;
     color: var(--texto-blanco);
     line-height: 1.15;
 }
 .promo-banner p {
     margin: 0;
     color: var(--texto-gris);
-    opacity: 0.95;
+    opacity: 0.9;
     font-size: 1rem;
+    max-width: 720px;
 }
 .promo-banner .promo-btn {
     background: var(--naranja-principal);
     color: var(--texto-blanco);
-    border-radius: 8px;
-    padding: 10px 18px;
+    border-radius: 999px;
+    padding: 12px 24px;
     text-decoration: none;
     font-weight: 700;
-    box-shadow: 0 6px 14px rgba(0,0,0,0.25);
-    transition: transform .15s ease, box-shadow .15s ease;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.24);
+    transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease;
 }
 .promo-banner .promo-btn:hover {
     transform: translateY(-2px);
-    background-color: #ff4500;
-    box-shadow: 0 10px 22px rgba(0,0,0,0.32);
+    background-color: #ff7f3b;
+    box-shadow: 0 10px 22px rgba(0,0,0,0.28);
 }
-@media (max-width: 700px) {
-    .promo-banner .promo-content { flex-direction: column; align-items: flex-start; gap: 10px; padding: 0 12px; }
-    .promo-banner .promo-btn { width: 100%; text-align: center; }
-    .promo-banner h2 { font-size: 1.1rem; }
-    .promo-banner p { font-size: 0.95rem; }
+@media (max-width: 900px) {
+    .promo-banner > .container {
+        padding: 0 16px;
+    }
+    .promo-banner .promo-content {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 18px;
+    }
+    .promo-banner .promo-btn {
+        width: 100%;
+        text-align: center;
+    }
+    .promo-banner h2 { font-size: 1.35rem; }
+    .promo-banner .promo-description p { font-size: 1rem; }
 }
 
 /* Estilos para el formulario de promociones */

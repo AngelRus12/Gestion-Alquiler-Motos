@@ -70,13 +70,17 @@ $is_mobile = isMobile();
     <section class="promo-banner">
         <div class="container">
             <div class="promo-content">
-                <div class="promo-text">
+                <div class="promo-summary">
                     <span class="promo-label">Oferta destacada</span>
                     <h2><?php echo htmlspecialchars($promocion_activa['titulo']); ?></h2>
+                </div>
+                <div class="promo-description">
                     <p><?php echo htmlspecialchars($promocion_activa['mensaje']); ?></p>
                 </div>
                 <?php if (!empty($promocion_activa['enlace'])): ?>
-                    <a href="<?php echo htmlspecialchars($promocion_activa['enlace']); ?>" class="btn promo-btn">Ver oferta</a>
+                    <div class="promo-action">
+                        <a href="<?php echo htmlspecialchars($promocion_activa['enlace']); ?>" class="btn promo-btn">Ver oferta</a>
+                    </div>
                 <?php endif; ?>
             </div>
         </div>
