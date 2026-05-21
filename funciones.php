@@ -38,6 +38,23 @@ function validar_csrf_token() {
 }
 
 /**
+ * Inicia una sesión segura con cookies configuradas adecuadamente.
+ * Esta función debe llamarse antes de cualquier salida HTML cuando no se haya iniciado sesión todavía.
+ */
+function start_secure_session() {
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_set_cookie_params([
+            'lifetime' => 1800,
+            'path' => '/',
+            'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+            'httponly' => true,
+            'samesite' => 'Lax'
+        ]);
+        session_start();
+    }
+}
+
+/**
  * Calcula la antigüedad de un usuario en días desde su fecha de registro (DATEDIFF).
  * @param mysqli $conn La conexión a la base de datos.
  * @param int $usuario_id El ID del usuario.

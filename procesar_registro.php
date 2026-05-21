@@ -6,8 +6,10 @@
  * - Comprueba unicidad de email y DNI en la base de datos.
  * - Hashea la contraseña antes de guardarla.
  */
-session_start();
+require_once 'funciones.php';
+start_secure_session();
 require_once 'loginbd.php';
+validar_csrf_token();
 
 $conexion = mysqli_connect($db_hostname, $db_username, $db_password, $db_database);
 

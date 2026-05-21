@@ -6,8 +6,10 @@
  * - Verifica la contraseña con password_verify().
  * - Redirige según el rol de usuario (admin o cliente).
  */
-session_start();
+require_once 'funciones.php';
+start_secure_session();
 require_once 'loginbd.php';
+validar_csrf_token();
 
 $conexion = mysqli_connect($db_hostname, $db_username, $db_password, $db_database);
 
@@ -39,7 +41,7 @@ $resultado = mysqli_stmt_get_result($stmt);
 
 if ($usuario = mysqli_fetch_assoc($resultado)) {
     if (password_verify($password, $usuario['password'])) {
-        
+        session_regenerate_id(true);
         $_SESSION['usuario_id'] = $usuario['id'];
         $_SESSION['usuario_nombre'] = $usuario['nombre'];
         $_SESSION['rol'] = $usuario['rol']; 

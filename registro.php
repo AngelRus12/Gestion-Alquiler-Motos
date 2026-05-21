@@ -5,7 +5,9 @@
  * - Guarda temporalmente los datos inválidos en sesión para reinsertarlos en el formulario.
  * - Utiliza validación HTML y mensajes de error claros para facilitar la experiencia.
  */
-session_start();
+require_once 'funciones.php';
+start_secure_session();
+generar_csrf_token();
 
 $old_data = $_SESSION['form_data'] ?? [];
 unset($_SESSION['form_data']);
@@ -58,6 +60,7 @@ $is_mobile = isMobile();
         ?>
         
         <form action="procesar_registro.php" method="POST">
+            <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
             <div class="form-grid-2-col">
                 <div class="form-group">
                     <label for="nombre">Nombre: *</label>

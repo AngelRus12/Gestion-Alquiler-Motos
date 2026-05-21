@@ -7,9 +7,11 @@
  * - Muestra mensajes de error de login y resultados del registro.
  */
 // Configurar el tiempo de vida de la sesión (ej. 30 minutos de inactividad)
+require_once 'funciones.php';
 ini_set('session.gc_maxlifetime', 1800);
-session_set_cookie_params(1800);
-session_start();
+start_secure_session();
+
+generar_csrf_token();
 
 // Función para detectar dispositivos móviles
 function isMobile() {
@@ -63,7 +65,8 @@ if (isset($_SESSION['usuario_id'])) {
         }
         ?>
         
-        <form method="POST" action="procesar_login">
+        <form method="POST" action="procesar_login.php">
+            <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
             <div class="form-group">
                 <label for="email">Email:</label>
                 <input type="email" id="email" name="email" required>

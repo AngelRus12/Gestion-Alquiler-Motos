@@ -19,14 +19,14 @@ if (!isset($_SESSION['usuario_id'])) {
 
 // --- 2. VALIDACIÓN DE ENTRADA ---
 // Verifica si se ha pasado un parámetro 'id' en la URL. Si no, redirige al perfil.
-if (!isset($_GET['id'])) {
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     header('Location: perfil_usuario.php?error=no_id');
     exit();
 }
 
 // --- 3. RECOLECCIÓN DE DATOS ---
 // Se obtiene el ID del alquiler a cancelar desde la URL.
-$id_alquiler_a_cancelar = $_GET['id'];
+$id_alquiler_a_cancelar = (int) $_GET['id'];
 // Se obtiene el ID del usuario actual desde la sesión.
 $id_usuario_actual = $_SESSION['usuario_id'];
 
@@ -50,11 +50,11 @@ $stmt = mysqli_prepare($conexion, $sql);
 mysqli_stmt_bind_param($stmt, "ii", $id_alquiler_a_cancelar, $id_usuario_actual);
 
 // Se ejecuta la consulta.
-if (mysqli_stmt_execute($stmt)) {
+if (mysqli_stmt_execute($stmt) && mysqli_stmt_affected_rows($stmt) > 0) {
     // Si la actualización es exitosa, se redirige al perfil con un mensaje de éxito.
     header('Location: perfil_usuario.php?cancelacion=exitosa');
 } else {
-    // Si falla, se redirige con un mensaje de error.
+    // Si falla o no se encontró la reserva, se redirige con un mensaje de error.
     header('Location: perfil_usuario.php?error=cancelacion_fallida');
 }
 

@@ -63,21 +63,51 @@ $is_mobile = isMobile();
             // Obtener valores distintos para selects
             $marcas_res = mysqli_query($conexion, "SELECT DISTINCT marca FROM motos WHERE marca IS NOT NULL AND marca <> '' ORDER BY marca");
             $marcas = mysqli_fetch_all($marcas_res, MYSQLI_ASSOC);
-            $modelos_res = mysqli_query($conexion, "SELECT DISTINCT modelo FROM motos WHERE modelo IS NOT NULL AND modelo <> '' ORDER BY modelo");
-            $modelos = mysqli_fetch_all($modelos_res, MYSQLI_ASSOC);
+
+            // Si hay marca seleccionada, limitar el listado de modelos a esa marca.
+            $selected_marca = isset($_GET['marca']) ? trim($_GET['marca']) : '';
+            $selected_modelo = isset($_GET['modelo']) ? trim($_GET['modelo']) : '';
+            $selected_tipo = isset($_GET['tipo']) ? trim($_GET['tipo']) : '';
+
+            if ($selected_marca !== '') {
+                $stmt_modelos = mysqli_prepare($conexion, "SELECT DISTINCT modelo FROM motos WHERE marca = ? AND modelo IS NOT NULL AND modelo <> '' ORDER BY modelo");
+                mysqli_stmt_bind_param($stmt_modelos, 's', $selected_marca);
+                mysqli_stmt_execute($stmt_modelos);
+                $modelos_res = mysqli_stmt_get_result($stmt_modelos);
+                $modelos = mysqli_fetch_all($modelos_res, MYSQLI_ASSOC);
+                mysqli_stmt_close($stmt_modelos);
+
+                // Si el modelo seleccionado no pertenece a la marca actual, ignorarlo.
+                if ($selected_modelo !== '') {
+                    $stmt_valida_modelo = mysqli_prepare($conexion, "SELECT COUNT(*) AS total FROM motos WHERE marca = ? AND modelo = ?");
+                    mysqli_stmt_bind_param($stmt_valida_modelo, 'ss', $selected_marca, $selected_modelo);
+                    mysqli_stmt_execute($stmt_valida_modelo);
+                    $valid_result = mysqli_stmt_get_result($stmt_valida_modelo);
+                    $valid_row = mysqli_fetch_assoc($valid_result);
+                    mysqli_stmt_close($stmt_valida_modelo);
+
+                    if (intval($valid_row['total']) === 0) {
+                        $selected_modelo = '';
+                    }
+                }
+            } else {
+                $modelos_res = mysqli_query($conexion, "SELECT DISTINCT modelo FROM motos WHERE modelo IS NOT NULL AND modelo <> '' ORDER BY modelo");
+                $modelos = mysqli_fetch_all($modelos_res, MYSQLI_ASSOC);
+            }
+
             $tipos_res = mysqli_query($conexion, "SELECT DISTINCT tipo FROM motos WHERE tipo IS NOT NULL AND tipo <> '' ORDER BY tipo");
             $tipos = mysqli_fetch_all($tipos_res, MYSQLI_ASSOC);
 
             // Mostrar formulario de filtros (selects dinámicos)
             ?>
-            <form method="get" class="formulario-filtros espaciado-arriba-20 catalogo-filtros-form">
+            <form method="get" action="catalogo.php" class="formulario-filtros espaciado-arriba-20 catalogo-filtros-form">
                 <div class="form-grid-3-col">
                     <div class="form-group">
                         <label>Marca</label>
-                        <select name="marca">
+                        <select name="marca" onchange="document.querySelector('select[name=\'modelo\']').value=''; this.form.submit();">
                             <option value="">-- Todas --</option>
                             <?php foreach ($marcas as $m): ?>
-                                <option value="<?php echo htmlspecialchars($m['marca']); ?>" <?php if(isset($_GET['marca']) && $_GET['marca']==$m['marca']) echo 'selected'; ?>><?php echo htmlspecialchars($m['marca']); ?></option>
+                                <option value="<?php echo htmlspecialchars($m['marca']); ?>" <?php if($selected_marca !== '' && $selected_marca == $m['marca']) echo 'selected'; ?>><?php echo htmlspecialchars($m['marca']); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -86,7 +116,7 @@ $is_mobile = isMobile();
                         <select name="modelo">
                             <option value="">-- Todos --</option>
                             <?php foreach ($modelos as $mo): ?>
-                                <option value="<?php echo htmlspecialchars($mo['modelo']); ?>" <?php if(isset($_GET['modelo']) && $_GET['modelo']==$mo['modelo']) echo 'selected'; ?>><?php echo htmlspecialchars($mo['modelo']); ?></option>
+                                <option value="<?php echo htmlspecialchars($mo['modelo']); ?>" <?php if($selected_modelo !== '' && $selected_modelo == $mo['modelo']) echo 'selected'; ?>><?php echo htmlspecialchars($mo['modelo']); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -95,7 +125,7 @@ $is_mobile = isMobile();
                         <select name="tipo">
                             <option value="">-- Cualquiera --</option>
                             <?php foreach ($tipos as $t): ?>
-                                <option value="<?php echo htmlspecialchars($t['tipo']); ?>" <?php if(isset($_GET['tipo']) && $_GET['tipo']==$t['tipo']) echo 'selected'; ?>><?php echo htmlspecialchars($t['tipo']); ?></option>
+                                <option value="<?php echo htmlspecialchars($t['tipo']); ?>" <?php if($selected_tipo !== '' && $selected_tipo == $t['tipo']) echo 'selected'; ?>><?php echo htmlspecialchars($t['tipo']); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -126,14 +156,14 @@ $is_mobile = isMobile();
             $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
             $offset = ($page - 1) * $per_page;
 
-            // Construir WHERE y parámetros para prepared statements
+            // Construir WHERE y parámetros para prepared statements con los valores ya validados.
             $where_clauses = array("(disponible = 1 OR disponible = 'si')");
             $params = array();
             $types = '';
 
-            if (!empty($_GET['marca'])) { $where_clauses[] = "marca LIKE ?"; $types .= 's'; $params[] = '%' . trim($_GET['marca']) . '%'; }
-            if (!empty($_GET['modelo'])) { $where_clauses[] = "modelo LIKE ?"; $types .= 's'; $params[] = '%' . trim($_GET['modelo']) . '%'; }
-            if (!empty($_GET['tipo'])) { $where_clauses[] = "tipo = ?"; $types .= 's'; $params[] = trim($_GET['tipo']); }
+            if ($selected_marca !== '') { $where_clauses[] = "marca = ?"; $types .= 's'; $params[] = $selected_marca; }
+            if ($selected_modelo !== '') { $where_clauses[] = "modelo = ?"; $types .= 's'; $params[] = $selected_modelo; }
+            if ($selected_tipo !== '') { $where_clauses[] = "tipo = ?"; $types .= 's'; $params[] = $selected_tipo; }
             if (isset($_GET['precio_min']) && $_GET['precio_min'] !== '') { $where_clauses[] = "precio_dia >= ?"; $types .= 'i'; $params[] = intval($_GET['precio_min']); }
             if (isset($_GET['precio_max']) && $_GET['precio_max'] !== '') { $where_clauses[] = "precio_dia <= ?"; $types .= 'i'; $params[] = intval($_GET['precio_max']); }
             if (isset($_GET['cil_min']) && $_GET['cil_min'] !== '') { $where_clauses[] = "cilindrada >= ?"; $types .= 'i'; $params[] = intval($_GET['cil_min']); }
@@ -181,7 +211,9 @@ $is_mobile = isMobile();
             
             // Mostrar resultados
             echo '<div class="grid">';
+            $filas_mostradas = 0;
             while ($fila = mysqli_fetch_assoc($resultado)) {
+                $filas_mostradas++;
                     // Estructura de la tarjeta actualizada para coincidir con .card y .card-body
                     echo '<div class="card">';
                     if (!empty($fila['imagen'])) {
@@ -190,13 +222,16 @@ $is_mobile = isMobile();
                         echo '<img src="imgs/default.jpg" alt="Moto">';
                     }
                     echo '<div class="card-body">';
-                    echo '<h3>' . $fila['marca'] . ' ' . $fila['modelo'] . '</h3>';
+                    echo '<h3>' . htmlspecialchars($fila['marca'] . ' ' . $fila['modelo']) . '</h3>';
                     // Añadido .descripcion
-                    echo '<p class="descripcion">' . $fila['descripcion'] . '</p>';
-                    echo '<p class="precio">' . $fila['precio_dia'] . ' €/día</p>';
-                    echo '<a href="detalle_moto?id=' . $fila['id'] . '" class="btn">Reservar Ahora</a>';
+                    echo '<p class="descripcion">' . htmlspecialchars($fila['descripcion']) . '</p>';
+                    echo '<p class="precio">' . htmlspecialchars($fila['precio_dia']) . ' €/día</p>';
+                    echo '<a href="detalle_moto?id=' . intval($fila['id']) . '" class="btn">Reservar Ahora</a>';
                     echo '</div></div>';
                 }
+            if ($filas_mostradas === 0) {
+                echo '<div class="sin-resultados"><p>No se encontraron motos con los filtros seleccionados.</p></div>';
+            }
             echo '</div>';
             mysqli_close($conexion);
             ?>

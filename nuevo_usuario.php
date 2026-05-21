@@ -18,32 +18,40 @@ $is_mobile = isMobile();
 $mensaje = "";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $nombre = mysqli_real_escape_string($conexion, $_POST['nombre']);
-    $apellidos = mysqli_real_escape_string($conexion, $_POST['apellidos']);
-    $email = mysqli_real_escape_string($conexion, $_POST['email']);
-    $telefono = mysqli_real_escape_string($conexion, $_POST['telefono']);
-    $dni = mysqli_real_escape_string($conexion, $_POST['dni']);
-    $direccion = mysqli_real_escape_string($conexion, $_POST['direccion']);
-    $rol = $_POST['rol'];
+    $nombre = trim($_POST['nombre'] ?? '');
+    $apellidos = trim($_POST['apellidos'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $telefono = trim($_POST['telefono'] ?? '');
+    $dni = trim($_POST['dni'] ?? '');
+    $direccion = trim($_POST['direccion'] ?? '');
+    $rol = ($_POST['rol'] === 'admin') ? 'admin' : 'cliente';
     
-    $password_plana = $_POST['password'];
+    $password_plana = $_POST['password'] ?? '';
     $password_hash = password_hash($password_plana, PASSWORD_DEFAULT);
 
-    $check_email = mysqli_query($conexion, "SELECT id FROM usuarios WHERE email = '$email'");
-    
-    if (mysqli_num_rows($check_email) > 0) {
+    $stmt_check = mysqli_prepare($conexion, "SELECT id FROM usuarios WHERE email = ?");
+    mysqli_stmt_bind_param($stmt_check, 's', $email);
+    mysqli_stmt_execute($stmt_check);
+    mysqli_stmt_store_result($stmt_check);
+
+    if (mysqli_stmt_num_rows($stmt_check) > 0) {
         $mensaje = "<div class='alerta alerta-error'>Ese correo ya existe en el sistema.</div>";
     } else {
-        $sql = "INSERT INTO usuarios (nombre, apellidos, email, password, telefono, dni, direccion, rol, estado) 
-                VALUES ('$nombre', '$apellidos', '$email', '$password_hash', '$telefono', '$dni', '$direccion', '$rol', 'activo')";
+        $sql = "INSERT INTO usuarios (nombre, apellidos, email, password, telefono, dni, direccion, rol, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'activo')";
+        $stmt_insert = mysqli_prepare($conexion, $sql);
+        mysqli_stmt_bind_param($stmt_insert, 'ssssssss', $nombre, $apellidos, $email, $password_hash, $telefono, $dni, $direccion, $rol);
 
-        if (mysqli_query($conexion, $sql)) {
+        if (mysqli_stmt_execute($stmt_insert)) {
+            mysqli_stmt_close($stmt_insert);
+            mysqli_stmt_close($stmt_check);
             header('Location: admin_dashboard.php?msg=usuario_creado');
             exit();
         } else {
             $mensaje = "<div class='alerta alerta-error'>No se pudo crear el usuario.</div>";
+            mysqli_stmt_close($stmt_insert);
         }
     }
+    mysqli_stmt_close($stmt_check);
 }
 ?>
 
