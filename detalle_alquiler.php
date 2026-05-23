@@ -34,16 +34,15 @@ $alquiler_id = (int)$_GET['id'];
 $usuario_id = $_SESSION['usuario_id'];
 
 // --- 4. CONSULTA SEGURA DE DATOS DEL ALQUILER ---
-// La consulta se adapta según el rol del usuario para garantizar la seguridad y privacidad.
+// La consulta para obtener los datos del alquiler es diferente si eres admin o un usuario normal.
 if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin') {
-    // Si el usuario es administrador, puede ver los detalles de cualquier alquiler.
-    // La consulta solo filtra por el ID del alquiler.
+    // Si es admin, puede ver cualquier alquiler solo con saber su ID.
     $sql_alquiler = "SELECT * FROM alquileres WHERE id = ?";
     $stmt_alquiler = mysqli_prepare($conexion, $sql_alquiler);
     mysqli_stmt_bind_param($stmt_alquiler, "i", $alquiler_id);
 } else {
-    // Si es un usuario normal, solo puede ver los alquileres que le pertenecen.
-    // CRÍTICO: Se añade la condición 'AND usuario_id = ?' para asegurar que un usuario no pueda ver
+    // Si es un usuario normal, además del ID del alquiler, compruebo que el 'usuario_id'
+    // del alquiler coincida con el de la sesión. Esto es para que un usuario no pueda ver los alquileres de otro.
     // los datos de otro simplemente cambiando el ID en la URL.
     $sql_alquiler = "SELECT * FROM alquileres WHERE id = ? AND usuario_id = ?";
     $stmt_alquiler = mysqli_prepare($conexion, $sql_alquiler);
@@ -56,28 +55,27 @@ $alquiler = mysqli_fetch_assoc($resultado_alquiler);
 mysqli_stmt_close($stmt_alquiler);
 
 // --- 5. VERIFICACIÓN DE EXISTENCIA ---
-// Si la consulta anterior no devolvió ningún alquiler, significa que no existe o no pertenece al usuario.
+// Si la consulta no devuelve nada, es que el alquiler no existe o no tienes permiso para verlo.
 if (!$alquiler) {
     header('Location: perfil_usuario.php?error=no_encontrado');
     exit();
 }
 
 // --- 6. OBTENCIÓN DE DATOS RELACIONADOS (SIN USAR JOINs) ---
-// En lugar de una consulta compleja con JOIN, se realizan consultas simples y separadas.
-// Esto puede ser más fácil de leer y depurar en algunos casos.
+// Ahora que tengo los datos del alquiler, necesito los de la moto y el usuario.
+// Los busco por separado para no usar JOINs.
 $moto_data = [];
 $usuario_data = [];
 
-// Consulta para obtener los datos de la moto asociada al alquiler.
+// Busco los datos de la moto usando el 'moto_id' que obtuve en la consulta anterior.
 $sql_moto = "SELECT marca, modelo, tipo, precio_dia, imagen, descripcion as moto_descripcion FROM motos WHERE id = ?";
 $stmt_moto = mysqli_prepare($conexion, $sql_moto);
 mysqli_stmt_bind_param($stmt_moto, "i", $alquiler['moto_id']);
 mysqli_stmt_execute($stmt_moto);
-// Se usa mysqli_fetch_assoc porque esperamos solo una fila (una moto por alquiler).
 $moto_data = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt_moto));
 mysqli_stmt_close($stmt_moto);
 
-// Consulta para obtener los datos del usuario asociado al alquiler.
+// Hago lo mismo para el usuario, usando el 'usuario_id' del alquiler.
 $sql_usuario = "SELECT nombre, apellidos, email FROM usuarios WHERE id = ?";
 $stmt_usuario = mysqli_prepare($conexion, $sql_usuario);
 mysqli_stmt_bind_param($stmt_usuario, "i", $alquiler['usuario_id']);
@@ -85,11 +83,9 @@ mysqli_stmt_execute($stmt_usuario);
 $usuario_data = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt_usuario));
 mysqli_stmt_close($stmt_usuario);
 
-// --- 7. COMBINACIÓN DE DATOS Y VERIFICACIÓN FINAL ---
-// Se simula el comportamiento de un INNER JOIN. Un INNER JOIN solo devuelve resultados si hay coincidencias en todas las tablas.
-// Un INNER JOIN solo devuelve resultados si hay coincidencias en todas las tablas.
-// Aquí replicamos ese comportamiento: si la moto o el usuario del alquiler han sido eliminados
-// de la base de datos, consideramos que el alquiler ya no es válido.
+// --- 7. COMBINACIÓN DE DATOS ---
+// Si la moto o el usuario han sido eliminados, las variables de antes estarán vacías.
+// En ese caso, considero que el alquiler no es válido.
 if (!$moto_data || !$usuario_data) {
     $alquiler = false; // Se marca el alquiler como falso para que la siguiente comprobación falle.
 } else {
@@ -98,7 +94,7 @@ if (!$moto_data || !$usuario_data) {
     $alquiler = array_merge($alquiler, $moto_data, $usuario_data);
 }
 
-// Si después de las comprobaciones el alquiler se marcó como falso (porque la moto o el usuario no existen), se redirige.
+// Si el alquiler se marcó como falso, redirijo al usuario.
 if (!$alquiler) {
     header('Location: perfil_usuario.php?error=no_encontrado');
     exit();

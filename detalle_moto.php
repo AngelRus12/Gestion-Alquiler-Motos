@@ -21,10 +21,8 @@ if (isset($_GET['id'])) {
     $id_moto = (int)$_GET['id'];
 }
 
-// Se utiliza una consulta preparada para obtener los datos de la moto.
-// Esto previene la inyección SQL, una vulnerabilidad de seguridad crítica donde un atacante
-// podría manipular la consulta para acceder o dañar la base de datos.
-// El '?' es un marcador de posición que será reemplazado de forma segura por el valor de $id_moto.
+// Uso una consulta preparada para coger los datos de la moto de forma segura,
+// evitando que alguien pueda manipular la URL para atacar la base de datos.
 $consulta = "SELECT * FROM motos WHERE id = ?";
 $stmt = mysqli_prepare($conexion, $consulta);
 // La "i" indica que el parámetro que se va a vincular es un entero (integer).
@@ -149,28 +147,27 @@ $is_mobile = isMobile();
                     <?php else: ?>
                         <p class="alerta-error text-center alerta-sin-fondo">No disponible actualmente</p>
                         <?php
-                        // Si el usuario es admin, mostrar quién la tiene alquilada
-                        // Esta sección utiliza el método de consultas separadas para evitar JOINs.
+                        // Si la moto no está disponible y el que mira es un admin,
+                        // le muestro quién la tiene alquilada.
                         if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin') {
-                            // Paso 1: Obtener el alquiler activo ('confirmado' o 'en_curso') para esta moto.
+                            // Primero, busco si hay un alquiler activo para esta moto.
                             $sql_alquiler_moto = "SELECT usuario_id, fecha_inicio, fecha_fin, id as alquiler_id FROM alquileres WHERE moto_id = ? AND estado IN ('confirmado', 'en_curso') ORDER BY fecha_inicio DESC LIMIT 1";
                             $stmt_alquiler_moto = mysqli_prepare($conexion, $sql_alquiler_moto);
                             mysqli_stmt_bind_param($stmt_alquiler_moto, "i", $id_moto);
                             mysqli_stmt_execute($stmt_alquiler_moto);
                             $res_alquiler_moto = mysqli_stmt_get_result($stmt_alquiler_moto);
 
-                            // Si se encuentra un alquiler...
+                            // Si lo encuentro...
                             if ($alquiler_info = mysqli_fetch_assoc($res_alquiler_moto)) {
-                                // Paso 2: Con el 'usuario_id' del alquiler, obtener los datos de ese usuario.
+                                // ...uso el ID del usuario para buscar su nombre.
                                 $sql_usuario_alquila = "SELECT nombre, apellidos FROM usuarios WHERE id = ?";
                                 $stmt_usuario_alquila = mysqli_prepare($conexion, $sql_usuario_alquila);
                                 mysqli_stmt_bind_param($stmt_usuario_alquila, "i", $alquiler_info['usuario_id']);
                                 mysqli_stmt_execute($stmt_usuario_alquila);
                                 $res_usuario_alquila = mysqli_stmt_get_result($stmt_usuario_alquila);
                                 
-                                // Si se encuentran los datos del usuario...
+                                // Y si encuentro al usuario, muestro su nombre y las fechas del alquiler.
                                 if ($quien_alquila = mysqli_fetch_assoc($res_usuario_alquila)) {
-                                    // Paso 3: Combinar la información del alquiler y del usuario en un solo array.
                                     $alquiler_actual = array_merge($alquiler_info, $quien_alquila);
                                     ?>
                                     <!-- Se muestra la información combinada en el HTML. -->

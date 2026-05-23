@@ -13,8 +13,7 @@ if (!isset($_SESSION['usuario_id'])) {
     exit();
 }
 
-// --- ¡SEGURIDAD EXTRA! ---
-// Validamos el token CSRF. Si no es válido, el script se detiene.
+// Valido el token CSRF para asegurarme de que la petición viene de mi propio formulario.
 validar_csrf_token();
 
 // --- 2. CONEXIÓN A LA BASE DE DATOS ---
@@ -27,25 +26,25 @@ if (!$conexion) {
 $usuario_id = $_SESSION['usuario_id'];
 
 // --- 3. RECOLECCIÓN Y VALIDACIÓN DE DATOS DEL FORMULARIO ---
-// Se recogen las contraseñas del formulario, eliminando espacios en blanco.
+// Recojo las contraseñas que el usuario ha escrito en el formulario.
 $current_password = trim($_POST['current_password'] ?? '');
 $new_password = trim($_POST['new_password'] ?? '');
 $confirm_new_password = trim($_POST['confirm_new_password'] ?? '');
 
-// Se comprueba que ninguno de los campos esté vacío.
+// Primero, compruebo que ha rellenado todos los campos.
 if (empty($current_password) || empty($new_password) || empty($confirm_new_password)) {
     header('Location: perfil_usuario.php?password_change_error=empty');
     exit();
 }
 
-// Se verifica que la nueva contraseña y su confirmación coincidan.
+// Segundo, compruebo que la nueva contraseña y su confirmación son iguales.
 if ($new_password !== $confirm_new_password) {
     header('Location: perfil_usuario.php?password_change_error=new_mismatch');
     exit();
 }
 
-// Se valida el formato de la nueva contraseña (mínimo 8 caracteres, con letras y números).
-// Es la misma validación que se usa en el formulario de registro para mantener la consistencia.
+// Tercero, compruebo que la nueva contraseña cumple los requisitos de seguridad
+// (mínimo 8 caracteres, con al menos una letra y un número).
 if (strlen($new_password) < 8 || !preg_match('/[A-Za-z]/', $new_password) || !preg_match('/[0-9]/', $new_password)) {
     header('Location: perfil_usuario.php?password_change_error=format');
     exit();
@@ -53,7 +52,7 @@ if (strlen($new_password) < 8 || !preg_match('/[A-Za-z]/', $new_password) || !pr
 
 // --- 4. OBTENCIÓN DE LA CONTRASEÑA ACTUAL DE LA BD ---
 // Se prepara una consulta para obtener el hash de la contraseña actual del usuario desde la base de datos.
-$sql_get_pass = "SELECT password FROM usuarios WHERE id = ?";
+$sql_get_pass = "SELECT password FROM usuarios WHERE id = ?"; // Busco la contraseña (hash) del usuario en la BD.
 $stmt_get = mysqli_prepare($conexion, $sql_get_pass);
 mysqli_stmt_bind_param($stmt_get, "i", $usuario_id);
 mysqli_stmt_execute($stmt_get);
@@ -61,28 +60,28 @@ $resultado = mysqli_stmt_get_result($stmt_get);
 $usuario = mysqli_fetch_assoc($resultado);
 mysqli_stmt_close($stmt_get);
 
-// Si no se encuentra el usuario (algo muy improbable si ha iniciado sesión), se le desloguea por seguridad.
+// Si por alguna razón no encuentro al usuario, lo mando fuera.
 if (!$usuario) {
     header('Location: logout.php');
     exit();
 }
 
-// Se guarda el hash de la contraseña de la BD en una variable.
+// Guardo la contraseña hasheada de la BD en una variable.
 $current_password_hash_db = $usuario['password'];
 
 // --- 5. VERIFICACIÓN DE LA CONTRASEÑA ACTUAL ---
-// Se utiliza `password_verify()` para comparar de forma segura la contraseña en texto plano
-// que el usuario ha introducido (`$current_password`) con el hash almacenado en la base de datos.
+// Uso password_verify() para comparar de forma segura la contraseña que ha escrito el usuario
+// con la que tengo guardada en la base de datos.
 if (!password_verify($current_password, $current_password_hash_db)) {
     header('Location: perfil_usuario.php?password_change_error=current_mismatch');
     exit();
 }
 
 // --- 6. ACTUALIZACIÓN DE LA NUEVA CONTRASEÑA ---
-// Si todas las comprobaciones son correctas, se crea un nuevo hash para la nueva contraseña.
+// Si todo lo anterior es correcto, creo un nuevo hash para la nueva contraseña.
 $new_password_hash = password_hash($new_password, PASSWORD_DEFAULT);
 
-// Se prepara una consulta para actualizar la contraseña en la base de datos con el nuevo hash.
+// Y finalmente, actualizo la contraseña en la base de datos con el nuevo hash.
 $sql_update_pass = "UPDATE usuarios SET password = ? WHERE id = ?";
 $stmt_update = mysqli_prepare($conexion, $sql_update_pass);
 mysqli_stmt_bind_param($stmt_update, "si", $new_password_hash, $usuario_id);
@@ -96,7 +95,7 @@ if (mysqli_stmt_execute($stmt_update)) {
     header('Location: perfil_usuario.php?password_change_error=sql');
 }
 
-// Se cierran la consulta preparada y la conexión.
+// Cierro todo para liberar recursos.
 mysqli_stmt_close($stmt_update);
 mysqli_close($conexion);
 ?>

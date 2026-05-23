@@ -26,71 +26,61 @@ session_set_cookie_params(1800);
 // Se inicia la sesión para poder acceder a las variables de sesión (como los datos del usuario y la transacción).
 session_start();
 
-// Se incluye el archivo con las credenciales de la base de datos.
 require_once 'loginbd.php';
 
 // --- CONEXIÓN A LA BASE DE DATOS ---
 $conexion = mysqli_connect($db_hostname, $db_username, $db_password, $db_database);
 
-// Se verifica si la conexión a la base de datos fue exitosa.
 if (!$conexion) {
-    // Es crucial registrar el error para poder depurarlo sin exponer detalles al usuario.
+    // Si no me puedo conectar a la BD, guardo el error para mí y redirijo al usuario.
     error_log("Error de conexión a la base de datos en callback_pago.php: " . mysqli_connect_error());
-    // Redirigimos al usuario a su perfil con un mensaje de error genérico.
     header('Location: perfil_usuario.php?pago=error_db_conn');
     exit();
 }
 
 // --- PASO 1: VERIFICACIÓN DE SEGURIDAD INICIAL ---
-// Comprobamos que existan datos de una transacción en la sesión. Si un usuario llega aquí
-// directamente sin haber pasado por la pasarela de pago, esta variable no existirá.
+// Compruebo que en la sesión existan los datos del pago. Si alguien llega a esta URL directamente,
+// esta variable no existirá y lo echo de aquí.
 if (!isset($_SESSION['last_transaction']) || empty($_SESSION['last_transaction'])) {
     error_log("No se encontraron datos de la última transacción en la sesión.");
     header('Location: catalogo.php?error=no_transaction_data');
     exit();
 }
 
-// Recuperamos los datos de la transacción que guardamos en `pago.php` antes de redirigir.
+// Recupero los datos de la transacción que guardé en la sesión justo antes de ir a la pasarela de pago.
 $transaction = $_SESSION['last_transaction'];
 
-// El estado del pago (approved, rejected, etc.) viene desde el simulador vía POST.
+// El simulador de pago me envía el resultado (approved, rejected...) por POST.
 $status = $_POST['response_type'] ?? 'error';
 
 $order_id = $transaction['order_id'] ?? '';
 
 // --- PASO 2: EXTRACCIÓN DEL ID DEL ALQUILER ---
-// El 'order_id' que generamos en `pago.php` tiene el formato "ALQ-ID-TIMESTAMP".
-// Aquí, descomponemos esa cadena para obtener el ID del alquiler que necesitamos actualizar.
+// El número de orden que generé era "ALQ-ID-TIMESTAMP". Lo separo para quedarme solo con el ID del alquiler.
 $parts = explode('-', $order_id);
-// Se convierte el ID a entero para mayor seguridad y consistencia.
 $id_alquiler = isset($parts[1]) ? (int)$parts[1] : 0;
 
 // --- PASO 3: VERIFICACIÓN DE AUTENTICACIÓN Y DATOS VÁLIDOS ---
-// Prevenimos que se procesen pagos si el usuario no ha iniciado sesión o si el ID del alquiler no es válido (0).
+// Me aseguro de que el usuario ha iniciado sesión y de que el ID del alquiler es un número válido.
 if (!isset($_SESSION['usuario_id']) || !$id_alquiler) {
     error_log("Acceso denegado o ID de alquiler inválido. Usuario ID: " . ($_SESSION['usuario_id'] ?? 'N/A') . ", Alquiler ID: " . $id_alquiler);
     header('Location: catalogo.php?error=invalid_access');
     exit();
 }
-// Se guarda el ID del usuario de la sesión en una variable para facilitar su uso.
 $u_id = $_SESSION['usuario_id'];
 
 // --- PASO 4: VERIFICACIÓN DE PROPIEDAD DEL ALQUILER ---
-// Esta es una comprobación de seguridad crítica. Nos aseguramos de que el alquiler que se
-// intenta procesar realmente pertenece al usuario que ha iniciado sesión. Esto evita que
-// un usuario malintencionado pueda manipular la URL para afectar al alquiler de otro.
-// También obtenemos el 'moto_id' para usarlo más adelante si el pago se aprueba.
+// ¡Esto es muy importante! Compruebo que el alquiler que se está pagando pertenece de verdad
+// al usuario que está conectado. Así evito que alguien pague o modifique el alquiler de otra persona.
 $sql_check = "SELECT id, moto_id FROM alquileres WHERE id = ? AND usuario_id = ?";
 $stmt_check = mysqli_prepare($conexion, $sql_check);
 
-// Se verifica si la preparación de la consulta falló.
 if (!$stmt_check) {
     error_log("Error al preparar la consulta SQL_CHECK en callback_pago.php: " . mysqli_error($conexion));
     mysqli_close($conexion);
     header('Location: perfil_usuario.php?pago=error_sql_prep');
     exit();
 }
-// Se asocian las variables a los parámetros de la consulta. "ii" significa que ambos son enteros.
 mysqli_stmt_bind_param($stmt_check, "ii", $id_alquiler, $u_id);
 mysqli_stmt_execute($stmt_check);
 $result = mysqli_stmt_get_result($stmt_check);
@@ -104,23 +94,19 @@ if (!$alquiler) {
     header('Location: catalogo.php?error=alquiler_not_found');
     exit();
 }
-// Se cierra la consulta preparada para liberar recursos.
 mysqli_stmt_close($stmt_check);
 
 // --- PASO 5: INICIO DE LA TRANSACCIÓN DE BASE DE DATOS ---
-// Esto es CRÍTICO para la integridad de los datos. Una transacción asegura que un grupo de
-// operaciones de base de datos (en nuestro caso, 2 `UPDATE`) se traten como una sola unidad.
-// O TODAS se ejecutan con éxito, o NINGUNA lo hace.
-// Esto evita inconsistencias, como tener un alquiler 'confirmado' pero que la moto siga
-// apareciendo como 'disponible' porque la segunda consulta falló.
+// Inicio una transacción. Esto sirve para que las dos actualizaciones que haré ahora
+// (cambiar estado del alquiler y de la moto) se hagan a la vez. Si una falla, la otra se deshace.
+// Así la base de datos siempre queda consistente.
 mysqli_begin_transaction($conexion);
 $transaction_successful = true; // Bandera para controlar el éxito de la transacción.
 $mensaje = 'pago=error_procesamiento'; // Mensaje de redirección por defecto en caso de fallo.
 
 // --- PASO 6: DETERMINAR EL NUEVO ESTADO DEL ALQUILER ---
-// Según el estado del pago que nos envió el simulador ('approved', 'rejected', etc.),
-// decidimos qué estado debe tener el alquiler en nuestra base de datos y qué mensaje
-// mostraremos al usuario.
+// Según lo que me ha dicho el simulador ('approved', 'rejected'...), decido qué estado
+// ponerle al alquiler en la base de datos y qué mensaje mostrar al usuario.
 switch ($status) {
     case 'approved':
         $nuevo_estado = 'confirmado';
@@ -153,26 +139,21 @@ switch ($status) {
 $sql_update = "UPDATE alquileres SET estado = ? WHERE id = ?";
 $stmt_update = mysqli_prepare($conexion, $sql_update);
 
-// Se comprueba si la preparación de la consulta falló.
 if (!$stmt_update) {
     error_log("Error al preparar la consulta SQL_UPDATE en callback_pago.php: " . mysqli_error($conexion));
-    // Si falla, se marca la transacción como no exitosa.
     $transaction_successful = false;
 } else {
-    // Se asocian los parámetros. "si" significa string e integer.
     mysqli_stmt_bind_param($stmt_update, "si", $nuevo_estado, $id_alquiler);
-    // Se ejecuta la consulta y se comprueba si hubo un error.
     if (!mysqli_stmt_execute($stmt_update)) {
         error_log("Error al ejecutar SQL_UPDATE en callback_pago.php: " . mysqli_stmt_error($stmt_update));
         $transaction_successful = false;
     }
-    // Se cierra la consulta preparada.
     mysqli_stmt_close($stmt_update);
 }
 
 // --- PASO 8: ACTUALIZAR DISPONIBILIDAD DE LA MOTO (2ª operación de la transacción) ---
-// Esta operación solo se ejecuta si el pago fue aprobado (`$nuevo_estado === 'confirmado'`)
-// y la operación anterior fue exitosa (`$transaction_successful` es true).
+// Si el pago se ha aprobado y la actualización anterior ha ido bien,
+// ahora tengo que marcar la moto como "no disponible".
 if ($transaction_successful && $nuevo_estado === 'confirmado') {
     $moto_id = $alquiler['moto_id'];
     $sql_update_moto = "UPDATE motos SET disponible = 0 WHERE id = ?";
@@ -194,28 +175,23 @@ if ($transaction_successful && $nuevo_estado === 'confirmado') {
 
 // --- PASO 9: FINALIZAR LA TRANSACCIÓN (COMMIT O ROLLBACK) ---
 if ($transaction_successful) {
-    // Si todas las operaciones fueron exitosas, confirmamos los cambios permanentemente en la base de datos.
+    // Si todo ha ido bien, confirmo los cambios para que se guarden permanentemente en la BD.
     mysqli_commit($conexion);
     
-    // Se limpian las variables de sesión relacionadas con el pago para evitar que se pueda
-    // reprocesar accidentalmente si el usuario recarga la página o vuelve atrás.
+    // Limpio los datos del pago de la sesión para que no se pueda volver a procesar por error.
     unset($_SESSION['id_pago_pendiente']);
     unset($_SESSION['monto_pago']);
     unset($_SESSION['last_transaction']);
     
-    // Se redirige al perfil del usuario con el mensaje de estado correspondiente ('pago=confirmado', 'pago=rechazado', etc.).
+    // Redirijo al usuario a su perfil con el mensaje de éxito o de lo que haya pasado.
     header('Location: perfil_usuario.php?' . $mensaje);
 } else {
-    // Si alguna operación falló, se revierten TODOS los cambios hechos durante la transacción.
-    // La base de datos vuelve al estado en que estaba antes de `mysqli_begin_transaction`.
+    // Si algo ha fallado, revierto todos los cambios. La base de datos se quedará como estaba al principio.
     mysqli_rollback($conexion);
-    // Se redirige al usuario con un mensaje de error genérico.
     header('Location: perfil_usuario.php?pago=error_procesamiento');
 }
 
 // --- PASO 10: CIERRE DE CONEXIÓN ---
-// Se cierra la conexión a la base de datos para liberar recursos.
 mysqli_close($conexion);
-// Se finaliza la ejecución del script.
 exit();
 ?>

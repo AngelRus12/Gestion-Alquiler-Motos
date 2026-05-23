@@ -103,21 +103,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['guardar_promocion']))
 $res_promociones = mysqli_query($conexion, "SELECT * FROM promociones ORDER BY activo DESC, fecha_inicio DESC, fecha_creacion DESC");
 
 // --- 6. DATOS PARA EL CALENDARIO DE RESERVAS ---
-$consulta_eventos = "SELECT a.id, a.fecha_inicio, a.fecha_fin, a.estado, u.nombre, u.apellidos, m.marca, m.modelo
-                     FROM alquileres a
-                     LEFT JOIN usuarios u ON a.usuario_id = u.id
-                     LEFT JOIN motos m ON a.moto_id = m.id
-                     ORDER BY a.fecha_inicio ASC";
-$resultado_eventos = mysqli_query($conexion, $consulta_eventos);
+// Primero, cojo todos los alquileres de la base de datos.
+$resultado_eventos = mysqli_query($conexion, "SELECT * FROM alquileres ORDER BY fecha_inicio ASC");
 $eventos_calendario = [];
+// Luego, recorro cada alquiler uno por uno.
 while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
+    // Por cada alquiler, hago una consulta para buscar el nombre del usuario que lo reservó.
+    $stmt_u = mysqli_prepare($conexion, "SELECT nombre, apellidos FROM usuarios WHERE id = ?");
+    mysqli_stmt_bind_param($stmt_u, "i", $evento['usuario_id']);
+    mysqli_stmt_execute($stmt_u);
+    // Si el usuario ya no existe, pongo un nombre genérico para que no dé error.
+    $usuario_info = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt_u)) ?: ['nombre' => 'Usuario', 'apellidos' => 'Eliminado'];
+    mysqli_stmt_close($stmt_u);
+
+    // Hago lo mismo para la moto: busco su marca y modelo.
+    $stmt_m = mysqli_prepare($conexion, "SELECT marca, modelo FROM motos WHERE id = ?");
+    mysqli_stmt_bind_param($stmt_m, "i", $evento['moto_id']);
+    mysqli_stmt_execute($stmt_m);
+    // Si la moto fue eliminada, también pongo un texto genérico.
+    $moto_info = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt_m)) ?: ['marca' => 'Moto', 'modelo' => 'Eliminada'];
+    mysqli_stmt_close($stmt_m);
+
     $eventos_calendario[] = [
-        'id' => $evento['id'],
+        'id'           => $evento['id'],
         'fecha_inicio' => $evento['fecha_inicio'],
-        'fecha_fin' => $evento['fecha_fin'],
-        'estado' => $evento['estado'],
-        'cliente' => trim($evento['nombre'] . ' ' . $evento['apellidos']),
-        'moto' => trim($evento['marca'] . ' ' . $evento['modelo']),
+        'fecha_fin'    => $evento['fecha_fin'],
+        'estado'       => $evento['estado'],
+        'cliente'      => trim($usuario_info['nombre'] . ' ' . $usuario_info['apellidos']),
+        'moto'         => trim($moto_info['marca'] . ' ' . $moto_info['modelo']),
     ];
 }
 
@@ -337,8 +350,6 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                             <tr>
                                 <td>
                                     <?php 
-                                    // Lógica para mostrar la imagen de la moto.
-                                    // Si la moto no tiene imagen, se muestra una por defecto.
                                     $imagen_src = 'imgs/default.jpg';
                                     if (!empty($moto['imagen'])) {
                                         $imagen_src = 'data:image/jpeg;base64,' . base64_encode($moto['imagen']);
@@ -350,39 +361,31 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                                 <td><?php echo strtoupper(htmlspecialchars($moto['tipo'])); ?></td>
                                 <td class="precio"><?php echo htmlspecialchars($moto['precio_dia']); ?>€</td>
                                 <td>
-                                    <?php // Se muestra un estado diferente si la moto está disponible o alquilada. ?>
                                     <?php if ($moto['disponible'] == 1 || $moto['disponible'] == 'si') { ?>
                                         <span class="etiqueta etiqueta-exito">Disponible</span>
                                     <?php } else { ?>
                                         <div class="info-alquilada">
                                             <span class="etiqueta etiqueta-aviso">Alquilada</span>
                                             <?php
-                                            // --- PROBLEMA N+1: CONSULTAS EN BUCLE ---
-                                            // Este bloque de código, aunque funciona, es ineficiente. Por cada moto alquilada,
-                                            // realiza DOS consultas adicionales a la base de datos dentro del bucle `while`.
-                                            // Esto se conoce como el "problema N+1" y puede ralentizar mucho la página si hay muchas motos.
-                                            // Paso 1: Encontrar el alquiler activo ('confirmado' o 'en_curso') para esta moto específica.
+                                            // Si la moto no está disponible, tengo que averiguar quién la tiene.
+                                            // Primero, busco en 'alquileres' si hay alguna reserva activa para esta moto.
                                             $sql_alquiler_moto = "SELECT usuario_id, id as alquiler_id FROM alquileres WHERE moto_id = ? AND estado IN ('confirmado', 'en_curso') LIMIT 1";
                                             $stmt_alquiler_moto = mysqli_prepare($conexion, $sql_alquiler_moto);
                                             mysqli_stmt_bind_param($stmt_alquiler_moto, "i", $moto['id']);
                                             mysqli_stmt_execute($stmt_alquiler_moto);
                                             $res_alquiler_moto = mysqli_stmt_get_result($stmt_alquiler_moto);
 
-                                            // Si se encuentra un alquiler activo...
+                                            // Si encuentro un alquiler activo...
                                             if ($alquiler_info = mysqli_fetch_assoc($res_alquiler_moto)) {
-                                                $usuario_alquila_id = $alquiler_info['usuario_id'];
-                                                $alquiler_id = $alquiler_info['alquiler_id'];
-
-                                                // Paso 2: Con el ID del usuario obtenido, hacer una segunda consulta para obtener su nombre.
+                                                // ...uso el ID del usuario de ese alquiler para buscar su nombre en la tabla 'usuarios'.
                                                 $sql_usuario_alquila = "SELECT nombre, apellidos FROM usuarios WHERE id = ?";
                                                 $stmt_usuario_alquila = mysqli_prepare($conexion, $sql_usuario_alquila);
-                                                mysqli_stmt_bind_param($stmt_usuario_alquila, "i", $usuario_alquila_id);
+                                                mysqli_stmt_bind_param($stmt_usuario_alquila, "i", $alquiler_info['usuario_id']);
                                                 mysqli_stmt_execute($stmt_usuario_alquila);
                                                 $res_usuario_alquila = mysqli_stmt_get_result($stmt_usuario_alquila);
-                                                
+                                                // Finalmente, si encuentro al usuario, muestro su nombre con un enlace al detalle del alquiler.
                                                 if ($quien_alquila = mysqli_fetch_assoc($res_usuario_alquila)) {
-                                                    // Paso 3: Mostrar el nombre del cliente con un enlace al detalle del alquiler.
-                                                    echo '<a href="detalle_alquiler.php?id=' . htmlspecialchars($alquiler_id) . '" class="boton boton-secundario boton-pequeño mt-5">👤 ' . htmlspecialchars($quien_alquila['nombre'] . ' ' . $quien_alquila['apellidos']) . '</a>';
+                                                    echo '<a href="detalle_alquiler.php?id=' . htmlspecialchars($alquiler_info['alquiler_id']) . '" class="boton boton-secundario boton-pequeño mt-5">👤 ' . htmlspecialchars($quien_alquila['nombre'] . ' ' . $quien_alquila['apellidos']) . '</a>';
                                                 }
                                                 mysqli_stmt_close($stmt_usuario_alquila);
                                             }
@@ -422,48 +425,25 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                         </thead>
                         <tbody>
                             <?php 
-                            // --- SOLUCIÓN AL PROBLEMA N+1: PRE-CARGA DE DATOS (Eager Loading) ---
-                            // Esta es la forma optimizada de obtener datos relacionados.
-
-                            // Paso 1: Obtener todos los alquileres pendientes de una sola vez.
+                            // Aquí busco todos los alquileres que están pendientes de pago en tienda.
                             $res_pendientes_tabla = mysqli_query($conexion, "SELECT * FROM alquileres WHERE estado = 'pendiente' ORDER BY fecha_reserva DESC");
-                            $alquileres_pendientes = [];
-                            $user_ids_pendientes = [];
-                            $moto_ids_pendientes = [];
 
-                            // Se comprueba si la consulta devolvió algún resultado.
                             if (mysqli_num_rows($res_pendientes_tabla) > 0) {
-                                // Paso 2: Recorrer los resultados y guardar los IDs de usuario y moto en arrays.
-                                // Esto evita hacer una consulta a la base de datos por cada fila de la tabla (problema N+1).
+                                // Recorro cada alquiler pendiente.
                                 while ($alquiler = mysqli_fetch_assoc($res_pendientes_tabla)) {
-                                    $alquileres_pendientes[] = $alquiler;
-                                    $user_ids_pendientes[] = $alquiler['usuario_id'];
-                                    $moto_ids_pendientes[] = $alquiler['moto_id'];
-                                }
+                                    // Por cada uno, busco el nombre del cliente.
+                                    $stmt_u_pen = mysqli_prepare($conexion, "SELECT nombre, apellidos FROM usuarios WHERE id = ?");
+                                    mysqli_stmt_bind_param($stmt_u_pen, "i", $alquiler['usuario_id']);
+                                    mysqli_stmt_execute($stmt_u_pen);
+                                    $user_data = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt_u_pen)) ?: ['nombre' => 'Usuario', 'apellidos' => 'Eliminado'];
+                                    mysqli_stmt_close($stmt_u_pen);
 
-                                // Paso 3: Obtener todos los datos de los usuarios necesarios con UNA SOLA consulta.
-                                $usuarios_pendientes = [];
-                                if (!empty($user_ids_pendientes)) {
-                                    // Se usa "IN (...)" para traer múltiples usuarios a la vez, y `array_unique` para no pedir el mismo ID varias veces.
-                                    $res_u = mysqli_query($conexion, "SELECT id, nombre, apellidos FROM usuarios WHERE id IN (" . implode(',', array_unique($user_ids_pendientes)) . ")");
-                                    // Se crea un array asociativo donde la clave es el ID del usuario para un acceso rápido después.
-                                    while ($user_data = mysqli_fetch_assoc($res_u)) { $usuarios_pendientes[$user_data['id']] = $user_data; }
-                                }
-
-                                // Paso 4: Obtener todos los datos de las motos necesarias con UNA SOLA consulta.
-                                $motos_pendientes = [];
-                                if (!empty($moto_ids_pendientes)) {
-                                    // Misma estrategia que con los usuarios.
-                                    $res_m = mysqli_query($conexion, "SELECT id, marca, modelo FROM motos WHERE id IN (" . implode(',', array_unique($moto_ids_pendientes)) . ")");
-                                    while ($moto_data = mysqli_fetch_assoc($res_m)) { $motos_pendientes[$moto_data['id']] = $moto_data; }
-                                }
-
-                                // Paso 5: Ahora sí, recorrer los alquileres y mostrar los datos.
-                                // La información de usuario y moto se obtiene de los arrays que ya tenemos en memoria, no de la BD.
-                                foreach ($alquileres_pendientes as $alquiler) {
-                                    // Se usa el operador de fusión de null (??) para evitar errores si un usuario o moto ha sido eliminado.
-                                    $user_data = $usuarios_pendientes[$alquiler['usuario_id']] ?? ['nombre' => 'Usuario', 'apellidos' => 'Eliminado'];
-                                    $moto_data = $motos_pendientes[$alquiler['moto_id']] ?? ['marca' => 'Moto', 'modelo' => 'Eliminada'];
+                                    // Y también busco el nombre de la moto.
+                                    $stmt_m_pen = mysqli_prepare($conexion, "SELECT marca, modelo FROM motos WHERE id = ?");
+                                    mysqli_stmt_bind_param($stmt_m_pen, "i", $alquiler['moto_id']);
+                                    mysqli_stmt_execute($stmt_m_pen);
+                                    $moto_data = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt_m_pen)) ?: ['marca' => 'Moto', 'modelo' => 'Eliminada'];
+                                    mysqli_stmt_close($stmt_m_pen);
                             ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($user_data['nombre'] . " " . $user_data['apellidos']); ?></td>
@@ -521,54 +501,38 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                         </thead>
                         <tbody>
                             <?php 
-                            // --- LÓGICA OPTIMIZADA PARA LA TABLA DE TODOS LOS ALQUILERES ---
-                            // Se sigue la misma estrategia que en la tabla de pagos pendientes para ser más eficientes.
-
-                            // Paso 1: Obtener todos los alquileres.
+                            // Para la tabla general, cojo absolutamente todos los alquileres del sistema.
                             $res_alquileres_todos = mysqli_query($conexion, "SELECT * FROM alquileres ORDER BY fecha_reserva DESC");
-                            $todos_alquileres = [];
-                            $todos_user_ids = [];
-                            $todos_moto_ids = [];
 
                             if (mysqli_num_rows($res_alquileres_todos) > 0) {
-                                // Paso 2: Guardar los IDs de usuario y moto en arrays.
+                                // Recorro cada alquiler que he encontrado.
                                 while ($alquiler = mysqli_fetch_assoc($res_alquileres_todos)) {
-                                    $todos_alquileres[] = $alquiler;
-                                    $todos_user_ids[] = $alquiler['usuario_id'];
-                                    $todos_moto_ids[] = $alquiler['moto_id'];
-                                }
+                                    // Igual que antes, busco el nombre del usuario para esta fila.
+                                    $stmt_u_all = mysqli_prepare($conexion, "SELECT nombre, apellidos FROM usuarios WHERE id = ?");
+                                    mysqli_stmt_bind_param($stmt_u_all, "i", $alquiler['usuario_id']);
+                                    mysqli_stmt_execute($stmt_u_all);
+                                    $usuario_alquiler = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt_u_all)) ?: ['nombre' => 'Usuario', 'apellidos' => 'Eliminado'];
+                                    mysqli_stmt_close($stmt_u_all);
 
-                                // Paso 3: Obtener todos los usuarios y motos necesarios en solo dos consultas.
-                                $todos_usuarios = [];
-                                if (!empty($todos_user_ids)) {
-                                    $res_u_todos = mysqli_query($conexion, "SELECT id, nombre, apellidos FROM usuarios WHERE id IN (" . implode(',', array_unique($todos_user_ids)) . ")");
-                                    while ($user_data = mysqli_fetch_assoc($res_u_todos)) { $todos_usuarios[$user_data['id']] = $user_data; }
-                                }
-
-                                $todas_motos = [];
-                                if (!empty($todos_moto_ids)) {
-                                    // La función array_unique() es importante para no pedir el mismo ID varias veces.
-                                    $res_m_todos = mysqli_query($conexion, "SELECT id, marca, modelo FROM motos WHERE id IN (" . implode(',', array_unique($todos_moto_ids)) . ")");
-                                    while ($moto_data = mysqli_fetch_assoc($res_m_todos)) { $todas_motos[$moto_data['id']] = $moto_data; }
-                                }
-
-                                // Paso 4: Iterar y mostrar los datos combinados desde la memoria.
-                                foreach ($todos_alquileres as $alquiler_full) {
-                                    $usuario_alquiler = $todos_usuarios[$alquiler_full['usuario_id']] ?? ['nombre' => 'Usuario', 'apellidos' => 'Eliminado'];
-                                    $moto_alquiler = $todas_motos[$alquiler_full['moto_id']] ?? ['marca' => 'Moto', 'modelo' => 'Eliminada'];
+                                    // Y también el nombre de la moto.
+                                    $stmt_m_all = mysqli_prepare($conexion, "SELECT marca, modelo FROM motos WHERE id = ?");
+                                    mysqli_stmt_bind_param($stmt_m_all, "i", $alquiler['moto_id']);
+                                    mysqli_stmt_execute($stmt_m_all);
+                                    $moto_alquiler = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt_m_all)) ?: ['marca' => 'Moto', 'modelo' => 'Eliminada'];
+                                    mysqli_stmt_close($stmt_m_all);
                             ?>
                             <tr>
-                                <td>#<?php echo htmlspecialchars($alquiler_full['id']); ?></td>
+                                <td>#<?php echo htmlspecialchars($alquiler['id']); ?></td>
                                 <td><?php echo htmlspecialchars($usuario_alquiler['nombre'] . " " . $usuario_alquiler['apellidos']); ?></td>
                                 <td><?php echo htmlspecialchars($moto_alquiler['marca'] . " " . $moto_alquiler['modelo']); ?></td>
                                 <td>
-                                    <?php echo htmlspecialchars(date("d/m/Y", strtotime($alquiler_full['fecha_inicio']))); ?> - 
-                                    <?php echo htmlspecialchars(date("d/m/Y", strtotime($alquiler_full['fecha_fin']))); ?>
+                                    <?php echo htmlspecialchars(date("d/m/Y", strtotime($alquiler['fecha_inicio']))); ?> - 
+                                    <?php echo htmlspecialchars(date("d/m/Y", strtotime($alquiler['fecha_fin']))); ?>
                                 </td>
-                                <td class="precio"><strong><?php echo htmlspecialchars($alquiler_full['precio_total']); ?>€</strong></td>
-                                <td><span class="etiqueta estado-alquiler <?php echo htmlspecialchars($alquiler_full['estado']); ?>"><?php echo htmlspecialchars(str_replace('_', ' ', strtoupper($alquiler_full['estado']))); ?></span></td>
+                                <td class="precio"><strong><?php echo htmlspecialchars($alquiler['precio_total']); ?>€</strong></td>
+                                <td><span class="etiqueta estado-alquiler <?php echo htmlspecialchars($alquiler['estado']); ?>"><?php echo htmlspecialchars(str_replace('_', ' ', strtoupper($alquiler['estado']))); ?></span></td>
                                 <td>
-                                    <a href="detalle_alquiler.php?id=<?php echo htmlspecialchars($alquiler_full['id']); ?>" class="boton boton-pequeño">Ver Detalles</a>
+                                    <a href="detalle_alquiler.php?id=<?php echo htmlspecialchars($alquiler['id']); ?>" class="boton boton-pequeño">Ver Detalles</a>
                                 </td>
                             </tr>
                             <?php 

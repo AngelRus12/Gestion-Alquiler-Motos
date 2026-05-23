@@ -28,33 +28,57 @@ if (!$conexion) {
 }
 mysqli_set_charset($conexion, "utf8");
 
-// --- 3. OBTENCIÓN DE DATOS (Consulta con JOIN para eficiencia) ---
-// Usamos JOINs para obtener toda la información en una sola consulta.
-$sql = "SELECT a.*, m.marca, m.modelo, m.matricula, u.nombre, u.apellidos, u.email, u.dni, u.direccion
-        FROM alquileres a
-        JOIN motos m ON a.moto_id = m.id
-        JOIN usuarios u ON a.usuario_id = u.id
-        WHERE a.id = ?";
+// --- 3. OBTENCIÓN DE DATOS (SIN USAR JOINs) ---
+// Para la factura, necesito datos de 3 tablas. Los cojo por separado.
 
-$stmt = mysqli_prepare($conexion, $sql);
-mysqli_stmt_bind_param($stmt, "i", $alquiler_id);
-mysqli_stmt_execute($stmt);
-$resultado = mysqli_stmt_get_result($stmt);
-$alquiler = mysqli_fetch_assoc($resultado);
-mysqli_stmt_close($stmt);
+// Primero, obtengo los datos principales del alquiler usando el ID que viene en la URL.
+$sql_alquiler = "SELECT * FROM alquileres WHERE id = ?";
+$stmt_alquiler = mysqli_prepare($conexion, $sql_alquiler);
+mysqli_stmt_bind_param($stmt_alquiler, "i", $alquiler_id);
+mysqli_stmt_execute($stmt_alquiler);
+$resultado_alquiler = mysqli_stmt_get_result($stmt_alquiler);
+$alquiler = mysqli_fetch_assoc($resultado_alquiler);
+mysqli_stmt_close($stmt_alquiler);
+
+// Si no encuentro el alquiler, detengo el script.
+if (!$alquiler) {
+    mysqli_close($conexion);
+    die("El alquiler solicitado no existe.");
+}
+
+// Segundo, uso el 'moto_id' del alquiler para buscar los datos de la moto.
+$sql_moto = "SELECT marca, modelo, matricula FROM motos WHERE id = ?";
+$stmt_moto = mysqli_prepare($conexion, $sql_moto);
+mysqli_stmt_bind_param($stmt_moto, "i", $alquiler['moto_id']);
+mysqli_stmt_execute($stmt_moto);
+$moto_data = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt_moto));
+mysqli_stmt_close($stmt_moto);
+
+// Tercero, uso el 'usuario_id' del alquiler para buscar los datos del cliente.
+$sql_usuario = "SELECT nombre, apellidos, email, dni, direccion FROM usuarios WHERE id = ?";
+$stmt_usuario = mysqli_prepare($conexion, $sql_usuario);
+mysqli_stmt_bind_param($stmt_usuario, "i", $alquiler['usuario_id']);
+mysqli_stmt_execute($stmt_usuario);
+$usuario_data = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt_usuario));
+mysqli_stmt_close($stmt_usuario);
+
 mysqli_close($conexion);
 
 // --- 4. VERIFICACIÓN DE PERMISOS ---
-// El usuario debe ser el dueño del alquiler o un administrador.
-if (!$alquiler || ($alquiler['usuario_id'] != $usuario_id && $_SESSION['rol'] !== 'admin')) {
-    die("No tienes permiso para ver esta factura.");
+// Compruebo que el usuario que pide la factura es el dueño o un admin.
+if (!$alquiler || !$moto_data || !$usuario_data || ($alquiler['usuario_id'] != $usuario_id && $_SESSION['rol'] !== 'admin')) {
+    die("No tienes permiso para ver esta factura o los datos están incompletos.");
 }
 
-// --- 5. CÁLCULOS PARA LA FACTURA (BASE IMPONIBLE, IVA, ETC.) ---
+// --- 5. CÁLCULOS PARA LA FACTURA ---
 $precio_total = $alquiler['precio_total'];
 $iva_tasa = 0.21; // 21% de IVA
 $base_imponible = $precio_total / (1 + $iva_tasa);
 $iva_monto = $precio_total - $base_imponible;
+
+// Junto los datos de la moto y el usuario con los del alquiler en un solo array.
+// Así es más fácil usarlos después para escribir el PDF.
+$alquiler = array_merge($alquiler, $moto_data, $usuario_data);
 
 // --- 5. CREACIÓN DEL PDF CON FPDF ---
 
