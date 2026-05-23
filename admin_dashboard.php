@@ -225,7 +225,7 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                                 <label><input type="checkbox" name="activo" checked /> Publicar ahora</label>
                             </div>
                         </div>
-                        <button type="submit" name="guardar_promocion" class="boton boton-primario">Publicar promoción</button>
+                        <button type="submit" name="guardar_promocion" class="boton">Guardar y Publicar</button>
                     </form>
                     <table>
                         <thead>
@@ -235,6 +235,7 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                                 <th>Mensaje</th>
                                 <th>Fechas</th>
                                 <th>Activo</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -245,6 +246,9 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                                     <td><?php echo htmlspecialchars($promo['mensaje']); ?></td>
                                     <td><?php echo htmlspecialchars($promo['fecha_inicio'] ?: '-'); ?> - <?php echo htmlspecialchars($promo['fecha_fin'] ?: '-'); ?></td>
                                     <td><?php echo $promo['activo'] ? '<span class="etiqueta etiqueta-exito">Sí</span>' : '<span class="etiqueta-aviso">No</span>'; ?></td>
+                                    <td>
+                                        <a href="eliminar_promocion.php?id=<?php echo htmlspecialchars($promo['id']); ?>" class="boton boton-pequeño etiqueta-error" onclick="return confirm('¿Estás seguro de que quieres eliminar esta promoción?');">Eliminar</a>
+                                    </td>
                                 </tr>
                             <?php } ?>
                         </tbody>

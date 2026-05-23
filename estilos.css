@@ -835,82 +835,54 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
 .promo-form {
     display: grid;
     gap: 16px;
-    margin-bottom: 24px;
+    margin-bottom: 30px;
     padding: 22px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: #1c2b4d; /* Fondo azul oscuro tipo alerta info */
+    border: 1px solid #47b2e4; /* Borde azul claro */
     border-radius: 18px;
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
 }
 .promo-form label {
     display: block;
     margin-bottom: 8px;
-    font-size: 0.96rem;
+    font-size: 14px;
     font-weight: 600;
-    color: #f5f5f5;
+    color: var(--texto-blanco);
 }
 .promo-form input[type="text"],
 .promo-form input[type="url"],
 .promo-form input[type="date"],
 .promo-form textarea {
     width: 100%;
-    min-height: 44px;
     padding: 12px 14px;
-    border-radius: 14px;
+    border-radius: 6px;
     border: 1px solid rgba(255, 255, 255, 0.16);
-    background: rgba(255, 255, 255, 0.08);
-    color: #f9f9f9;
-    transition: border-color 0.2s ease, background 0.2s ease;
+    background: rgba(0, 0, 0, 0.2); /* Fondo más oscuro para contraste */
+    color: var(--texto-blanco);
+    font-size: 15px;
 }
 .promo-form textarea {
     min-height: 120px;
     resize: vertical;
 }
 .promo-form input:focus,
-.promo-form textarea:focus {
-    border-color: #f8b94c;
+.promo-form textarea:focus,
+.promo-form select:focus {
+    border-color: var(--naranja-principal);
     outline: none;
-    background: rgba(255, 255, 255, 0.12);
 }
 .promo-grid-row {
-    display: flex;
-    gap: 14px;
-    flex-wrap: wrap;
-}
-.promo-grid-row > div {
-    flex: 1 1 180px;
-    min-width: 180px;
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 18px;
+    align-items: flex-end;
 }
 .promo-checkbox-group {
     display: flex;
-    align-items: flex-end;
-    justify-content: flex-start;
+    align-items: center;
 }
 .promo-checkbox-group label {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 0;
-    font-weight: 600;
-    color: #f5f5f5;
-}
-.promo-checkbox-group input[type="checkbox"] {
-    width: auto;
-    height: auto;
-    accent-color: #f8b94c;
-}
-.boton.boton-primario {
-    width: fit-content;
-    padding: 12px 28px;
-    border-radius: 12px;
-    background: #e03e00;
-    color: #1b1b1b;
-    font-weight: 700;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.boton.boton-primario:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 24px rgba(248, 185, 76, 0.28);
 }
 
 /* ==========================================================

@@ -165,6 +165,9 @@ function actualizar_sistema_completo($conn) {
     
     // 5. Marca como 'no disponible' solo aquellas motos que están en un alquiler activo ('confirmado' o 'en_curso').
     $conn->query("UPDATE motos SET disponible = 0 WHERE id IN (SELECT DISTINCT moto_id FROM alquileres WHERE estado IN ('confirmado', 'en_curso'))");
+
+    // 6. Desactiva las promociones cuya fecha de fin ya ha pasado.
+    $conn->query("UPDATE promociones SET activo = 0 WHERE fecha_fin IS NOT NULL AND fecha_fin < CURDATE() AND activo = 1");
 }
 
 /**
