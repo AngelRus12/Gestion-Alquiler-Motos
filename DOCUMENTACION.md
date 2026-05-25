@@ -13,7 +13,7 @@ ARUSLAT es un sistema web de alquiler de motos para la gestión de reservas, pag
 ### Carpetas principales
 - `database/` : Contiene el backup SQL del proyecto (`alquilermotos.sql`).
 - `libs/` : Librerías externas, especialmente `fpdf` para generación de PDF.
-- `payment/` : Pasarela de pago y simulador de transacciones.
+- `payment/` : Pasarela de pago y simulador de transacciones. 
 
 ### Archivos principales
 - `index.php` : Página de inicio general.
@@ -64,12 +64,22 @@ ARUSLAT es un sistema web de alquiler de motos para la gestión de reservas, pag
   - Opciones para cancelar reservas pendientes.
 
 ## 4. Seguridad implementada
-- Uso de `session_start()` para manejar sesiones.
-- Uso de consultas preparadas `mysqli_prepare()` para evitar inyección SQL.
-- Contraseñas almacenadas con `password_hash()`.
-- Validación de datos en el servidor para fechas, DNI y formato de contraseña.
-- Escritura de comentarios y mensajes de error para guiar al usuario.
-- Puntos de mejora: fortalecer CSRF en formularios adicionales.
+El proyecto adopta un enfoque de "defensa en profundidad" para proteger la aplicación y los datos de los usuarios en múltiples niveles.
+
+- **Protección de Identidad (Hashing de Contraseñas):** Las contraseñas nunca se almacenan en texto plano. Se utiliza la función `password_hash()` de PHP con el algoritmo `PASSWORD_DEFAULT`, que garantiza el uso del método de hashing más robusto disponible. La verificación se realiza de forma segura con `password_verify()`, haciendo imposible la ingeniería inversa de las contraseñas, incluso para un administrador con acceso a la base de datos.
+
+- **Integridad de Datos (Prevención de Inyección SQL):** Todas las consultas a la base de datos que involucran datos proporcionados por el usuario se ejecutan utilizando **sentencias preparadas** a través de la extensión `MySQLi` (`mysqli_prepare`, `mysqli_stmt_bind_param`). Esta técnica neutraliza por completo los ataques de inyección SQL al separar las instrucciones SQL de los datos.
+
+- **Protección contra CSRF (Cross-Site Request Forgery):** Los formularios críticos (registro, login, cambio de contraseña) están protegidos contra ataques CSRF. Se utiliza un sistema de tokens de un solo uso (`generar_csrf_token()` y `validar_csrf_token()`) que asegura que las solicitudes provengan legítimamente de la propia aplicación y no de un sitio malicioso externo.
+
+- **Gestión Segura de Sesiones:** Se ha implementado una gestión de sesiones robusta a través de la función `start_secure_session()`. Esta configura las cookies de sesión con los atributos de seguridad:
+  - `HttpOnly`: Previene el acceso a la cookie de sesión desde JavaScript (mitiga ataques XSS).
+  - `Secure`: Asegura que la cookie solo se envíe a través de conexiones HTTPS (previene el secuestro de sesión en redes inseguras).
+  - `Samesite=Lax`: Ofrece protección adicional contra ataques CSRF.
+
+- **Control de Acceso y Autorización:** La aplicación implementa una estricta separación de roles. El acceso a rutas sensibles, como el panel de administración (`admin_dashboard.php`), está protegido por una verificación explícita del rol del usuario en la sesión. Además, las consultas para ver datos (ej. `detalle_alquiler.php`) comprueban que un usuario solo pueda ver sus propios alquileres, a menos que sea un administrador.
+
+- **Validación de Datos en el Servidor:** Toda la información enviada por el usuario (fechas, DNI, formato de contraseña, etc.) se valida rigurosamente en el lado del servidor. Esto previene la manipulación de datos en el cliente y asegura la consistencia de la información que llega a la base de datos.
 
 ## 5. Base de datos y lógica
 
