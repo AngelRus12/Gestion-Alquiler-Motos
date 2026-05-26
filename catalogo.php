@@ -157,7 +157,7 @@ $is_mobile = isMobile();
             $offset = ($page - 1) * $per_page;
 
             // Construir WHERE y parámetros para prepared statements con los valores ya validados.
-            $where_clauses = array("(disponible = 1 OR disponible = 'si')");
+            $where_clauses = array("disponible = 1");
             $params = array();
             $types = '';
 
@@ -223,7 +223,7 @@ $is_mobile = isMobile();
                     }
                     echo '<div class="card-body">'; // Inicio del cuerpo de la tarjeta
                     echo '<h3>' . htmlspecialchars($fila['marca'] . ' ' . $fila['modelo']) . '</h3>'; // Título
-                    echo '<p class="descripcion">' . htmlspecialchars($fila['descripcion']) . '</p>'; // Descripción
+                    echo '<p class="card-descripcion">' . htmlspecialchars($fila['descripcion']) . '</p>'; // Descripción
                     echo '<p class="precio">' . htmlspecialchars($fila['precio_dia']) . ' €/día</p>';
 
                     echo '<a href="detalle_moto?id=' . intval($fila['id']) . '" class="btn">Reservar Ahora</a>';

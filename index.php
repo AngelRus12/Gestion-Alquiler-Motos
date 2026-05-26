@@ -47,13 +47,11 @@ $is_mobile = isMobile();
                 <a href="index">Inicio</a>
                 <a href="catalogo">Catálogo</a>
                 <?php 
-                if (isset($_SESSION['usuario_id'])) { 
-                    if (isset($_SESSION['rol'])) {
-                        if ($_SESSION['rol'] === 'admin') { ?>
-                            <a href="admin_dashboard" class="nav-destacado">Panel Admin</a>
-                        <?php }
-                    } ?>
-                    <a href="perfil_usuario">Mi Perfil</a> 
+                if (isset($_SESSION['usuario_id'])) {
+                    if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin') {
+                        echo '<a href="admin_dashboard" class="nav-destacado">Panel Admin</a>';
+                    }
+                    echo '<a href="perfil_usuario">Mi Perfil</a>'; ?>
                     <a href="logout">Cerrar Sesión</a>
                 <?php } else { ?>
                     <a href="login">Login</a>
@@ -88,7 +86,7 @@ $is_mobile = isMobile();
                     
                     echo '<div class="card-body">';
                     echo '<h3>' . $fila['marca'] . ' ' . $fila['modelo'] . '</h3>';
-                    echo '<p class="descripcion">Compañera perfecta para viajes largos. Potencia y confort sin límites.</p>'; // Descripción genérica
+                    echo '<p class="card-descripcion">' . $fila['descripcion'] . '</p>';
                     echo '<p class="precio">' . $fila['precio_dia'] . ' €/día</p>';
                     echo '<a href="detalle_moto?id=' . $fila['id'] . '" class="btn">Ver Detalles</a>';
                     echo '</div></div>';

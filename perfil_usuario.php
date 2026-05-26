@@ -47,6 +47,34 @@ $stmt_alquileres = mysqli_prepare($conexion, $sql_alquileres);
 mysqli_stmt_bind_param($stmt_alquileres, "i", $u_id);
 mysqli_stmt_execute($stmt_alquileres);
 $alquileres = mysqli_stmt_get_result($stmt_alquileres);
+$alquileres_data = mysqli_fetch_all($alquileres, MYSQLI_ASSOC);
+mysqli_stmt_close($stmt_alquileres);
+
+// --- OPTIMIZACIÓN N+1 ---
+// 1. Recolectar todos los IDs de moto de los alquileres.
+$moto_ids = [];
+foreach ($alquileres_data as $alq) {
+    if (!in_array($alq['moto_id'], $moto_ids)) {
+        $moto_ids[] = $alq['moto_id'];
+    }
+}
+
+// 2. Obtener todas las motos necesarias en UNA SOLA consulta.
+$motos_map = [];
+if (!empty($moto_ids)) {
+    // Creamos los placeholders (?) dinámicamente
+    $placeholders = implode(',', array_fill(0, count($moto_ids), '?'));
+    $types = str_repeat('i', count($moto_ids));
+    $sql_motos = "SELECT id, marca, modelo FROM motos WHERE id IN ($placeholders)";
+    $stmt_motos = mysqli_prepare($conexion, $sql_motos);
+    mysqli_stmt_bind_param($stmt_motos, $types, ...$moto_ids);
+    mysqli_stmt_execute($stmt_motos);
+    $resultado_motos = mysqli_stmt_get_result($stmt_motos);
+    while ($moto = mysqli_fetch_assoc($resultado_motos)) {
+        $motos_map[$moto['id']] = $moto; // Creamos un mapa para fácil acceso
+    }
+    mysqli_stmt_close($stmt_motos);
+}
 
 // Función para detectar dispositivos móviles
 function isMobile() {
@@ -227,19 +255,13 @@ $is_mobile = isMobile();
                     </thead>
                     <tbody>   
                         <?php 
-                        if (mysqli_num_rows($alquileres) > 0) {
+                        if (count($alquileres_data) > 0) {
                             // Recorro la lista de alquileres del usuario.
-                            while ($alq = mysqli_fetch_assoc($alquileres)) {
-                                // Por cada alquiler, necesito saber el nombre de la moto.
-                                // Así que hago una consulta a la tabla 'motos' usando el 'moto_id' del alquiler.
-                                $sql_moto = "SELECT marca, modelo FROM motos WHERE id = ?";
-                                $stmt_moto = mysqli_prepare($conexion, $sql_moto);
-                                mysqli_stmt_bind_param($stmt_moto, "i", $alq['moto_id']);
-                                mysqli_stmt_execute($stmt_moto);
-                                $res_moto = mysqli_stmt_get_result($stmt_moto);
-                                $moto = mysqli_fetch_assoc($res_moto);
-                                $moto_nombre = ($moto) 
-                                    ? htmlspecialchars($moto['marca'] . " " . $moto['modelo']) 
+                            foreach ($alquileres_data as $alq) {
+                                // Buscamos la moto en nuestro mapa, sin hacer una nueva consulta.
+                                $moto = $motos_map[$alq['moto_id']] ?? null;
+                                $moto_nombre = ($moto)
+                                    ? htmlspecialchars($moto['marca'] . " " . $moto['modelo'])
                                     : "Moto eliminada";
                         ?>
                         <tr>
@@ -263,14 +285,13 @@ $is_mobile = isMobile();
                             <td class="text-center">
                                 <a href="detalle_alquiler.php?id=<?php echo htmlspecialchars($alq['id']); ?>" class="boton boton-pequeño">Ver Detalles</a><?php
                                 // El botón para cancelar solo debe aparecer si la reserva todavía está 'pendiente'.
-                                if ($alq['estado'] == 'pendiente') {
-                                    echo ' <a href="cancelar_reserva.php?id=' . htmlspecialchars($alq['id']) . '" class="boton boton-pequeño" onclick="return confirm(\'¿Estás seguro de que quieres cancelar esta reserva?\');">Cancelar</a>';
+                                if ($alq['estado'] == 'pendiente') { ?>
+                                    <button onclick="cancelarReserva(this, <?php echo htmlspecialchars($alq['id']); ?>)" class="boton boton-pequeño boton-error ml-10">Cancelar</button>
+                                <?php
                                 } ?>
                             </td>
                         </tr>
-                        <?php 
-                                mysqli_stmt_close($stmt_moto);
-                            } 
+                        <?php } 
                         } else { ?>
                             <tr><td colspan='7' class='text-center'>No tienes alquileres registrados.</td></tr>
                         <?php } ?>
@@ -308,6 +329,45 @@ $is_mobile = isMobile();
         <p>Proyecto TFG - Ángel Rus Latorre - ASIR</p>
     </footer>
 
+    <script>
+    function cancelarReserva(button, idAlquiler) {
+        if (!confirm('¿Estás seguro de que quieres cancelar esta reserva?')) {
+            return;
+        }
+
+        // Deshabilitar el botón para evitar clics múltiples
+        button.disabled = true;
+        button.textContent = 'Cancelando...';
+
+        // Preparar los datos para enviar vía POST
+        const formData = new FormData();
+        formData.append('id', idAlquiler);
+
+        // Petición AJAX con fetch
+        fetch('ajax_cancelar_reserva.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Éxito: Actualizar la interfaz de usuario
+                const fila = button.closest('tr');
+                const celdaEstado = fila.querySelector('.etiqueta');
+                celdaEstado.textContent = 'CANCELADO';
+                celdaEstado.className = 'etiqueta etiqueta-error'; // Cambiar a la clase de cancelado
+                button.remove(); // Eliminar el botón de cancelar
+                alert(data.message);
+            } else {
+                // Error: Mostrar mensaje y reactivar el botón
+                alert('Error: ' + data.message);
+                button.disabled = false;
+                button.textContent = 'Cancelar';
+            }
+        })
+        .catch(error => console.error('Error en la petición AJAX:', error));
+    }
+    </script>
 </body>
 </html>
 <?php mysqli_close($conexion); ?>

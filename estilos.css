@@ -285,6 +285,14 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }
     flex-grow: 1; 
 }
 
+/* Nueva clase para descripciones sin estiramiento */
+.card-descripcion {
+    font-size: 14px; 
+    color: var(--texto-gris); 
+    margin-bottom: 15px; 
+    /* Se elimina flex-grow: 1 para evitar estiramiento vertical */
+}
+
 .card p.precio { 
     color: var(--naranja-principal);
     font-weight: bold;
@@ -727,6 +735,11 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
     margin-top: 20px;
     margin-bottom: 15px;
 }
+.detalle-precio-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
 
 .pago-metodo-select {
     width: 100%;
