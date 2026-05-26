@@ -196,7 +196,7 @@ $is_mobile = isMobile();
             $sql = "SELECT * FROM motos " . $where_sql . " ORDER BY marca, modelo LIMIT ? OFFSET ?";
             $stmt = mysqli_prepare($conexion, $sql);
             // bind params including pagination integers
-            $params_with_limit = $params;
+            $params_with_limit = $params; // Los parámetros de los filtros
             $types_with_limit = $types . 'ii';
             $params_with_limit[] = $per_page;
             $params_with_limit[] = $offset;
@@ -221,11 +221,11 @@ $is_mobile = isMobile();
                     } else {
                         echo '<img src="imgs/default.jpg" alt="Moto">';
                     }
-                    echo '<div class="card-body">';
-                    echo '<h3>' . htmlspecialchars($fila['marca'] . ' ' . $fila['modelo']) . '</h3>';
-                    // Añadido .descripcion
-                    echo '<p class="descripcion">' . htmlspecialchars($fila['descripcion']) . '</p>';
+                    echo '<div class="card-body">'; // Inicio del cuerpo de la tarjeta
+                    echo '<h3>' . htmlspecialchars($fila['marca'] . ' ' . $fila['modelo']) . '</h3>'; // Título
+                    echo '<p class="descripcion">' . htmlspecialchars($fila['descripcion']) . '</p>'; // Descripción
                     echo '<p class="precio">' . htmlspecialchars($fila['precio_dia']) . ' €/día</p>';
+
                     echo '<a href="detalle_moto?id=' . intval($fila['id']) . '" class="btn">Reservar Ahora</a>';
                     echo '</div></div>';
                 }

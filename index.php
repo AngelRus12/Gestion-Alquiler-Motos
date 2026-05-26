@@ -17,9 +17,6 @@ if (!$conexion) {
 
 mysqli_set_charset($conexion, "utf8");
 
-// Asegura que la tabla de promociones exista antes de intentar leerla.
-crear_tabla_promociones_si_no_existe($conexion);
-$promocion_activa = obtener_promocion_activa($conexion);
 
 // Función para detectar dispositivos móviles
 function isMobile() {
@@ -65,27 +62,6 @@ $is_mobile = isMobile();
             </nav>
         </div>
     </header>
-
-    <?php if (!empty($promocion_activa)): ?>
-    <section class="promo-banner">
-        <div class="container">
-            <div class="promo-content">
-                <div class="promo-summary">
-                    <span class="promo-label">Oferta destacada</span>
-                    <h2><?php echo htmlspecialchars($promocion_activa['titulo']); ?></h2>
-                </div>
-                <div class="promo-description">
-                    <p><?php echo htmlspecialchars($promocion_activa['mensaje']); ?></p>
-                </div>
-                <?php if (!empty($promocion_activa['enlace'])): ?>
-                    <div class="promo-action">
-                        <a href="<?php echo htmlspecialchars($promocion_activa['enlace']); ?>" class="btn promo-btn">Ver oferta</a>
-                    </div>
-                <?php endif; ?>
-            </div>
-        </div>
-    </section>
-    <?php endif; ?>
 
     <main class="main-content">
         <div class="hero">

@@ -462,6 +462,12 @@ tr:hover td {
     font-weight: bold;
 }
 .precio-grande { font-size: 28px; }
+.precio-anterior {
+    text-decoration: line-through;
+    color: var(--texto-gris);
+    font-size: 16px;
+    font-weight: normal;
+}
 
 .estado-alquiler { 
     font-weight: bold; 
@@ -733,53 +739,37 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
 
 /* Estilos de promociones en la página de inicio */
 .promo-banner {
-    width: 100%;
-    background: var(--bg-tarjeta);
+    background: linear-gradient(45deg, var(--naranja-principal), #ff7f3b);
     color: var(--texto-blanco);
-    padding: 20px 0;
-    margin: 0;
-    border-top: 1px solid rgba(255,255,255,0.05);
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-    box-shadow: var(--sombre-tarjeta);
+    padding: 25px 0;
+    margin: 30px 0;
+    border-radius: var(--borde-redondeado);
+    box-shadow: 0 8px 25px rgba(224, 62, 0, 0.3);
 }
 .promo-banner > .container {
+    /* El contenedor ya está definido globalmente, no necesita sobreescritura aquí */
     max-width: 1400px;
     width: 100%;
     margin: 0 auto;
     padding: 0 24px;
 }
 .promo-banner .promo-content {
-    display: grid;
-    grid-template-columns: minmax(260px, 1fr) minmax(320px, 1.4fr) auto;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 24px;
+    text-align: center;
     width: 100%;
 }
 .promo-banner .promo-summary {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-width: 260px;
-}
-.promo-banner .promo-description {
-    display: flex;
-    align-items: center;
-    min-width: 320px;
-}
-.promo-banner .promo-description p {
-    margin: 0;
-    color: var(--texto-gris);
-    opacity: 0.9;
-    font-size: 1rem;
-    line-height: 1.6;
+    /* Ya no es necesario */
 }
 .promo-banner .promo-label {
     display: inline-block;
     margin-bottom: 10px;
     padding: 8px 14px;
     border-radius: 999px;
-    background: var(--naranja-principal);
-    color: var(--texto-blanco);
+    background: rgba(0,0,0,0.15);
+    color: white;
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.6px;
@@ -788,30 +778,31 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
 .promo-banner h2 {
     margin: 0 0 10px;
     font-size: 1.55rem;
-    color: var(--texto-blanco);
+    color: var(--texto-blanco); /* Mantenemos el color */
     line-height: 1.15;
 }
 .promo-banner p {
-    margin: 0;
-    color: var(--texto-gris);
-    opacity: 0.9;
+    margin: 0 auto 20px; /* Centramos el párrafo y añadimos margen inferior */
+    color: rgba(255, 255, 255, 0.85);
+    opacity: 1;
     font-size: 1rem;
     max-width: 720px;
 }
 .promo-banner .promo-btn {
-    background: var(--naranja-principal);
-    color: var(--texto-blanco);
-    border-radius: 999px;
-    padding: 12px 24px;
+    background: var(--texto-blanco);
+    color: var(--naranja-principal);
+    border-radius: 8px;
+    padding: 12px 28px;
     text-decoration: none;
     font-weight: 700;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.24);
-    transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: transform .2s ease, box-shadow .2s ease;
+    margin-top: 10px; /* Reducimos el margen superior */
+    align-self: stretch; /* Hacemos que el botón ocupe todo el ancho */
 }
 .promo-banner .promo-btn:hover {
-    transform: translateY(-2px);
-    background-color: #ff7f3b;
-    box-shadow: 0 10px 22px rgba(0,0,0,0.28);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.2);
 }
 @media (max-width: 900px) {
     .promo-banner > .container {

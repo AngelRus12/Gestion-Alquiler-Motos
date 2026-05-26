@@ -69,39 +69,6 @@ $total_users = mysqli_fetch_assoc($total_users_res)['total'];
 $total_motos = mysqli_fetch_assoc($total_motos_res)['total'];
 $total_pendientes = mysqli_fetch_assoc($res_pendientes_res)['total'];
 
-// Asegura que la tabla de promociones exista.
-crear_tabla_promociones_si_no_existe($conexion);
-
-$mensaje_promocion_html = "";
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['guardar_promocion'])) {
-    $titulo = trim($_POST['titulo']);
-    $mensaje = trim($_POST['mensaje']);
-    $enlace = trim($_POST['enlace']);
-    $fecha_inicio = trim($_POST['fecha_inicio']);
-    $fecha_fin = trim($_POST['fecha_fin']);
-    $activo = isset($_POST['activo']) ? 1 : 0;
-
-    if (empty($titulo) || empty($mensaje)) {
-        $mensaje_promocion_html = "<div class='alerta alerta-error'>El título y el mensaje son obligatorios para publicar una promoción.</div>";
-    } else {
-        if ($activo) {
-            mysqli_query($conexion, "UPDATE promociones SET activo = 0");
-        }
-        $sql_promocion = "INSERT INTO promociones (titulo, mensaje, enlace, fecha_inicio, fecha_fin, activo)
-                          VALUES (?, ?, ?, NULLIF(?,''), NULLIF(?,''), ?)";
-        $stmt_promocion = mysqli_prepare($conexion, $sql_promocion);
-        mysqli_stmt_bind_param($stmt_promocion, "sssssi", $titulo, $mensaje, $enlace, $fecha_inicio, $fecha_fin, $activo);
-        if (mysqli_stmt_execute($stmt_promocion)) {
-            $mensaje_promocion_html = "<div class='alerta alerta-exito'>Promoción guardada correctamente y publicada en la página de inicio.</div>";
-        } else {
-            $mensaje_promocion_html = "<div class='alerta alerta-error'>No se pudo guardar la promoción. Intenta de nuevo.</div>";
-        }
-        mysqli_stmt_close($stmt_promocion);
-    }
-}
-
-$res_promociones = mysqli_query($conexion, "SELECT * FROM promociones ORDER BY activo DESC, fecha_inicio DESC, fecha_creacion DESC");
-
 // --- 6. DATOS PARA EL CALENDARIO DE RESERVAS ---
 // Primero, cojo todos los alquileres de la base de datos.
 $resultado_eventos = mysqli_query($conexion, "SELECT * FROM alquileres ORDER BY fecha_inicio ASC");
@@ -192,69 +159,6 @@ while ($evento = mysqli_fetch_assoc($resultado_eventos)) {
                     <div class="stat-icon">💰</div>
                 </div>
             </div>
-
-            <?php echo $mensaje_promocion_html; ?>
-            <section>
-                <div class="seccion-titulo-admin">
-                    <h2>Ofertas y Promociones</h2>
-                </div>
-                <div class="contenedor-tabla">
-                    <form method="POST" class="promo-form">
-                        <div class="promo-field">
-                            <label>Título de la promoción</label>
-                            <input type="text" name="titulo" required placeholder="Ej. 20% de descuento este fin de semana" />
-                        </div>
-                        <div class="promo-field">
-                            <label>Mensaje</label>
-                            <textarea name="mensaje" required rows="3" placeholder="Texto que se mostrará en la página de inicio"></textarea>
-                        </div>
-                        <div class="promo-field">
-                            <label>Enlace (opcional)</label>
-                            <input type="url" name="enlace" placeholder="https://tusitio.com/oferta" />
-                        </div>
-                        <div class="promo-grid-row">
-                            <div>
-                                <label>Fecha inicio (opcional)</label>
-                                <input type="date" name="fecha_inicio" />
-                            </div>
-                            <div>
-                                <label>Fecha fin (opcional)</label>
-                                <input type="date" name="fecha_fin" />
-                            </div>
-                            <div class="promo-checkbox-group">
-                                <label><input type="checkbox" name="activo" checked /> Publicar ahora</label>
-                            </div>
-                        </div>
-                        <button type="submit" name="guardar_promocion" class="boton">Guardar y Publicar</button>
-                    </form>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Título</th>
-                                <th>Mensaje</th>
-                                <th>Fechas</th>
-                                <th>Activo</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php while ($promo = mysqli_fetch_assoc($res_promociones)) { ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars($promo['id']); ?></td>
-                                    <td><?php echo htmlspecialchars($promo['titulo']); ?></td>
-                                    <td><?php echo htmlspecialchars($promo['mensaje']); ?></td>
-                                    <td><?php echo htmlspecialchars($promo['fecha_inicio'] ?: '-'); ?> - <?php echo htmlspecialchars($promo['fecha_fin'] ?: '-'); ?></td>
-                                    <td><?php echo $promo['activo'] ? '<span class="etiqueta etiqueta-exito">Sí</span>' : '<span class="etiqueta-aviso">No</span>'; ?></td>
-                                    <td>
-                                        <a href="eliminar_promocion.php?id=<?php echo htmlspecialchars($promo['id']); ?>" class="boton boton-pequeño etiqueta-error" onclick="return confirm('¿Estás seguro de que quieres eliminar esta promoción?');">Eliminar</a>
-                                    </td>
-                                </tr>
-                            <?php } ?>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
 
             <section class="calendar-panel">
                 <div class="calendar-header">

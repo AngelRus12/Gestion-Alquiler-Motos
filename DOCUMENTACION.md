@@ -87,7 +87,6 @@ El proyecto adopta un enfoque de "defensa en profundidad" para proteger la aplic
 - `usuarios` : Usuarios con datos personales, contraseña hasheada, rol y estado.
 - `motos` : Inventario de motos con precio, disponibilidad y características.
 - `alquileres` : Reservas y alquileres registrados con estado y fechas.
-- `promociones` : Mensajes promocionales visibles en la página de inicio.
 
 ### Stored procedures y funciones SQL
 El archivo `database/alquilermotos.sql` incluye:

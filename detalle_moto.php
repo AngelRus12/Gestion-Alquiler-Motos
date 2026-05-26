@@ -7,6 +7,7 @@
  */
 header('Content-Type: text/html; charset=utf-8');
 session_start();
+require_once 'funciones.php';
 require_once 'loginbd.php';
 $conexion = mysqli_connect($db_hostname, $db_username, $db_password, $db_database);
 
@@ -138,9 +139,18 @@ $is_mobile = isMobile();
                                     <option value="tienda">Pago en Tienda</option>
                                     <option value="web">Pago Online con Tarjeta</option>
                                 </select>
-                            </div>
-                            <div class="desglose-precio">
-                                <p>Total: <strong id="total_val" class="precio-grande">0.00</strong> €</p>
+                            </div>                            
+                            <div id="precio-desglose" class="precio-desglose" style="display: none;">
+                                <div class="precio-fila">
+                                    <span id="etiqueta-precio-base">Precio base</span> <span>(<span id="dias-seleccionados">0</span> días)</span>
+                                    <span id="precio-base-valor">0.00€</span>
+                                </div>
+                                
+                                <hr class="divider-muted">
+                                <div class="precio-fila">
+                                    <strong>Precio Total</strong>
+                                    <strong id="precio-final" class="precio-total-final">0.00€</strong>
+                                </div>
                             </div>
                             <button type="submit" class="btn btn-block espaciado-arriba">Reservar</button>
                         </form>
@@ -191,28 +201,35 @@ $is_mobile = isMobile();
         function calcularTotal() {
             const f_inicio_input = document.getElementById('f_inicio');
             const f_fin_input = document.getElementById('f_fin');
-            const total_display = document.getElementById('total_val');
             const precio_dia = parseFloat(document.getElementById('precio_dia_val').value);
+            const moto_id = <?php echo $moto['id']; ?>;
+
+            const precioDesglose = document.getElementById('precio-desglose');
+            const diasSeleccionados = document.getElementById('dias-seleccionados');
+            const precioBaseValorElement = document.getElementById('precio-base-valor');
+            const precioFinalElement = document.getElementById('precio-final');
 
             // 1. Establecer el mínimo de la fecha de fin basado en la fecha de inicio
             if (f_inicio_input.value) {
                 f_fin_input.min = f_inicio_input.value;
             }
 
-            const d1 = new Date(f_inicio_input.value);
-            const d2 = new Date(f_fin_input.value);
+            const fechaInicio = new Date(f_inicio_input.value);
+            const fechaFin = new Date(f_fin_input.value);
 
-            if (f_inicio_input.value && f_fin_input.value) {
-                // 2. Validar que la fecha fin sea mayor o igual a la de inicio
-                if (d2 >= d1) {
+            if (f_inicio_input.value && f_fin_input.value && fechaFin >= fechaInicio) {
                     const milisegundosPorDia = 1000 * 60 * 60 * 24;
-                    // Calculamos la diferencia y sumamos 1 para incluir el día de inicio
-                    const dias = Math.floor((d2 - d1) / milisegundosPorDia) + 1;
-                    total_display.textContent = (dias * precio_dia).toFixed(2);
-                    f_fin_input.style.borderColor = "#2d1f1b"; // Reset color si es correcto
-                } else {
-                    // Si el usuario intenta poner una fecha anterior manualmente
-                    total_display.textContent = "0.00";
+                    const dias = Math.floor((fechaFin - fechaInicio) / milisegundosPorDia) + 1;
+                    const precioTotal = dias * precio_dia;
+
+                    diasSeleccionados.textContent = dias;
+                    precioBaseValorElement.textContent = `${precioTotal.toFixed(2)}€`;
+                    precioFinalElement.textContent = precioTotal.toFixed(2) + '€';
+                    precioDesglose.style.display = 'block';
+
+            } else {
+                precioDesglose.style.display = 'none';
+                if (f_fin_input.value && fechaFin < fechaInicio) {
                     f_fin_input.style.borderColor = "#f44336"; // Marca error en rojo
                     alert("La fecha de finalización no puede ser anterior a la de inicio.");
                     f_fin_input.value = ""; // Limpia el campo erróneo
