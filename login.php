@@ -83,13 +83,9 @@ if (isset($_SESSION['usuario_id'])) {
         <div class="links">
             <p>¿No tienes cuenta? <a href="registro">Regístrate aquí</a></p>
             <br>
-
-
-            
             <p><a href="index">Volver al inicio</a></p>
             <br>
-            <p>Si olvidaste tu contraseña, envie un correo a info@alquilermotos.com</a></p>
-            <p>indicando tu DNI y correo electrónico.</a></p>
+            <p><a href="solicitar_recuperacion.php" class="enlace-discreto">¿Olvidaste tu contraseña?</a></p>
         </div>
     </div>
 </body>

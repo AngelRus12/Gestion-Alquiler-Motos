@@ -40,14 +40,30 @@ mysqli_stmt_execute($stmt_usuario);
 $res_stats = mysqli_stmt_get_result($stmt_usuario);
 $usuario = mysqli_fetch_assoc($res_stats);
 mysqli_stmt_close($stmt_usuario);
+ 
+// --- LÓGICA DE PAGINACIÓN PARA ALQUILERES ---
+$limit = 10; // 10 alquileres por página
 
-// Se obtienen todos los alquileres del usuario para mostrarlos en la tabla.
-$sql_alquileres = "SELECT * FROM alquileres WHERE usuario_id = ? ORDER BY fecha_reserva DESC";
+// 1. Contar el total de alquileres del usuario.
+$sql_count = "SELECT COUNT(*) as total FROM alquileres WHERE usuario_id = ?";
+$stmt_count = mysqli_prepare($conexion, $sql_count);
+mysqli_stmt_bind_param($stmt_count, "i", $u_id);
+mysqli_stmt_execute($stmt_count);
+$total_alquileres = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt_count))['total'] ?? 0;
+mysqli_stmt_close($stmt_count);
+
+// 2. Calcular páginas.
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $limit;
+$total_pages = ceil($total_alquileres / $limit);
+
+// 3. Se obtienen los alquileres del usuario para la página actual.
+$sql_alquileres = "SELECT * FROM alquileres WHERE usuario_id = ? ORDER BY fecha_reserva DESC LIMIT ? OFFSET ?";
 $stmt_alquileres = mysqli_prepare($conexion, $sql_alquileres);
-mysqli_stmt_bind_param($stmt_alquileres, "i", $u_id);
+mysqli_stmt_bind_param($stmt_alquileres, "iii", $u_id, $limit, $offset);
 mysqli_stmt_execute($stmt_alquileres);
 $alquileres = mysqli_stmt_get_result($stmt_alquileres);
-$alquileres_data = mysqli_fetch_all($alquileres, MYSQLI_ASSOC);
+$alquileres_data = mysqli_fetch_all($alquileres, MYSQLI_ASSOC); // Datos solo para la página actual
 mysqli_stmt_close($stmt_alquileres);
 
 // --- OPTIMIZACIÓN N+1 ---
@@ -74,6 +90,29 @@ if (!empty($moto_ids)) {
         $motos_map[$moto['id']] = $moto; // Creamos un mapa para fácil acceso
     }
     mysqli_stmt_close($stmt_motos);
+}
+
+// Función para generar los enlaces de paginación (local para esta página)
+function generar_paginacion($page, $total_pages, $base_url) {
+    if ($total_pages <= 1) return;
+
+    echo '<div class="paginacion paginacion-perfil">';
+    // Botón Anterior
+    if ($page > 1) {
+        echo '<a href="' . $base_url . ($page - 1) . '" class="boton boton-pequeño">&laquo; Anterior</a>';
+    }
+
+    // Números de página
+    for ($i = 1; $i <= $total_pages; $i++) {
+        $active_class = ($i == $page) ? 'active' : '';
+        echo '<a href="' . $base_url . $i . '" class="page-number ' . $active_class . '">' . $i . '</a>';
+    }
+
+    // Botón Siguiente
+    if ($page < $total_pages) {
+        echo '<a href="' . $base_url . ($page + 1) . '" class="boton boton-pequeño">Siguiente &raquo;</a>';
+    }
+    echo '</div>';
 }
 
 // Función para detectar dispositivos móviles
@@ -283,11 +322,22 @@ $is_mobile = isMobile();
                                 </span>
                             </td>
                             <td class="text-center">
-                                <a href="detalle_alquiler.php?id=<?php echo htmlspecialchars($alq['id']); ?>" class="boton boton-pequeño">Ver Detalles</a><?php
-                                // El botón para cancelar solo debe aparecer si la reserva todavía está 'pendiente'.
-                                if ($alq['estado'] == 'pendiente') { ?>
-                                    <button onclick="cancelarReserva(this, <?php echo htmlspecialchars($alq['id']); ?>)" class="boton boton-pequeño boton-error ml-10">Cancelar</button>
+                                <a href="detalle_alquiler.php?id=<?php echo htmlspecialchars($alq['id']); ?>" class="boton boton-pequeño">Ver Detalles</a>
                                 <?php
+                                // Lógica para mostrar botones de Cancelar/Modificar
+                                // 1. El estado debe ser 'pendiente' o 'confirmado'.
+                                // 2. Deben faltar más de 48 horas para el inicio del alquiler.
+                                $es_modificable = false;
+                                if (in_array($alq['estado'], ['pendiente', 'confirmado'])) {
+                                    $fecha_inicio_ts = strtotime($alq['fecha_inicio']);
+                                    $limite_48h_ts = strtotime('+48 hours');
+                                    if ($fecha_inicio_ts > $limite_48h_ts) {
+                                        $es_modificable = true;
+                                    }
+                                }
+                                if ($es_modificable) { ?>
+                                    <a href="modificar_reserva.php?id=<?php echo htmlspecialchars($alq['id']); ?>" class="boton boton-pequeño boton-secundario ml-10">Modificar</a>
+                                    <button onclick="cancelarReserva(this, <?php echo htmlspecialchars($alq['id']); ?>)" class="boton boton-pequeño boton-error ml-10">Cancelar</button><?php
                                 } ?>
                             </td>
                         </tr>
@@ -297,6 +347,13 @@ $is_mobile = isMobile();
                         <?php } ?>
                     </tbody>
                 </table>
+                <?php
+                // Generar URL base para la paginación de alquileres
+                $params = $_GET;
+                unset($params['page']);
+                $base_url_alquileres = 'perfil_usuario.php?' . http_build_query($params) . (empty($params) ? '' : '&') . 'page=';
+                generar_paginacion($page, $total_pages, $base_url_alquileres);
+                ?>
             </div>
 
             <div class="perfil-container">

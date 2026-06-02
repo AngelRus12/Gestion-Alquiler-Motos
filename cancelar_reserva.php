@@ -45,6 +45,31 @@ if (mysqli_connect_errno()) {
 // cancele la reserva de otro cambiando el ID en la URL.
 $sql = "UPDATE alquileres SET estado = 'cancelado' WHERE id = ? AND usuario_id = ?";
 
+// --- 5. VERIFICACIÓN DE PERMISOS Y REGLA DE 48 HORAS ---
+// Primero, obtenemos los datos del alquiler para verificar al propietario y la fecha.
+$sql_check = "SELECT usuario_id, fecha_inicio, estado FROM alquileres WHERE id = ?";
+$stmt_check = mysqli_prepare($conexion, $sql_check);
+mysqli_stmt_bind_param($stmt_check, "i", $id_alquiler_a_cancelar);
+mysqli_stmt_execute($stmt_check);
+$resultado = mysqli_stmt_get_result($stmt_check);
+$alquiler = mysqli_fetch_assoc($resultado);
+mysqli_stmt_close($stmt_check);
+
+if (!$alquiler || $alquiler['usuario_id'] != $id_usuario_actual) {
+    // Si el alquiler no existe o no pertenece al usuario, redirige con error.
+    header('Location: perfil_usuario.php?error=cancelacion_fallida');
+    exit();
+}
+
+// Comprobamos la regla de las 48 horas.
+if (strtotime($alquiler['fecha_inicio']) <= strtotime('+48 hours')) {
+    // Si faltan 48 horas o menos, no se puede cancelar.
+    header('Location: perfil_usuario.php?error=cancelacion_fuera_plazo');
+    exit();
+}
+
+// Si todo es correcto, procedemos a actualizar.
+
 $stmt = mysqli_prepare($conexion, $sql);
 // Se asocian las variables a los parámetros de la consulta. "ii" significa que ambos son enteros.
 mysqli_stmt_bind_param($stmt, "ii", $id_alquiler_a_cancelar, $id_usuario_actual);

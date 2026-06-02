@@ -1139,6 +1139,11 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
     border-color: var(--naranja-principal);
 }
 
+/* Ajuste para la paginación en el perfil de usuario */
+.paginacion-perfil {
+    margin-top: 20px;
+}
+
 .titulo-seccion-pago {
     color: var(--texto-blanco);
     font-size: 20px;
