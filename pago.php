@@ -26,90 +26,70 @@ $description = 'Alquiler de motocicleta - ID: ' . $id_alquiler;
 
 // Se construye la URL a la que la pasarela de pago debe redirigir al usuario después de completar el pago.
 // En este caso, es el script `callback_pago.php` que procesará el resultado.
-$return_url = 'http://' . $_SERVER['HTTP_HOST'] . '/perfil_usuario.php';
+// Se construye la URL de retorno dinámicamente para mayor robustez.
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$host = $_SERVER['HTTP_HOST'];
+$return_url = $protocol . '://' . $host . '/perfil_usuario.php';
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="logo.png" type="image/png">
+    <link rel="apple-touch-icon" href="logo.png">
     <title>Pago Seguro - ARUSLAT</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Estilos personalizados del simulador -->
-    <link rel="stylesheet" href="payment/css/bank-style.css">
+    <link rel="stylesheet" href="estilos.css">
+    <link rel="stylesheet" href="estilos_mobile.css">
 </head>
-<body>
+<body class="login-body">
 
-    <main class="container mt-4 mt-md-5">
-        <div class="row justify-content-center">
-            <div class="col-lg-6">
-                <div class="card shadow-soft border-rounded">
-                    <div class="card-header bg-gradient-primary text-white text-center p-4">
-                        <h2 class="mb-0">Pasarela de Pago</h2>
-                        <p class="mb-0">Estás a punto de pagar</p>
-                        <h1 class="display-4 fw-bold my-2"><?php echo number_format($monto, 2); ?>€</h1>
-                    </div>
-                    <div class="card-body p-4 p-md-5">
-                        <h4 class="mb-4 text-center">Selecciona tu método de pago</h4>
-
-                        <!-- El formulario envía los datos al script `checkout.php` del simulador de pago. -->
-                        <form action="payment/checkout.php" method="POST" id="paymentForm">
-                            <input type="hidden" name="amount" value="<?php echo htmlspecialchars(number_format($amount, 2, '.', '')); ?>">
-                            <input type="hidden" name="order_id" value="<?php echo $order_id; ?>">
-                            <input type="hidden" name="description" value="<?php echo $description; ?>">
-                            <input type="hidden" name="return_url" value="<?php echo $return_url; ?>">
-                            <input type="hidden" name="auto_redirect_on_approved" value="true">
-                            <input type="hidden" name="redirect_delay_ms" value="3000">
-
-                            <div class="row g-3 mb-4">
-                                <!-- Opciones de métodos de pago simulados. Se usan radio buttons. -->
-                                
-                                <div class="col-6 payment-option">
-                                    <input type="radio" class="btn-check" name="payment_method" id="webpay" value="webpay" checked>
-                                    <label class="btn btn-outline-secondary w-100 payment-label" for="webpay">
-                                        <h5 class="mb-1">Webpay Plus</h5>
-                                        <small class="text-muted">Paga con tu tarjeta de crédito</small>
-                                    </label>
-                                </div>
-
-                                <div class="col-6 payment-option">
-                                    <input type="radio" class="btn-check" name="payment_method" id="paypal" value="paypal">
-                                    <label class="btn btn-outline-secondary w-100 payment-label" for="paypal">
-                                        <h5 class="mb-1">Paypal</h5>
-                                        <small class="text-muted">Paga con tu cuenta PayPal</small>
-                                    </label>
-                                </div>
-
-                                <div class="col-6 payment-option">
-                                    <input type="radio" class="btn-check" name="payment_method" id="mercadopago" value="mercadopago">
-                                    <label class="btn btn-outline-secondary w-100 payment-label" for="mercadopago">
-                                        <h5 class="mb-1">Mercado Pago</h5>
-                                        <small class="text-muted">Varias opciones de pago</small>
-                                    </label>
-                                </div>
-                                
-                                <div class="col-6 payment-option">
-                                    <input type="radio" class="btn-check" name="payment_method" id="bank_transfer" value="bank_transfer">
-                                    <label class="btn btn-outline-secondary w-100 payment-label" for="bank_transfer">
-                                        <h5 class="mb-1">Transferencia</h5>
-                                        <small class="text-muted">Desde tu banco</small>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary btn-lg hover-lift">Proceder al Pago Seguro</button>
-                                <a href="catalogo.php" class="btn btn-outline-secondary">Cancelar y volver</a>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
+    <div class="pago-container">
+        <div class="pago-header">
+            <p>Estás a punto de pagar</p>
+            <h1 class="monto-valor"><?php echo number_format($monto, 2); ?>€</h1>
+            <p class="info-alquiler">Concepto: Alquiler de moto (ID: <?php echo htmlspecialchars($id_alquiler); ?>)</p>
         </div>
-    </main>
+        <div class="pago-body">
+            <h3 class="titulo-seccion-pago">Selecciona tu método de pago</h3>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+            <!-- El formulario envía los datos al script `checkout.php` del simulador de pago. -->
+            <form action="payment/checkout.php" method="POST" id="paymentForm">
+                <input type="hidden" name="amount" value="<?php echo htmlspecialchars(number_format($amount, 2, '.', '')); ?>">
+                <input type="hidden" name="order_id" value="<?php echo $order_id; ?>">
+                <input type="hidden" name="description" value="<?php echo $description; ?>">
+                <input type="hidden" name="return_url" value="<?php echo $return_url; ?>">
+                <input type="hidden" name="auto_redirect_on_approved" value="true">
+                <input type="hidden" name="redirect_delay_ms" value="3000">
+
+                <div class="metodo-pago-grid">
+                    <!-- Opciones de métodos de pago simulados. Se usan radio buttons. -->
+                    <label class="metodo-option-label">
+                        <input type="radio" name="payment_method" value="webpay" checked>
+                        <div class="metodo-option-content"><span>💳</span> Webpay Plus</div>
+                    </label>
+                    <label class="metodo-option-label">
+                        <input type="radio" name="payment_method" value="paypal">
+                        <div class="metodo-option-content"><span>🅿️</span> Paypal</div>
+                    </label>
+                    <label class="metodo-option-label">
+                        <input type="radio" name="payment_method" value="mercadopago">
+                        <div class="metodo-option-content"><span>🛒</span> Mercado Pago</div>
+                    </label>
+                    <label class="metodo-option-label">
+                        <input type="radio" name="payment_method" value="bank_transfer">
+                        <div class="metodo-option-content"><span>🏦</span> Transferencia</div>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-block">Proceder al Pago Seguro</button>
+                </div>
+                <div class="form-group text-center btn-cancelar">
+                    <a href="perfil_usuario.php?pago=cancelado" class="enlace-discreto">Cancelar y volver</a>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>

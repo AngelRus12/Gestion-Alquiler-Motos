@@ -182,35 +182,31 @@ $params['return_url'] = $_SESSION['last_transaction']['return_url'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="../logo.png" type="image/png">
     <title>Redirigiendo al Portal de Pago...</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="css/bank-style.css">
+    <link rel="stylesheet" href="../estilos.css">
+    <link rel="stylesheet" href="../estilos_mobile.css">
 </head>
-<body class="page-redirect-body" onload="document.getElementById('bank_form').submit();">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card shadow-lg">
-                    <div class="card-body text-center p-5">
-                        <div class="loader mx-auto mb-4"></div>
-                        <h4 class="mb-3">Redirigiendo al Portal de Pago Seguro</h4>
-                        <p class="text-muted mb-4">
-                            <i class="bi bi-shield-lock-fill text-success"></i>
-                            Conexión segura establecida
-                        </p>
-                        <div class="alert alert-info">
-                            <small>
-                                <strong>Método:</strong> <?php echo ucfirst($paymentMethod); ?><br>
-                                <strong>Monto:</strong> <?php echo number_format($amount, 2, '.', ''); ?> €<br>
-                                <strong>Orden:</strong> <?php echo $orderId; ?>
-                            </small>
-                        </div>
-                        <p class="small text-muted">
-                            No cierres esta ventana. Serás redirigido automáticamente...
-                        </p>
-                    </div>
-                </div>
+<body class="login-body" onload="document.getElementById('bank_form').submit();">
+    <div class="pago-container">
+        <div class="pago-body text-center">
+            <div class="loader-container">
+                <div class="loader"></div>
+            </div>
+            <h3 class="titulo-seccion-pago">Redirigiendo al pago seguro</h3>
+            <p class="texto-gris">Estás siendo transferido al portal de pago. Por favor, espera.</p>
+            
+            <div class="resumen-pago-redirect">
+                <p><strong>Método:</strong> <?php echo htmlspecialchars(ucfirst($paymentMethod)); ?></p>
+                <p><strong>Monto:</strong> <?php echo htmlspecialchars(number_format($amount, 2, '.', '')); ?> €</p>
+                <p><strong>Orden:</strong> <?php echo htmlspecialchars($orderId); ?></p>
+            </div>
+
+            <p class="texto-gris-claro" style="font-size: 12px; margin-top: 20px;">
+                <span style="color: #4caf50;">✓</span> Conexión segura establecida.
+            </p>
+            <div class="form-group text-center btn-cancelar">
+                <a href="../perfil_usuario.php?pago=cancelado" class="enlace-discreto">Cancelar y volver</a>
             </div>
         </div>
     </div>

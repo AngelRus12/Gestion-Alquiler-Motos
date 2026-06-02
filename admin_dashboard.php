@@ -63,20 +63,47 @@ $res_pendientes_res = mysqli_query($conexion, "SELECT COUNT(*) as total FROM alq
 // Se extrae el valor 'total' de cada resultado.
 $total_users = mysqli_fetch_assoc($total_users_res)['total'] ?? 0;
 $total_motos = mysqli_fetch_assoc($total_motos_res)['total'] ?? 0;
-$total_pendientes = mysqli_fetch_assoc($res_pendientes_res)['total'] ?? 0;
+$total_pendientes_res = mysqli_query($conexion, "SELECT COUNT(*) as total FROM alquileres WHERE estado = 'pendiente'");
+$total_pendientes = mysqli_fetch_assoc($total_pendientes_res)['total'] ?? 0;
+
+// --- 5.1. LÓGICA DE PAGINACIÓN ---
+$limit = 10; // Límite de registros por página
+
+// Paginación para Usuarios
+$page_users = isset($_GET['page_users']) ? (int)$_GET['page_users'] : 1;
+$offset_users = ($page_users - 1) * $limit;
+$total_pages_users = ceil($total_users / $limit);
+
+// Paginación para Motos
+$page_motos = isset($_GET['page_motos']) ? (int)$_GET['page_motos'] : 1;
+$offset_motos = ($page_motos - 1) * $limit;
+$total_pages_motos = ceil($total_motos / $limit);
+
+// Paginación para Alquileres
+$total_alquileres_res = mysqli_query($conexion, "SELECT COUNT(*) as total FROM alquileres");
+$total_alquileres = mysqli_fetch_assoc($total_alquileres_res)['total'] ?? 0;
+$page_alquileres = isset($_GET['page_alquileres']) ? (int)$_GET['page_alquileres'] : 1;
+$offset_alquileres = ($page_alquileres - 1) * $limit;
+$total_pages_alquileres = ceil($total_alquileres / $limit);
 
 // --- 6. OPTIMIZACIÓN DE CONSULTAS (N+1) PARA TABLAS Y CALENDARIO ---
 // En lugar de hacer consultas dentro de bucles, obtenemos todos los datos necesarios al principio.
 
-// a) Obtener todos los alquileres
-$resultado_alquileres = mysqli_query($conexion, "SELECT * FROM alquileres ORDER BY fecha_reserva DESC");
+// a) Obtener los alquileres para la página actual y para el calendario
+$stmt_alquileres = mysqli_prepare($conexion, "SELECT * FROM alquileres ORDER BY fecha_reserva DESC LIMIT ? OFFSET ?");
+mysqli_stmt_bind_param($stmt_alquileres, "ii", $limit, $offset_alquileres);
+mysqli_stmt_execute($stmt_alquileres);
+$resultado_alquileres = mysqli_stmt_get_result($stmt_alquileres);
 $alquileres_todos = mysqli_fetch_all($resultado_alquileres, MYSQLI_ASSOC);
 
 // b) Obtener todos los usuarios y motos
-$resultado_usuarios = mysqli_query($conexion, "SELECT id, nombre, apellidos, email, rol, estado FROM usuarios");
+$stmt_usuarios = mysqli_prepare($conexion, "SELECT id, nombre, apellidos, email, rol, estado FROM usuarios ORDER BY id DESC LIMIT ? OFFSET ?");
+mysqli_stmt_bind_param($stmt_usuarios, "ii", $limit, $offset_users);
+mysqli_stmt_execute($stmt_usuarios);
+$resultado_usuarios = mysqli_stmt_get_result($stmt_usuarios);
 $usuarios_todos = mysqli_fetch_all($resultado_usuarios, MYSQLI_ASSOC);
 
-$resultado_motos_tabla = mysqli_query($conexion, "SELECT id, marca, modelo, precio_dia, disponible, tipo, imagen FROM motos");
+$resultado_motos_tabla = mysqli_query($conexion, "SELECT id, marca, modelo, precio_dia, disponible, tipo, imagen FROM motos ORDER BY id DESC LIMIT $limit OFFSET $offset_motos");
 $motos_todas = mysqli_fetch_all($resultado_motos_tabla, MYSQLI_ASSOC);
 
 // c) Crear "mapas" para un acceso rápido a los datos sin necesidad de nuevas consultas.
@@ -90,10 +117,13 @@ foreach ($motos_todas as $moto) {
     $motos_map[$moto['id']] = $moto;
 }
 
-// d) Preparar los datos para el calendario usando los mapas
+// d) Preparar los datos para el calendario (se obtienen todos los alquileres para el calendario, sin paginación)
 $eventos_calendario = [];
-foreach ($alquileres_todos as $evento) {
-    // Buscamos el usuario en nuestro mapa. Si no existe (fue eliminado), usamos valores por defecto.
+$resultado_alquileres_calendario = mysqli_query($conexion, "SELECT * FROM alquileres ORDER BY fecha_reserva DESC");
+$alquileres_calendario = mysqli_fetch_all($resultado_alquileres_calendario, MYSQLI_ASSOC);
+
+foreach ($alquileres_calendario as $evento) {
+    // Buscamos el usuario en nuestro mapa. Si no existe (fue eliminado), usamos valores por defecto. (Puede que necesitemos un mapa más grande para esto)
     $usuario_info = $usuarios_map[$evento['usuario_id']] ?? ['nombre' => 'Usuario', 'apellidos' => 'Eliminado'];
     
     // Hacemos lo mismo para la moto.
@@ -108,6 +138,30 @@ foreach ($alquileres_todos as $evento) {
         'moto'         => trim($moto_info['marca'] . ' ' . $moto_info['modelo']),
     ];
 }
+
+// Función para generar los enlaces de paginación
+function generar_paginacion($page, $total_pages, $base_url) {
+    if ($total_pages <= 1) return;
+
+    echo '<div class="paginacion">';
+    // Botón Anterior
+    if ($page > 1) {
+        echo '<a href="' . $base_url . ($page - 1) . '" class="boton boton-pequeño">&laquo; Anterior</a>';
+    }
+
+    // Números de página
+    for ($i = 1; $i <= $total_pages; $i++) {
+        $active_class = ($i == $page) ? 'active' : '';
+        echo '<a href="' . $base_url . $i . '" class="page-number ' . $active_class . '">' . $i . '</a>';
+    }
+
+    // Botón Siguiente
+    if ($page < $total_pages) {
+        echo '<a href="' . $base_url . ($page + 1) . '" class="boton boton-pequeño">Siguiente &raquo;</a>';
+    }
+    echo '</div>';
+}
+
 ?>
 <!-- El resto del archivo es la estructura HTML que muestra los datos obtenidos. -->
 
@@ -238,6 +292,13 @@ foreach ($alquileres_todos as $evento) {
                         </tbody>
                     </table>
                 </div>
+                <?php
+                // Generar URL base para paginación de usuarios
+                $params = $_GET;
+                unset($params['page_users']);
+                $base_url_users = 'admin_dashboard.php?' . http_build_query($params) . '&page_users=';
+                generar_paginacion($page_users, $total_pages_users, $base_url_users);
+                ?>
             </section>
 
             <hr class="separador-admin">
@@ -306,6 +367,13 @@ foreach ($alquileres_todos as $evento) {
                         </tbody>
                     </table>
                 </div>
+                <?php
+                // Generar URL base para paginación de motos
+                $params = $_GET;
+                unset($params['page_motos']);
+                $base_url_motos = 'admin_dashboard.php?' . http_build_query($params) . '&page_motos=';
+                generar_paginacion($page_motos, $total_pages_motos, $base_url_motos);
+                ?>
             </section>
 
             <hr class="separador-admin">
@@ -329,7 +397,8 @@ foreach ($alquileres_todos as $evento) {
                         <tbody>
                             <?php 
                             $hay_pendientes = false;
-                            foreach ($alquileres_todos as $alquiler) {
+                            // Para los pendientes, recorremos todos los alquileres del calendario, no solo los paginados
+                            foreach ($alquileres_calendario as $alquiler) {
                                 if ($alquiler['estado'] === 'pendiente') {
                                     $hay_pendientes = true;
                                     // Usamos los mapas para obtener los datos sin nuevas consultas
@@ -421,6 +490,13 @@ foreach ($alquileres_todos as $evento) {
                         </tbody>
                     </table>
                 </div>
+                <?php
+                // Generar URL base para paginación de alquileres
+                $params = $_GET;
+                unset($params['page_alquileres']);
+                $base_url_alquileres = 'admin_dashboard.php?' . http_build_query($params) . '&page_alquileres=';
+                generar_paginacion($page_alquileres, $total_pages_alquileres, $base_url_alquileres);
+                ?>
             </section>
 
         </div>

@@ -7,6 +7,10 @@
  * =================================================================
  */
 
+// Establece la zona horaria para toda la aplicación a la de España.
+// Esto asegura que todas las funciones de fecha y hora (date(), strtotime(), etc.) funcionen correctamente.
+date_default_timezone_set('Europe/Madrid');
+
 /**
  * =================================================================
  * FUNCIONES DE SEGURIDAD CSRF (Cross-Site Request Forgery)

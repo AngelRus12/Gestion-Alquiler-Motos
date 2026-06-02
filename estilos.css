@@ -1081,6 +1081,102 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
     border-bottom: none;
 }
 
+/* ==========================================================
+   PÁGINA DE PAGO (NUEVO DISEÑO)
+   ========================================================== */
+/* Contenedor principal para la página de la pasarela de pago. */
+.pago-container {
+    max-width: 500px;
+    margin: 40px auto;
+    background: var(--bg-tarjeta);
+    border-radius: var(--borde-redondeado);
+    border: 1px solid var(--borde-tarjeta);
+    box-shadow: var(--sombre-tarjeta);
+    overflow: hidden;
+}
+
+/* Cabecera de la página de pago donde se muestra el monto. */
+.pago-header {
+    background-color: var(--bg-oscuro);
+    padding: 30px;
+    text-align: center;
+    border-bottom: 1px solid var(--borde-tarjeta);
+}
+
+.pago-header p { margin: 0; font-size: 16px; color: var(--texto-gris); }
+.pago-header .monto-valor { font-size: 48px; font-weight: 800; color: var(--naranja-principal); line-height: 1.2; }
+.pago-header .info-alquiler { font-size: 13px; color: var(--texto-gris); margin-top: 5px; }
+
+/* Cuerpo de la página de pago donde se seleccionan los métodos. */
+.pago-body {
+    padding: 30px;
+}
+
+/* ==========================================================
+   PAGINACIÓN
+   ========================================================== */
+.paginacion {
+    margin-top: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.paginacion .page-number {
+    padding: 8px 14px;
+    border-radius: 6px;
+    background-color: var(--bg-tarjeta);
+    border: 1px solid var(--borde-tarjeta);
+    color: var(--texto-gris);
+    font-weight: 600;
+}
+
+.paginacion .page-number.active,
+.paginacion .page-number:hover {
+    background-color: var(--naranja-principal);
+    color: var(--texto-blanco);
+    border-color: var(--naranja-principal);
+}
+
+.titulo-seccion-pago {
+    color: var(--texto-blanco);
+    font-size: 20px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+/* Cuadrícula para los botones de selección de método de pago. */
+.metodo-pago-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+/* Ocultar el radio button real */
+.metodo-option-label input[type="radio"] { display: none; }
+
+/* Estilo para la etiqueta que envuelve cada opción de pago. */
+.metodo-option-label .metodo-option-content {
+    border: 2px solid var(--borde-tarjeta);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+.metodo-option-label .metodo-option-content:hover { background-color: #2d1f1b; }
+
+/* Estilo que se aplica cuando se selecciona una opción de pago (radio button). */
+.metodo-option-label input[type="radio"]:checked + .metodo-option-content {
+    background-color: rgba(224, 62, 0, 0.1);
+    border-color: var(--naranja-principal);
+    color: var(--texto-blanco);
+}
+.btn-cancelar { padding-top: 15px; }
+
 @media (max-width: 760px) {
     .promo-grid-row {
         flex-direction: column;
@@ -1157,6 +1253,11 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
 
     .form-grid-3-col, .form-grid-2-col {
         grid-template-columns: 1fr;
+    }
+
+    /* Corrección específica para el formulario de registro en móvil */
+    .registro .form-grid-2-col {
+        grid-template-columns: 1fr; /* Asegura una sola columna */
     }
 
     .formulario-admin, .login-container, .registro, .container-formulario, .perfil-container {

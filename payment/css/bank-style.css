@@ -7,7 +7,7 @@
 
 /* ===== ESTILOS GENERALES ===== */
 body {
-    background-color: #f4f7f6;
+    background-color: #120907; /* Coincide con --bg-oscuro */
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
@@ -15,6 +15,8 @@ body {
 .card {
     border: none;
     border-radius: 12px;
+    background-color: #1c110e; /* Coincide con --bg-tarjeta */
+    color: #a0a0a0; /* Coincide con --texto-gris */
     transition: all 0.3s ease;
 }
 
@@ -25,6 +27,7 @@ body {
 .card-header {
     border-radius: 12px 12px 0 0 !important;
     font-weight: 600;
+    background-color: #120907;
     border-bottom: 2px solid rgba(0, 0, 0, 0.05);
 }
 
@@ -41,8 +44,8 @@ body {
 }
 
 .btn-check:checked + .payment-label {
-    background-color: #0d6efd;
-    color: white;
+    background-color: #e03e00; /* Coincide con --naranja-principal */
+    color: #ffffff;
     border-color: #0d6efd;
     transform: scale(1.02);
     box-shadow: 0 5px 20px rgba(13, 110, 253, 0.3);
@@ -90,7 +93,7 @@ body {
 .loader {
     width: 50px;
     height: 50px;
-    border: 5px solid #f3f3f3;
+    border: 5px solid #2d1f1b; /* Borde tarjeta */
     border-top: 5px solid #667eea;
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -116,28 +119,24 @@ body {
 }
 
 .alert-warning {
-    background-color: #fff3cd;
-    border-left: 4px solid #ffc107;
+    background-color: #4a3e20; color: #ffc107; border-left: 4px solid #ffc107;
 }
 
 .alert-info {
-    background-color: #cff4fc;
-    border-left: 4px solid #0dcaf0;
+    background-color: #1c2b4d; color: #47b2e4; border-left: 4px solid #47b2e4;
 }
 
 .alert-success {
-    background-color: #d1e7dd;
-    border-left: 4px solid #198754;
+    background-color: #213d29; color: #4caf50; border-left: 4px solid #4caf50;
 }
 
 .alert-danger {
-    background-color: #f8d7da;
-    border-left: 4px solid #dc3545;
+    background-color: #4d1c1c; color: #f44336; border-left: 4px solid #f44336;
 }
 
 /* ===== CÓDIGO Y PRE ===== */
 code {
-    background-color: #f8f9fa;
+    background-color: #120907;
     padding: 0.2rem 0.4rem;
     border-radius: 4px;
     font-size: 0.9em;
@@ -145,7 +144,7 @@ code {
 }
 
 pre {
-    background-color: #f8f9fa;
+    background-color: #120907;
     border-radius: 8px;
     padding: 1rem;
     overflow-x: auto;
@@ -153,6 +152,7 @@ pre {
 
 /* ===== NAVBAR ===== */
 .navbar {
+    background-color: #1c110e;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -163,6 +163,7 @@ pre {
 
 /* ===== FOOTER ===== */
 footer {
+    background-color: #1c110e;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
 }
 
@@ -189,24 +190,24 @@ footer {
 
 /* ===== GRADIENTES ===== */
 .bg-gradient-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #e03e00 0%, #ff4500 100%);
 }
 
 .bg-gradient-success {
-    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    background: linear-gradient(135deg, #213d29 0%, #4caf50 100%);
 }
 
 .bg-gradient-danger {
-    background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+    background: linear-gradient(135deg, #4d1c1c 0%, #f44336 100%);
 }
 
 .bg-gradient-warning {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background: linear-gradient(135deg, #4a3e20 0%, #ffc107 100%);
 }
 
 /* ===== JSON VIEWER ===== */
 .json-viewer {
-    background-color: #1e1e1e;
+    background-color: #120907;
     color: #d4d4d4;
     border-radius: 8px;
     padding: 1.5rem;
@@ -308,7 +309,7 @@ html {
 
 /* ===== PAGINAS DE REDIRECCIÓN Y CONTROLES PERSONALIZADOS ===== */
 .page-redirect-body {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-color: #120907;
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -319,8 +320,8 @@ html {
 .loader {
     width: 50px;
     height: 50px;
-    border: 5px solid #f3f3f3;
-    border-top: 5px solid #667eea;
+    border: 5px solid #2d1f1b;
+    border-top: 5px solid #e03e00;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -331,7 +332,7 @@ html {
 }
 
 .payment-simulator-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #e03e00 0%, #ff4500 100%);
     color: white;
     padding: 2rem 0;
 }

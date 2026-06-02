@@ -62,11 +62,11 @@ $is_mobile = isMobile();
         <form action="procesar_registro.php" method="POST">
             <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
             <div class="form-grid-2-col">
+                
                 <div class="form-group">
                     <label for="nombre">Nombre: *</label>
                     <input type="text" id="nombre" name="nombre" required value="<?php echo htmlspecialchars($old_data['nombre'] ?? ''); ?>">
                 </div>
-                
                 <div class="form-group">
                     <label for="apellidos">Apellidos: *</label>
                     <input type="text" id="apellidos" name="apellidos" required value="<?php echo htmlspecialchars($old_data['apellidos'] ?? ''); ?>">

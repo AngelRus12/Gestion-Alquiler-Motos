@@ -731,18 +731,15 @@ tr:hover td {
    Pasarela de pago (BOTONES) (Móvil)
    ========================================================== */
 
-/* ==========================================================
-   PÁGINA DE PAGO (NUEVO DISEÑO - MÓVIL)
-   ========================================================== */
 /* Contenedor principal para la página de la pasarela de pago. */
 .pago-container {
-    max-width: 100%;
-    margin: 20px auto;
     background: var(--bg-tarjeta);
     border-radius: var(--borde-redondeado);
     border: 1px solid var(--borde-tarjeta);
     box-shadow: var(--sombre-tarjeta);
     overflow: hidden;
+    margin: 20px auto;
+    max-width: 100%;
 }
 
 /* Cabecera de la página de pago donde se muestra el monto. */
@@ -849,10 +846,11 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 10px;}
 
 /* Registro y Login */
 /* Se ajusta el padding para las páginas de login y registro. */
-.registro-body, .login-body {
-    display: flex;
-    justify-content: center;
-    min-height: 100vh;
+.registro-body,
+.login-body {
+    /* Se eliminan las propiedades flex para permitir el scroll vertical natural
+       cuando el contenido es más alto que la pantalla. */
+    display: block; /* Comportamiento por defecto */
     padding: 15px 0;
 }
 .registro {
