@@ -22,28 +22,23 @@ if (isset($_GET['id'])) {
     $id_moto = (int)$_GET['id'];
 }
 
-// Uso una consulta preparada para coger los datos de la moto de forma segura,
+// Uso una consulta preparada para coger los datos de la moto de forma segura.
 // evitando que alguien pueda manipular la URL para atacar la base de datos.
 $consulta = "SELECT * FROM motos WHERE id = ?";
 $stmt = mysqli_prepare($conexion, $consulta);
-// La "i" indica que el parámetro que se va a vincular es un entero (integer).
+// La "i" indica que el parámetro que voy a vincular es un entero (integer).
 mysqli_stmt_bind_param($stmt, "i", $id_moto);
 mysqli_stmt_execute($stmt);
 $resultado = mysqli_stmt_get_result($stmt);
 $moto = mysqli_fetch_assoc($resultado);
 
-// Si no se encuentra ninguna moto con ese ID, se redirige al catálogo.
+// Si no encuentro ninguna moto con ese ID, redirijo al catálogo.
 if (!$moto) { 
     header('Location: catalogo.php'); 
     exit(); 
 }
 
 $esta_disponible = ($moto['disponible'] == 1);
-
-// Función para detectar dispositivos móviles
-function isMobile() {
-    return preg_match("/(android|avantgo|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino)/i", $_SERVER["HTTP_USER_AGENT"]);
-}
 
 $is_mobile = isMobile();
 ?>
@@ -160,8 +155,8 @@ $is_mobile = isMobile();
                     <?php else: ?>
                         <p class="alerta-error text-center alerta-sin-fondo">No disponible actualmente</p>
                         <?php
-                        // Si la moto no está disponible y el que mira es un admin,
-                        // le muestro quién la tiene alquilada.
+                        // Si la moto no está disponible y quien la mira es un admin (o sea, yo),
+                        // muestro quién la tiene alquilada.
                         if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin') {
                             // Primero, busco si hay un alquiler activo para esta moto.
                             $sql_alquiler_moto = "SELECT usuario_id, fecha_inicio, fecha_fin, id as alquiler_id FROM alquileres WHERE moto_id = ? AND estado IN ('confirmado', 'en_curso') ORDER BY fecha_inicio DESC LIMIT 1";
@@ -240,7 +235,7 @@ $is_mobile = isMobile();
             }
         }
 
-        // Opcional: Impedir que reserven fechas pasadas al cargar la página
+        // Como detalle adicional, impido que se puedan reservar fechas pasadas al cargar la página.
         window.onload = function() {
             const hoy = new Date().toISOString().split('T')[0];
             document.getElementById('f_inicio').setAttribute('min', hoy);

@@ -12,6 +12,7 @@ $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https'
 $host = $_SERVER['HTTP_HOST'];
 $path = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
 $action_url = "{$protocol}://{$host}{$path}/procesar_solicitud_recuperacion.php";
+$base_url = "{$protocol}://{$host}{$path}/";
 
 $is_mobile = preg_match("/(android|avantgo|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino)/i", $_SERVER["HTTP_USER_AGENT"]);
 ?>
@@ -20,9 +21,12 @@ $is_mobile = preg_match("/(android|avantgo|blackberry|blazer|compal|elaine|fenne
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Añadir una URL base para resolver problemas de origen relativo y CORS -->
+    <base href="<?php echo htmlspecialchars($base_url); ?>">
     <link rel="icon" href="logo.png" type="image/png">
     <title>Recuperar Contraseña - ARUSLAT</title>
     <?php if ($is_mobile): ?>
+    <?php if (isMobile()): ?>
         <link rel="stylesheet" href="estilos_mobile.css">
     <?php else: ?>
         <link rel="stylesheet" href="estilos.css">

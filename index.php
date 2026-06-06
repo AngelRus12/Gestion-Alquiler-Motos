@@ -72,7 +72,7 @@ $is_mobile = isMobile();
             <h2 class="titulo-seccion">Motos Destacadas</h2>
             <div class="grid">
                 <?php
-                $consulta = "SELECT * FROM motos WHERE disponible = 1 OR disponible = 'si' ORDER BY precio_dia DESC LIMIT 4";
+                $consulta = "SELECT * FROM motos WHERE disponible = 1 ORDER BY precio_dia DESC LIMIT 4";
                 $resultado = mysqli_query($conexion, $consulta);
                 
                 while ($fila = mysqli_fetch_assoc($resultado)) {

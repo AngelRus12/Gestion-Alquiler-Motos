@@ -7,18 +7,18 @@
  * - Inserta la reserva con estado 'pendiente' y redirige según el método de pago.
  */
 // --- CONFIGURACIÓN DE LA SESIÓN ---
-// Se establece un tiempo de vida de 30 minutos para la sesión.
+// Establezco un tiempo de vida de 30 minutos para la sesión.
 ini_set('session.gc_maxlifetime', 1800);
 session_set_cookie_params(1800);
-// Se inicia la sesión para poder acceder a las variables de sesión.
+// Inicio la sesión para poder acceder a las variables de sesión.
 session_start();
 
-// Se incluyen los archivos de configuración de la BD y de funciones reutilizables.
+// Incluyo los archivos de configuración de la BD y mis funciones reutilizables.
 require_once 'loginbd.php';
 require_once 'funciones.php';
 
 // --- 1. CONTROL DE ACCESO ---
-// Verifica si el usuario ha iniciado sesión. Si no, lo redirige al login.
+// Verifico si el usuario ha iniciado sesión. Si no, lo redirijo al login.
 if (!isset($_SESSION['usuario_id'])) {
     header('Location: login.php?error=acceso_denegado');
     exit();
@@ -29,11 +29,11 @@ $conexion = mysqli_connect($db_hostname, $db_username, $db_password, $db_databas
 if (!$conexion) {
     die("Error de conexión: " . mysqli_connect_error());
 }
-// Establece la codificación de caracteres a UTF-8.
+// Establezco la codificación de caracteres a UTF-8.
 mysqli_set_charset($conexion, "utf8");
 
 // --- 3. RECOLECCIÓN Y VALIDACIÓN DE DATOS DEL FORMULARIO ---
-// Se recogen los datos del formulario de reserva.
+// Recojo los datos del formulario de reserva.
 $u_id     = $_SESSION['usuario_id'];
 $moto_id  = (int)$_POST['id_moto'];
 $f_inicio = trim($_POST['f_inicio']);

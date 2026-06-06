@@ -53,12 +53,10 @@ $transaction = $_SESSION['last_transaction'];
 // El simulador de pago me envía el resultado (approved, rejected...) por POST.
 $status = $_POST['response_type'] ?? 'error';
 
-$order_id = $transaction['order_id'] ?? '';
-
 // --- PASO 2: EXTRACCIÓN DEL ID DEL ALQUILER ---
-// El número de orden que generé era "ALQ-ID-TIMESTAMP". Lo separo para quedarme solo con el ID del alquiler.
-$parts = explode('-', $order_id);
-$id_alquiler = isset($parts[1]) ? (int)$parts[1] : 0;
+// Ahora, el ID del alquiler es la fuente principal de verdad, obtenido desde la URL.
+// Esto hace el proceso más robusto que depender solo de la sesión.
+$id_alquiler = isset($_GET['alquiler_id']) ? (int)$_GET['alquiler_id'] : 0;
 
 // --- PASO 3: VERIFICACIÓN DE AUTENTICACIÓN Y DATOS VÁLIDOS ---
 // Me aseguro de que el usuario ha iniciado sesión y de que el ID del alquiler es un número válido.

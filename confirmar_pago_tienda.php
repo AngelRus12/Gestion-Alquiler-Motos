@@ -12,7 +12,7 @@ if (isset($_GET['id'])) {
     
     $id_alquiler = (int)$_GET['id'];
 
-    // Inicio una transacción. Esto es para asegurar que las dos operaciones siguientes
+    // Inicio una transacción. Esto es para asegurar que las dos operaciones que haré a continuación
     // (actualizar el alquiler y la moto) se hagan a la vez. O se hacen las dos, o no se hace ninguna.
     mysqli_begin_transaction($conexion);
 
@@ -24,7 +24,7 @@ if (isset($_GET['id'])) {
     mysqli_stmt_close($stmt_alquiler);
 
     // Segundo, necesito saber qué moto es para poder marcarla como no disponible.
-    // Busco el ID de la moto a partir del ID del alquiler.
+    // Para ello, busco el ID de la moto a partir del ID del alquiler.
     $sql_get_moto = "SELECT moto_id FROM alquileres WHERE id = ?";
     $stmt_get_moto = mysqli_prepare($conexion, $sql_get_moto);
     mysqli_stmt_bind_param($stmt_get_moto, "i", $id_alquiler);

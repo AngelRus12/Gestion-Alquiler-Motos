@@ -111,8 +111,8 @@ function calcular_precio_total($conn, $moto_id, $f_inicio, $f_fin) {
  * @param int $usuario_id El ID del usuario.
  * @return float El total gastado, o 0.00 si no hay gastos.
  */
-function total_gastadoo($conn, $usuario_id) {
-    $query = "SELECT SUM(precio_total) AS total FROM alquileres WHERE usuario_id = ? AND estado = 'confirmado'";
+function total_gastado($conn, $usuario_id) {
+    $query = "SELECT SUM(precio_total) AS total FROM alquileres WHERE usuario_id = ? AND estado IN ('confirmado', 'en_curso', 'finalizado')";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("i", $usuario_id);
     $stmt->execute();
@@ -214,6 +214,15 @@ function insertar_usuario($conn, $nombre, $apellidos, $email, $password, $telefo
  */
 function cancelar_reservas_antiguas($conn) {
     $conn->query("UPDATE alquileres SET estado = 'cancelado' WHERE estado = 'pendiente' AND fecha_reserva < (NOW() - INTERVAL 24 HOUR)");
+}
+
+/**
+ * Detecta si el agente de usuario corresponde a un dispositivo móvil.
+ * @return bool True si es un dispositivo móvil, false en caso contrario.
+ */
+function isMobile() {
+    // Expresión regular exhaustiva para detectar la mayoría de los sistemas operativos y navegadores móviles.
+    return preg_match("/(android|avantgo|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino)/i", $_SERVER["HTTP_USER_AGENT"]);
 }
 
 ?>

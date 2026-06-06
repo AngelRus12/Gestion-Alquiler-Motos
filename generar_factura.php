@@ -28,7 +28,7 @@ if (!$conexion) {
 }
 mysqli_set_charset($conexion, "utf8");
 
-// --- 3. OBTENCIÓN DE DATOS (SIN USAR JOINs) ---
+// --- 3. OBTENCIÓN DE DATOS  ---
 // Para la factura, necesito datos de 3 tablas. Los cojo por separado.
 
 // Primero, obtengo los datos principales del alquiler usando el ID que viene en la URL.
