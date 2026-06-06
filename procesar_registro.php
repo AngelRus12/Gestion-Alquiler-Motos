@@ -2,9 +2,9 @@
 /**
  * procesar_registro.php
  * Script que procesa el formulario de registro de usuario.
- * - Valida contraseña, DNI, email y campos obligatorios.
- * - Comprueba unicidad de email y DNI en la base de datos.
- * - Hashea la contraseña antes de guardarla.
+ * - Valido contraseña, DNI, email y campos obligatorios.
+ * - Compruebo la unicidad de email y DNI en la base de datos.
+ * - Hasheo la contraseña antes de guardarla para máxima seguridad.
  */
 require_once 'funciones.php';
 start_secure_session();
@@ -49,13 +49,13 @@ if (strlen($password) < 8 || !preg_match('/[A-Za-z]/', $password) || !preg_match
 }
 
 // --- Validación de DNI (formato y letra) ---
-function es_dni_valido($dni) {
+function es_dni_valido($dni) { // He creado esta función para validar el DNI.
     $dni = strtoupper(trim($dni));
-    // 1. Comprobar formato (8 números y 1 letra)
+    // 1. Compruebo el formato (8 números y 1 letra).
     if (!preg_match('/^[0-9]{8}[A-Z]$/', $dni)) {
         return false;
     }
-    // 2. Comprobar que la letra es correcta
+    // 2. Compruebo que la letra es correcta usando el algoritmo oficial.
     $letra = substr($dni, -1);
     $numeros = substr($dni, 0, -1);
     return substr("TRWAGMYFPDXBNJZSQVHLCKE", $numeros % 23, 1) === $letra;
@@ -67,7 +67,7 @@ if (!es_dni_valido($dni)) {
     exit();
 }
 
-// Comprobar si el email ya existe usando Consultas Preparadas
+// Compruebo si el email ya existe usando Consultas Preparadas.
 $sql_email = "SELECT id FROM usuarios WHERE email = ?";
 $stmt_email = mysqli_prepare($conexion, $sql_email);
 mysqli_stmt_bind_param($stmt_email, "s", $email);
@@ -83,7 +83,7 @@ if (mysqli_stmt_num_rows($stmt_email) > 0) {
 }
 mysqli_stmt_close($stmt_email);
 
-// Comprobar si el DNI ya existe
+// Compruebo si el DNI ya existe.
 $sql_dni = "SELECT id FROM usuarios WHERE dni = ?";
 $stmt_dni = mysqli_prepare($conexion, $sql_dni);
 mysqli_stmt_bind_param($stmt_dni, "s", $dni);
@@ -101,14 +101,14 @@ mysqli_stmt_close($stmt_dni);
 
 $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
-// Insertar usuario con consulta preparada
+// Inserto el nuevo usuario con una consulta preparada.
 $insertar = "INSERT INTO usuarios (nombre, apellidos, email, password, telefono, dni, direccion, rol, estado) 
              VALUES (?, ?, ?, ?, ?, ?, ?, 'cliente', 'activo')";
 
 $stmt_ins = mysqli_prepare($conexion, $insertar);
 mysqli_stmt_bind_param($stmt_ins, "sssssss", $nombre_limpio, $apellidos_limpios, $email, $password_hash, $telefono, $dni, $direccion);
 if (mysqli_stmt_execute($stmt_ins)) {
-    unset($_SESSION['form_data']);
+    unset($_SESSION['form_data']); // Limpio los datos del formulario de la sesión.
     // Redirigir al usuario a la página de login con un mensaje de éxito.
     header('Location: login.php?registro=exitoso');
     exit(); // Finalizar el script para asegurar la redirección.

@@ -2,14 +2,14 @@
 session_start();
 require_once 'loginbd.php';
 
-// Control de acceso (Verificamos que sea admin)
+// Control de acceso (Verifico que sea admin).
 if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
     header('Location: login.php?error=acceso_denegado');
     exit();
 }
 
-// Función para detectar dispositivos móviles
-function isMobile() {
+// Mi función para detectar dispositivos móviles.
+function isMobile() { 
     return preg_match("/(android|avantgo|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino)/i", $_SERVER["HTTP_USER_AGENT"]);
 }
 
@@ -29,7 +29,7 @@ if (!isset($_GET['id'])) {
 
 $id = $_GET['id'];
 
-// Fetch user data
+// Obtengo los datos del usuario.
 $sql = "SELECT * FROM usuarios WHERE id = ?";
 $stmt = mysqli_prepare($conexion, $sql);
 mysqli_stmt_bind_param($stmt, "i", $id);
@@ -43,7 +43,7 @@ if (!$user) {
     exit();
 }
 
-// Handle POST update
+// Proceso la actualización por POST.
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nombre = trim($_POST['nombre']);
     $apellidos = trim($_POST['apellidos']);
@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         if (mysqli_stmt_execute($update_stmt)) {
             $mensaje = "<div class='alerta alerta-exito'>Usuario actualizado correctamente.</div>";
-            // Re-fetch data
+            // Vuelvo a obtener los datos para mostrar la información actualizada en el formulario.
             $stmt = mysqli_prepare($conexion, $sql);
             mysqli_stmt_bind_param($stmt, "i", $id);
             mysqli_stmt_execute($stmt);

@@ -1,13 +1,13 @@
 <?php
-// Establece la codificación de caracteres a UTF-8 para soportar caracteres especiales.
+// Establezco la codificación de caracteres a UTF-8 para soportar caracteres especiales.
 header('Content-Type: text/html; charset=utf-8');
-// Inicia la sesión para poder acceder a las variables de sesión.
+// Inicio la sesión para poder acceder a las variables de sesión.
 session_start();
-// Se incluye el archivo con las credenciales de la base de datos.
+// Incluyo el archivo con las credenciales de la base de datos.
 require_once 'loginbd.php';
 
 // --- 1. CONTROL DE ACCESO ---
-// Verifica si el usuario ha iniciado sesión. Si no, lo redirige a la página de login.
+// Verifico si el usuario ha iniciado sesión. Si no, lo redirijo a la página de login.
 if (!isset($_SESSION['usuario_id'])) {
     header('Location: login.php?error=acceso_denegado');
     exit();
@@ -42,13 +42,13 @@ if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin') {
     mysqli_stmt_bind_param($stmt_alquiler, "i", $alquiler_id);
 } else {
     // Si es un usuario normal, además del ID del alquiler, compruebo que el 'usuario_id'
-    // del alquiler coincida con el de la sesión. Esto es para que un usuario no pueda ver los alquileres de otro.
-    // los datos de otro simplemente cambiando el ID en la URL.
+    // del alquiler coincida con el de la sesión. Así evito que un usuario pueda ver los alquileres
+    // de otro simplemente cambiando el ID en la URL.
     $sql_alquiler = "SELECT * FROM alquileres WHERE id = ? AND usuario_id = ?";
     $stmt_alquiler = mysqli_prepare($conexion, $sql_alquiler);
     mysqli_stmt_bind_param($stmt_alquiler, "ii", $alquiler_id, $usuario_id);
 }
-// Se ejecuta la consulta y se obtiene el resultado.
+// Ejecuto la consulta y obtengo el resultado.
 mysqli_stmt_execute($stmt_alquiler);
 $resultado_alquiler = mysqli_stmt_get_result($stmt_alquiler);
 $alquiler = mysqli_fetch_assoc($resultado_alquiler);
@@ -63,7 +63,7 @@ if (!$alquiler) {
 
 // --- 6. OBTENCIÓN DE DATOS RELACIONADOS (SIN USAR JOINs) ---
 // Ahora que tengo los datos del alquiler, necesito los de la moto y el usuario.
-// Los busco por separado para no usar JOINs.
+// Decidí buscarlos por separado para no usar JOINs en este caso.
 $moto_data = [];
 $usuario_data = [];
 
@@ -85,11 +85,11 @@ mysqli_stmt_close($stmt_usuario);
 
 // --- 7. COMBINACIÓN DE DATOS ---
 // Si la moto o el usuario han sido eliminados, las variables de antes estarán vacías.
-// En ese caso, considero que el alquiler no es válido.
+// En ese caso, considero que el alquiler no es válido y lo marco como falso.
 if (!$moto_data || !$usuario_data) {
     $alquiler = false; // Se marca el alquiler como falso para que la siguiente comprobación falle.
 } else {
-    // Si todos los datos existen, se combinan los tres arrays ($alquiler, $moto_data, $usuario_data)
+    // Si todos los datos existen, combino los tres arrays ($alquiler, $moto_data, $usuario_data)
     // en un único array $alquiler para usarlo fácilmente en el HTML.
     $alquiler = array_merge($alquiler, $moto_data, $usuario_data);
 }
@@ -195,4 +195,4 @@ $is_mobile = isMobile();
 
 </body>
 </html>
-<?php mysqli_close($conexion); // Cierra la conexión a la base de datos. ?>
+<?php mysqli_close($conexion); // Cierro la conexión a la base de datos. ?>

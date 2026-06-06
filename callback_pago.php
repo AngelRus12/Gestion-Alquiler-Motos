@@ -8,11 +8,11 @@
  * --------------------
  * En el contexto de un pago online, un callback (o webhook) es una URL en nuestro servidor
  * a la que la pasarela de pago (en este caso, nuestro simulador) envía una notificación
- * automática para informarnos del resultado de una transacción (aprobada, rechazada, etc.).
+ * automática para informarme del resultado de una transacción (aprobada, rechazada, etc.).
  * 
  * Flujo de trabajo de este archivo:
- * 1. Recibe la notificación del simulador.
- * 2. Realiza múltiples comprobaciones de seguridad para validar la transacción.
+ * 1. Recibo la notificación del simulador.
+ * 2. Realizo múltiples comprobaciones de seguridad para validar la transacción.
  * 3. Inicia una transacción de base de datos para garantizar la integridad de los datos.
  * 4. Actualiza el estado del alquiler y la disponibilidad de la moto.
  * 5. Confirma (commit) o revierte (rollback) los cambios en la base de datos.
@@ -20,10 +20,10 @@
  */
 
 // --- CONFIGURACIÓN DE LA SESIÓN ---
-// Se establece un tiempo de vida de 30 minutos para la sesión.
+// Establezco un tiempo de vida de 30 minutos para la sesión.
 ini_set('session.gc_maxlifetime', 1800);
 session_set_cookie_params(1800);
-// Se inicia la sesión para poder acceder a las variables de sesión (como los datos del usuario y la transacción).
+// Inicio la sesión para poder acceder a las variables de sesión (como los datos del usuario y la transacción).
 session_start();
 
 require_once 'loginbd.php';
@@ -53,15 +53,13 @@ $transaction = $_SESSION['last_transaction'];
 // El simulador de pago me envía el resultado (approved, rejected...) por POST.
 $status = $_POST['response_type'] ?? 'error';
 
-$order_id = $transaction['order_id'] ?? '';
-
 // --- PASO 2: EXTRACCIÓN DEL ID DEL ALQUILER ---
-// El número de orden que generé era "ALQ-ID-TIMESTAMP". Lo separo para quedarme solo con el ID del alquiler.
-$parts = explode('-', $order_id);
-$id_alquiler = isset($parts[1]) ? (int)$parts[1] : 0;
+// Ahora, el ID del alquiler es la fuente principal de verdad, obtenido desde la URL.
+// Esto hace que mi proceso sea más robusto que si dependiera solo de la sesión.
+$id_alquiler = isset($_GET['alquiler_id']) ? (int)$_GET['alquiler_id'] : 0;
 
 // --- PASO 3: VERIFICACIÓN DE AUTENTICACIÓN Y DATOS VÁLIDOS ---
-// Me aseguro de que el usuario ha iniciado sesión y de que el ID del alquiler es un número válido.
+// Me aseguro de que el usuario haya iniciado sesión y de que el ID del alquiler sea un número válido.
 if (!isset($_SESSION['usuario_id']) || !$id_alquiler) {
     error_log("Acceso denegado o ID de alquiler inválido. Usuario ID: " . ($_SESSION['usuario_id'] ?? 'N/A') . ", Alquiler ID: " . $id_alquiler);
     header('Location: catalogo.php?error=invalid_access');
@@ -129,7 +127,7 @@ switch ($status) {
         break;
     
     default:
-        // Si el estado es desconocido o hay un error, se marca como 'error'.
+        // Si el estado es desconocido o hay un error, lo marco como 'error'.
         $nuevo_estado = 'error';
         $mensaje = 'pago=error';
         break;

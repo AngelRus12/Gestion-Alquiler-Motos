@@ -2,13 +2,13 @@
 /**
  * solicitar_recuperacion.php
  * Formulario para que el usuario solicite un enlace de recuperación de contraseña.
+ * Aquí le pido al usuario su email para iniciar el proceso.
  */
 require_once 'funciones.php';
 start_secure_session();
 generar_csrf_token();
 
-// Construir la URL absoluta para el action del formulario para evitar errores de CORS.
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+// Construyo la URL absoluta para el 'action' del formulario para evitar errores de CORS.
 $host = $_SERVER['HTTP_HOST'];
 $path = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
 $action_url = "{$protocol}://{$host}{$path}/procesar_solicitud_recuperacion.php";

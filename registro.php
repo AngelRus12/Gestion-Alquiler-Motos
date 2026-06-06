@@ -2,8 +2,8 @@
 /**
  * registro.php
  * Página de registro de nuevos usuarios.
- * - Guarda temporalmente los datos inválidos en sesión para reinsertarlos en el formulario.
- * - Utiliza validación HTML y mensajes de error claros para facilitar la experiencia.
+ * - Guardo temporalmente los datos inválidos en sesión para reinsertarlos en el formulario si hay un error.
+ * - Utilizo validación HTML y mensajes de error claros para facilitar la experiencia del usuario.
  */
 require_once 'funciones.php';
 start_secure_session();
@@ -12,7 +12,7 @@ generar_csrf_token();
 $old_data = $_SESSION['form_data'] ?? [];
 unset($_SESSION['form_data']);
 
-// Función para detectar dispositivos móviles
+// Mi función para detectar dispositivos móviles.
 function isMobile() {
     return preg_match("/(android|avantgo|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino)/i", $_SERVER["HTTP_USER_AGENT"]);
 }
@@ -32,7 +32,7 @@ $is_mobile = isMobile();
     <?php else: ?>
         <link rel="stylesheet" href="estilos.css">
     <?php endif; ?>
-    <!-- Los estilos <style> se han movido a estilos.css y estilos_mobile.css -->
+    <!-- He movido los estilos <style> a los archivos estilos.css y estilos_mobile.css -->
 </head>
 <body class="registro-body" >
         

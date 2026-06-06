@@ -2,9 +2,9 @@
 /**
  * procesar_login.php
  * Script que procesa el formulario de inicio de sesión.
- * - Usa consultas preparadas para autenticar al usuario.
- * - Verifica la contraseña con password_verify().
- * - Redirige según el rol de usuario (admin o cliente).
+ * - Uso consultas preparadas para autenticar al usuario de forma segura.
+ * - Verifico la contraseña con password_verify().
+ * - Redirijo según el rol del usuario (admin o cliente).
  */
 require_once 'funciones.php';
 start_secure_session();
@@ -25,15 +25,15 @@ if (empty($email) || empty($password)) {
     exit();
 }
 
-// Preparar la consulta
+// Preparo la consulta
 $sql = "SELECT * FROM usuarios WHERE email = ? AND estado = 'activo'";
 $stmt = mysqli_prepare($conexion, $sql);
 
-// Vincular el dato real
-// "s" significa que el dato es un String
+// Vinculo el dato real.
+// La "s" significa que el dato que le paso es un String.
 mysqli_stmt_bind_param($stmt, "s", $email);
 
-// --- PASO 3: Ejecutar la consulta ---
+// Ejecuto la consulta
 mysqli_stmt_execute($stmt);
 
 // Obtener el resultado
@@ -55,7 +55,7 @@ if ($usuario = mysqli_fetch_assoc($resultado)) {
     }
 }
 
-// Si llega aquí, es que los datos no son válidos
+// Si el script llega hasta aquí, es que los datos no son válidos.
 header('Location: login.php?error=credenciales');
 mysqli_stmt_close($stmt);
 mysqli_close($conexion);

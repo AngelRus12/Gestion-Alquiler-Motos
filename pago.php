@@ -4,32 +4,32 @@ session_start();
 
 // --- 1. CONTROL DE ACCESO ---
 // Si un usuario llega a esta página sin haber iniciado un proceso de reserva
-// (es decir, sin que exista `id_pago_pendiente` en su sesión), se le redirige al catálogo.
+// (es decir, sin que exista `id_pago_pendiente` en su sesión), lo redirijo al catálogo.
 if (!isset($_SESSION['id_pago_pendiente'])) {
     header('Location: catalogo.php');
     exit();
 }
 
 // --- 2. RECOLECCIÓN DE DATOS DE LA SESIÓN ---
-// Se recupera el monto a pagar y el ID del alquiler desde las variables de sesión.
+// Recupero el monto a pagar y el ID del alquiler desde las variables de sesión.
 $monto = $_SESSION['monto_pago'];
 $id_alquiler = $_SESSION['id_pago_pendiente'];
 
 // --- 3. PREPARACIÓN DE DATOS PARA LA PASARELA DE PAGO ---
-// Se preparan los datos que se enviarán al simulador de la pasarela de pago.
+// Preparo los datos que se enviarán a mi simulador de la pasarela de pago.
 $amount = $monto; // Monto en euros
 
-// Se crea un ID de orden único para esta transacción, combinando el ID del alquiler y una marca de tiempo.
-// Esto es útil para el seguimiento y para evitar procesar la misma orden dos veces.
+// Creo un ID de orden único para esta transacción, combinando el ID del alquiler y una marca de tiempo.
+// Esto me es útil para el seguimiento y para evitar procesar la misma orden dos veces.
 $order_id = 'ALQ-' . $id_alquiler . '-' . time();
 $description = 'Alquiler de motocicleta - ID: ' . $id_alquiler;
 
-// Se construye la URL a la que la pasarela de pago debe redirigir al usuario después de completar el pago.
-// En este caso, es el script `callback_pago.php` que procesará el resultado.
-// Se construye la URL de retorno dinámicamente para mayor robustez.
+// Construyo la URL a la que la pasarela de pago debe redirigir al usuario después de completar el pago.
+// En este caso, es mi script `callback_pago.php` que procesará el resultado.
+// Construyo la URL de retorno dinámicamente para mayor robustez.
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
 $host = $_SERVER['HTTP_HOST'];
-$return_url = $protocol . '://' . $host . '/perfil_usuario.php';
+$return_url = $protocol . '://' . $host . '/callback_pago.php?alquiler_id=' . $id_alquiler;
 ?>
 <!DOCTYPE html>
 <html lang="es">

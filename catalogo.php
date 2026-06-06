@@ -2,8 +2,8 @@
 /**
  * catalogo.php
  * Lista de motos disponibles para alquilar y filtro dinámico.
- * - Usa paginación y consultas preparadas para evitar inyecciones SQL.
- * - Mejora la experiencia de usuario con filtros por marca, modelo, tipo y rango de precio.
+ * - Uso paginación y consultas preparadas para evitar inyecciones SQL.
+ * - He mejorado la experiencia de usuario con filtros por marca, modelo, tipo y rango de precio.
  */
 header('Content-Type: text/html; charset=utf-8');
 session_start();
@@ -12,7 +12,7 @@ $conexion = mysqli_connect($db_hostname, $db_username, $db_password, $db_databas
 
 mysqli_set_charset($conexion, "utf8");
 
-// Función para detectar dispositivos móviles
+// Mi función para detectar dispositivos móviles.
 function isMobile() {
     return preg_match("/(android|avantgo|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino)/i", $_SERVER["HTTP_USER_AGENT"]);
 }
@@ -57,14 +57,14 @@ $is_mobile = isMobile();
     <main class="main-content">
         <div class="container">
             <h2 class="titulo-seccion">Nuestro Catálogo de Motos</h2>
-
-            <!-- Filtros de búsqueda avanzada (selects dinámicos y prepared statements) -->
+            
+            <!-- He implementado filtros de búsqueda avanzada con selects dinámicos y sentencias preparadas. -->
             <?php
-            // Obtener valores distintos para selects
+            // Obtengo los valores distintos para rellenar los selects de los filtros.
             $marcas_res = mysqli_query($conexion, "SELECT DISTINCT marca FROM motos WHERE marca IS NOT NULL AND marca <> '' ORDER BY marca");
             $marcas = mysqli_fetch_all($marcas_res, MYSQLI_ASSOC);
 
-            // Si hay marca seleccionada, limitar el listado de modelos a esa marca.
+            // Si hay una marca seleccionada, limito el listado de modelos a esa marca para mejorar la UX.
             $selected_marca = isset($_GET['marca']) ? trim($_GET['marca']) : '';
             $selected_modelo = isset($_GET['modelo']) ? trim($_GET['modelo']) : '';
             $selected_tipo = isset($_GET['tipo']) ? trim($_GET['tipo']) : '';
@@ -77,7 +77,7 @@ $is_mobile = isMobile();
                 $modelos = mysqli_fetch_all($modelos_res, MYSQLI_ASSOC);
                 mysqli_stmt_close($stmt_modelos);
 
-                // Si el modelo seleccionado no pertenece a la marca actual, ignorarlo.
+                // Si el modelo seleccionado no pertenece a la marca actual, lo ignoro para evitar resultados incoherentes.
                 if ($selected_modelo !== '') {
                     $stmt_valida_modelo = mysqli_prepare($conexion, "SELECT COUNT(*) AS total FROM motos WHERE marca = ? AND modelo = ?");
                     mysqli_stmt_bind_param($stmt_valida_modelo, 'ss', $selected_marca, $selected_modelo);
@@ -98,8 +98,7 @@ $is_mobile = isMobile();
             $tipos_res = mysqli_query($conexion, "SELECT DISTINCT tipo FROM motos WHERE tipo IS NOT NULL AND tipo <> '' ORDER BY tipo");
             $tipos = mysqli_fetch_all($tipos_res, MYSQLI_ASSOC);
 
-            // Mostrar formulario de filtros (selects dinámicos)
-            ?>
+            // Aquí muestro el formulario de filtros con los selects dinámicos.            ?>
             <form method="get" action="catalogo.php" class="formulario-filtros espaciado-arriba-20 catalogo-filtros-form">
                 <div class="form-grid-3-col">
                     <div class="form-group">
@@ -151,12 +150,12 @@ $is_mobile = isMobile();
             </form>
             <?php
 
-            // Parámetros de paginación
+            // Defino los parámetros para la paginación.
             $per_page = 12;
             $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
             $offset = ($page - 1) * $per_page;
 
-            // Construir WHERE y parámetros para prepared statements con los valores ya validados.
+            // Construyo la cláusula WHERE y los parámetros para las sentencias preparadas con los valores ya validados.
             $where_clauses = array("disponible = 1");
             $params = array();
             $types = '';
@@ -175,12 +174,12 @@ $is_mobile = isMobile();
             if (count($where_clauses) > 0) { $where_sql = ' WHERE ' . implode(' AND ', $where_clauses); }
 
             // Contar resultados totales
-            $count_sql = "SELECT COUNT(*) as total FROM motos " . $where_sql;
+            // Primero cuento el total de resultados para saber cuántas páginas habrá.
+            $count_sql = "SELECT COUNT(*) as total FROM motos " . $where_sql; 
             $count_stmt = mysqli_prepare($conexion, $count_sql);
             if ($types !== '') {
-                // bind params by reference
                 $bind_names = array();
-                $bind_names[] = $types;
+                $bind_names[] = $types; // Paso los tipos de datos.
                 for ($i=0; $i<count($params); $i++) { $bind_names[] = & $params[$i]; }
                 call_user_func_array(array($count_stmt, 'bind_param'), $bind_names);
             }
@@ -192,11 +191,11 @@ $is_mobile = isMobile();
 
             $total_pages = max(1, ceil($total / $per_page));
 
-            // Consulta principal con LIMIT
+            // Ahora hago la consulta principal con LIMIT para obtener solo los resultados de la página actual.
             $sql = "SELECT * FROM motos " . $where_sql . " ORDER BY marca, modelo LIMIT ? OFFSET ?";
             $stmt = mysqli_prepare($conexion, $sql);
-            // bind params including pagination integers
-            $params_with_limit = $params; // Los parámetros de los filtros
+            // Vinculo los parámetros de los filtros y también los de la paginación.
+            $params_with_limit = $params;
             $types_with_limit = $types . 'ii';
             $params_with_limit[] = $per_page;
             $params_with_limit[] = $offset;
@@ -209,12 +208,12 @@ $is_mobile = isMobile();
             mysqli_stmt_execute($stmt);
             $resultado = mysqli_stmt_get_result($stmt);
             
-            // Mostrar resultados
+            // Muestro los resultados en tarjetas.
             echo '<div class="grid">';
             $filas_mostradas = 0;
             while ($fila = mysqli_fetch_assoc($resultado)) {
                 $filas_mostradas++;
-                    // Estructura de la tarjeta actualizada para coincidir con .card y .card-body
+                    // La estructura de la tarjeta coincide con mis clases .card y .card-body.
                     echo '<div class="card">';
                     if (!empty($fila['imagen'])) {
                         echo '<img src="data:image/jpeg;base64,' . base64_encode($fila['imagen']) . '" alt="Moto">';
@@ -236,8 +235,8 @@ $is_mobile = isMobile();
             mysqli_close($conexion);
             ?>
 
-            <!-- Paginación -->
-            <?php if ($total > $per_page): ?>
+            <!-- Lógica de paginación -->
+            <?php if ($total > $per_page): // Solo muestro la paginación si hay más de una página. ?>
             <div class="container espaciado-arriba-20 text-center">
                 <nav class="paginacion" aria-label="Paginación">
                     <?php if ($page > 1): ?>

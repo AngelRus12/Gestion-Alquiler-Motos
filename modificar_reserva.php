@@ -2,9 +2,9 @@
 /**
  * modificar_reserva.php
  * Página para que un usuario modifique las fechas de su reserva.
- * - Valida que el usuario sea el propietario y que se cumpla la regla de las 48h.
- * - Muestra un formulario con los datos actuales y un calendario para elegir nuevas fechas.
- * - El calendario deshabilita las fechas ya ocupadas por otras reservas para esa moto.
+ * - Valido que el usuario sea el propietario y que se cumpla la regla de las 48h.
+ * - Muestro un formulario con los datos actuales y un calendario para elegir nuevas fechas.
+ * - El calendario que he implementado deshabilita las fechas ya ocupadas por otras reservas para esa moto.
  */
 header('Content-Type: text/html; charset=utf-8');
 session_start();
@@ -41,19 +41,18 @@ $resultado = mysqli_stmt_get_result($stmt);
 $alquiler = mysqli_fetch_assoc($resultado);
 mysqli_stmt_close($stmt);
 
-if (!$alquiler) {
-    // El alquiler no existe o no pertenece al usuario.
+if (!$alquiler) { // El alquiler no existe o no pertenece al usuario.
     header('Location: perfil_usuario.php?error=no_encontrado');
     exit();
 }
 
-// Validar que el estado sea modificable
+// Valido que el estado sea modificable.
 if (!in_array($alquiler['estado'], ['pendiente', 'confirmado'])) {
     header('Location: perfil_usuario.php?error=no_modificable');
     exit();
 }
 
-// Validar la regla de las 48 horas
+// Valido la regla de negocio de las 48 horas.
 if (strtotime($alquiler['fecha_inicio']) <= strtotime('+48 hours')) {
     header('Location: perfil_usuario.php?error=modificacion_fuera_plazo');
     exit();
@@ -61,14 +60,14 @@ if (strtotime($alquiler['fecha_inicio']) <= strtotime('+48 hours')) {
 
 // --- 4. OBTENER DATOS ADICIONALES PARA EL FORMULARIO ---
 // Datos de la moto
-$sql_moto = "SELECT marca, modelo, imagen, precio_dia FROM motos WHERE id = ?";
+$sql_moto = "SELECT marca, modelo, imagen, precio_dia FROM motos WHERE id = ?"; // Obtengo los datos de la moto.
 $stmt_moto = mysqli_prepare($conexion, $sql_moto);
 mysqli_stmt_bind_param($stmt_moto, "i", $alquiler['moto_id']);
 mysqli_stmt_execute($stmt_moto);
 $moto = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt_moto));
 mysqli_stmt_close($stmt_moto);
 
-// Obtener fechas de otras reservas para esta moto y pasarlas a JavaScript
+// Obtengo las fechas de otras reservas para esta moto y se las paso a JavaScript.
 $sql_reservas = "SELECT fecha_inicio, fecha_fin FROM alquileres WHERE moto_id = ? AND id != ? AND estado IN ('confirmado', 'en_curso')";
 $stmt_reservas = mysqli_prepare($conexion, $sql_reservas);
 mysqli_stmt_bind_param($stmt_reservas, "ii", $alquiler['moto_id'], $id_alquiler);
