@@ -22,8 +22,13 @@ if (isset($_GET['id'])) {
     $id_moto = (int)$_GET['id'];
 }
 
+<<<<<<< HEAD
 // Uso una consulta preparada para coger los datos de la moto de forma segura,
 // así evito que alguien pueda manipular la URL para atacar la base de datos.
+=======
+// Uso una consulta preparada para coger los datos de la moto de forma segura.
+// evitando que alguien pueda manipular la URL para atacar la base de datos.
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
 $consulta = "SELECT * FROM motos WHERE id = ?";
 $stmt = mysqli_prepare($conexion, $consulta);
 // La "i" indica que el parámetro que voy a vincular es un entero (integer).
@@ -32,7 +37,11 @@ mysqli_stmt_execute($stmt);
 $resultado = mysqli_stmt_get_result($stmt);
 $moto = mysqli_fetch_assoc($resultado);
 
+<<<<<<< HEAD
 // Si no encuentro ninguna moto con ese ID, redirijo al usuario al catálogo.
+=======
+// Si no encuentro ninguna moto con ese ID, redirijo al catálogo.
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
 if (!$moto) { 
     header('Location: catalogo.php'); 
     exit(); 
@@ -155,8 +164,13 @@ $is_mobile = isMobile();
                     <?php else: ?>
                         <p class="alerta-error text-center alerta-sin-fondo">No disponible actualmente</p>
                         <?php
+<<<<<<< HEAD
                         // Si la moto no está disponible y quien la mira es un admin (o sea, yo mismo),
                         // he añadido una lógica para mostrar quién la tiene alquilada.
+=======
+                        // Si la moto no está disponible y quien la mira es un admin (o sea, yo),
+                        // muestro quién la tiene alquilada.
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
                         if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin') {
                             // Primero, busco si hay un alquiler activo para esta moto.
                             $sql_alquiler_moto = "SELECT usuario_id, fecha_inicio, fecha_fin, id as alquiler_id FROM alquileres WHERE moto_id = ? AND estado IN ('confirmado', 'en_curso') ORDER BY fecha_inicio DESC LIMIT 1";
@@ -235,7 +249,11 @@ $is_mobile = isMobile();
             }
         }
 
+<<<<<<< HEAD
         // Como detalle adicional, he impedido que se puedan reservar fechas pasadas al cargar la página.
+=======
+        // Como detalle adicional, impido que se puedan reservar fechas pasadas al cargar la página.
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
         window.onload = function() {
             const hoy = new Date().toISOString().split('T')[0];
             document.getElementById('f_inicio').setAttribute('min', hoy);

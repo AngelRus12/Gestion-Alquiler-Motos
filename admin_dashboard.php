@@ -3,7 +3,12 @@
  * admin_dashboard.php
  * Panel administrativo para gestionar usuarios, motos, reservas y promociones.
  * - Lo he diseñado para que sea accesible solo por administradores.
+<<<<<<< HEAD
  * - Antes de mostrar nada, actualizo los estados de los alquileres y muestro estadísticas.
+=======
+ * - Antes de mostrar nada, actualizo los estados de los alquileres y muestro estadísticas clave.
+ * - Desde aquí permito publicar promociones con fechas y estado activo.
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
  */
 // Establece la codificación de caracteres a UTF-8 para soportar caracteres especiales.
 header('Content-Type: text/html; charset=utf-8');
@@ -40,11 +45,19 @@ actualizar_sistema_completo($conexion);
 // Compruebo la URL en busca de parámetros 'msg' (éxito) o 'error' para mostrarle alertas al administrador.
 $mensaje_html = "";
 if (isset($_GET['msg'])) {
+<<<<<<< HEAD
     // He decidido usar mensajes genéricos para cubrir diferentes operaciones (crear, actualizar, eliminar).
     $mensaje_html = "<div class='alerta alerta-exito'>Operación realizada con éxito.</div>";
 }
 if (isset($_GET['error'])) {
     // Aquí manejo un caso específico que diseñé: el error de auto-eliminación.
+=======
+    // Uso mensajes genéricos para cubrir diferentes operaciones (crear, actualizar, eliminar).
+    $mensaje_html = "<div class='alerta alerta-exito'>Operación realizada con éxito.</div>";
+}
+if (isset($_GET['error'])) {
+    // Aquí manejo un caso específico: el error de auto-eliminación.
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
     if ($_GET['error'] == 'autodelecion') {
         $mensaje_html = "<div class='alerta alerta-error'>No puedes eliminar tu propia cuenta.</div>";
     } else {
@@ -59,7 +72,11 @@ $total_users_res = mysqli_query($conexion, "SELECT COUNT(*) as total FROM usuari
 $total_motos_res = mysqli_query($conexion, "SELECT COUNT(*) as total FROM motos");
 $res_pendientes_res = mysqli_query($conexion, "SELECT COUNT(*) as total FROM alquileres WHERE estado = 'pendiente'");
 
+<<<<<<< HEAD
 // Extraigo el valor 'total' de cada resultado para mostrarlo en las tarjetas.
+=======
+// Extraigo el valor 'total' de cada resultado.
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
 $total_users = mysqli_fetch_assoc($total_users_res)['total'] ?? 0;
 $total_motos = mysqli_fetch_assoc($total_motos_res)['total'] ?? 0;
 $total_pendientes_res = mysqli_query($conexion, "SELECT COUNT(*) as total FROM alquileres WHERE estado = 'pendiente'");
@@ -86,7 +103,11 @@ $offset_alquileres = ($page_alquileres - 1) * $limit;
 $total_pages_alquileres = ceil($total_alquileres / $limit);
 
 // --- 6. OPTIMIZACIÓN DE CONSULTAS (N+1) PARA TABLAS Y CALENDARIO ---
+<<<<<<< HEAD
 // En lugar de hacer consultas dentro de bucles (problema N+1), obtengo todos los datos que necesito al principio.
+=======
+// En lugar de hacer consultas dentro de bucles, obtengo todos los datos que necesito al principio.
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
 
 // a) Obtener los alquileres para la página actual y para el calendario
 $stmt_alquileres = mysqli_prepare($conexion, "SELECT * FROM alquileres ORDER BY fecha_reserva DESC LIMIT ? OFFSET ?");
@@ -105,7 +126,11 @@ $usuarios_todos = mysqli_fetch_all($resultado_usuarios, MYSQLI_ASSOC);
 $resultado_motos_tabla = mysqli_query($conexion, "SELECT id, marca, modelo, precio_dia, disponible, tipo, imagen FROM motos ORDER BY id DESC LIMIT $limit OFFSET $offset_motos");
 $motos_todas = mysqli_fetch_all($resultado_motos_tabla, MYSQLI_ASSOC);
 
+<<<<<<< HEAD
 // c) Creo "mapas" (arrays asociativos) para un acceso rápido a los datos. Así no necesito hacer nuevas consultas dentro de los bucles.
+=======
+// c) Creo "mapas" para un acceso rápido a los datos, así no necesito hacer nuevas consultas dentro de los bucles.
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
 $usuarios_map = [];
 foreach ($usuarios_todos as $usuario) {
     $usuarios_map[$usuario['id']] = $usuario;
@@ -116,7 +141,11 @@ foreach ($motos_todas as $moto) {
     $motos_map[$moto['id']] = $moto;
 }
 
+<<<<<<< HEAD
 // d) Preparo los datos para el calendario. Para esto, obtengo todos los alquileres, sin paginación.
+=======
+// d) Preparo los datos para el calendario (para esto, obtengo todos los alquileres, sin paginación).
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
 $eventos_calendario = [];
 $resultado_alquileres_calendario = mysqli_query($conexion, "SELECT * FROM alquileres ORDER BY fecha_reserva DESC");
 $alquileres_calendario = mysqli_fetch_all($resultado_alquileres_calendario, MYSQLI_ASSOC);
@@ -138,7 +167,11 @@ foreach ($alquileres_calendario as $evento) {
     ];
 }
 
+<<<<<<< HEAD
 // Esta es una función local que he creado para generar los enlaces de paginación.
+=======
+// Esta es una función local para generar los enlaces de paginación.
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
 function generar_paginacion($page, $total_pages, $base_url) {
     if ($total_pages <= 1) return;
 
@@ -462,7 +495,11 @@ function generar_paginacion($page, $total_pages, $base_url) {
                             <?php 
                             if (!empty($alquileres_todos)) {
                                 foreach ($alquileres_todos as $alquiler) {
+<<<<<<< HEAD
                                     // Reutilizo los mapas que ya he creado para no volver a consultar la BD.
+=======
+                                    // Reutilizo los mapas que ya he creado.
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
                                     $usuario_alquiler = $usuarios_map[$alquiler['usuario_id']] ?? ['nombre' => 'Usuario', 'apellidos' => 'Eliminado'];
                                     $moto_alquiler = $motos_map[$alquiler['moto_id']] ?? ['marca' => 'Moto', 'modelo' => 'Eliminada'];
                             ?>
@@ -626,6 +663,11 @@ function generar_paginacion($page, $total_pages, $base_url) {
 </html>
 <?php
 // --- 6. CIERRE DE CONEXIÓN ---
+<<<<<<< HEAD
 // Como buena práctica, cierro la conexión a la base de datos al final del script para liberar recursos.
+=======
+// Como buena práctica, cierro la conexión a la base de datos al final del script
+// para liberar recursos en el servidor.
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
 mysqli_close($conexion); 
 ?>

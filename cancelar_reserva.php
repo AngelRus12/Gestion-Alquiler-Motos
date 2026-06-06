@@ -26,7 +26,11 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 
 // --- 3. RECOLECCIÓN DE DATOS ---
 // Se obtiene el ID del alquiler a cancelar desde la URL.
+<<<<<<< HEAD
 // Obtengo el ID del alquiler a cancelar desde la URL.
+=======
+$id_alquiler_a_cancelar = (int)$_GET['id'];
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
 // Obtengo el ID del usuario actual desde la sesión.
 $id_usuario_actual = $_SESSION['usuario_id'];
 
@@ -34,13 +38,21 @@ $id_usuario_actual = $_SESSION['usuario_id'];
 $conexion = mysqli_connect($db_hostname, $db_username, $db_password, $db_database);
 
 // Si la conexión falla, detengo la ejecución y muestro un error.
+<<<<<<< HEAD
 if (mysqli_connect_errno()) { // Si la conexión falla, detengo la ejecución y muestro un error.
+=======
+if (mysqli_connect_errno()) {
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
     die("Error de conexión a la base de datos: " . mysqli_connect_error());
 }
 
 // --- 5. ACTUALIZACIÓN SEGURA EN LA BASE DE DATOS ---
 // Preparo una consulta para actualizar el estado del alquiler a 'cancelado'.
+<<<<<<< HEAD
 // ¡CRÍTICO! Añado la condición `AND usuario_id = ?`. Esto me asegura que un usuario
+=======
+// ¡CRÍTICO! Añado la condición `AND usuario_id = ?`. Esto asegura que un usuario
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
 // solo pueda cancelar una reserva que le pertenece, evitando que un usuario malintencionado
 // cancele la reserva de otro simplemente cambiando el ID en la URL.
 $sql = "UPDATE alquileres SET estado = 'cancelado' WHERE id = ? AND usuario_id = ?";
@@ -55,12 +67,21 @@ $resultado = mysqli_stmt_get_result($stmt_check);
 $alquiler = mysqli_fetch_assoc($resultado);
 mysqli_stmt_close($stmt_check);
 
+<<<<<<< HEAD
 if (!$alquiler || $alquiler['usuario_id'] != $id_usuario_actual) { // Si el alquiler no existe o no pertenece al usuario, lo redirijo con un error.
+=======
+if (!$alquiler || $alquiler['usuario_id'] != $id_usuario_actual) {
+    // Si el alquiler no existe o no pertenece al usuario, lo redirijo con un error.
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
     header('Location: perfil_usuario.php?error=cancelacion_fallida');
     exit();
 }
 
+<<<<<<< HEAD
 // Compruebo la regla de negocio de las 48 horas.
+=======
+// Compruebo la regla de las 48 horas.
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
 if (strtotime($alquiler['fecha_inicio']) <= strtotime('+48 hours')) {
     // Si faltan 48 horas o menos, no permito la cancelación.
     header('Location: perfil_usuario.php?error=cancelacion_fuera_plazo');
@@ -70,15 +91,26 @@ if (strtotime($alquiler['fecha_inicio']) <= strtotime('+48 hours')) {
 // Si todo es correcto, procedo a actualizar.
 
 $stmt = mysqli_prepare($conexion, $sql);
+<<<<<<< HEAD
 // Asocio las variables a los parámetros de la consulta. "ii" significa que ambos son enteros (integer).
+=======
+// Asocio las variables a los parámetros de la consulta. "ii" significa que ambos son enteros.
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
 mysqli_stmt_bind_param($stmt, "ii", $id_alquiler_a_cancelar, $id_usuario_actual);
 
 // Ejecuto la consulta.
 if (mysqli_stmt_execute($stmt) && mysqli_stmt_affected_rows($stmt) > 0) {
+<<<<<<< HEAD
     // Si la actualización es exitosa (y afectó a alguna fila), redirijo al perfil con un mensaje de éxito.
     header('Location: perfil_usuario.php?cancelacion=exitosa');
 } else {
     // Si falla o no se encontró la reserva (porque no cumplía las condiciones del WHERE), redirijo con un mensaje de error.
+=======
+    // Si la actualización es exitosa, redirijo al perfil con un mensaje de éxito.
+    header('Location: perfil_usuario.php?cancelacion=exitosa');
+} else {
+    // Si falla o no se encontró la reserva, redirijo con un mensaje de error.
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
     header('Location: perfil_usuario.php?error=cancelacion_fallida');
 }
 

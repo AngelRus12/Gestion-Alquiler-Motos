@@ -1,9 +1,17 @@
 <?php
+<<<<<<< HEAD
 // Inicio la sesión para poder acceder a las variables de sesión.
 session_start();
 // Incluye el archivo con las credenciales de la base de datos.
 require_once 'loginbd.php';
 // Incluyo mi archivo de funciones para poder usar la validación CSRF.
+=======
+// Inicio la sesión para acceder a las variables de sesión.
+session_start();
+// Incluye el archivo con las credenciales de la base de datos.
+require_once 'loginbd.php';
+// Incluyo mis funciones para poder usar la validación CSRF.
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
 require_once 'funciones.php';
 
 // --- 1. CONTROL DE ACCESO ---
@@ -31,7 +39,11 @@ $current_password = trim($_POST['current_password'] ?? '');
 $new_password = trim($_POST['new_password'] ?? '');
 $confirm_new_password = trim($_POST['confirm_new_password'] ?? '');
 
+<<<<<<< HEAD
 // Primero, compruebo que el usuario haya rellenado todos los campos.
+=======
+// Primero, compruebo que el usuario ha rellenado todos los campos.
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
 if (empty($current_password) || empty($new_password) || empty($confirm_new_password)) {
     header('Location: perfil_usuario.php?password_change_error=empty');
     exit();

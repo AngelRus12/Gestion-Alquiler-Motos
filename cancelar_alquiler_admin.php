@@ -2,7 +2,7 @@
 session_start();
 require_once 'loginbd.php';
 
-// Primero, me aseguro de que solo un administrador pueda ejecutar este script.
+// Primero, me aseguro de que solo un administrador como yo pueda ejecutar este script.
 if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
     header('Location: login.php?error=acceso_denegado');
     exit();

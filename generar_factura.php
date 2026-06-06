@@ -29,7 +29,11 @@ if (!$conexion) {
 mysqli_set_charset($conexion, "utf8");
 
 // --- 3. OBTENCIÓN DE DATOS  ---
+<<<<<<< HEAD
 // Para la factura, necesito datos de 3 tablas. Los obtengo por separado.
+=======
+// Para la factura, necesito datos de 3 tablas. Los cojo por separado.
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
 
 // Primero, obtengo los datos principales del alquiler usando el ID que viene en la URL.
 $sql_alquiler = "SELECT * FROM alquileres WHERE id = ?";

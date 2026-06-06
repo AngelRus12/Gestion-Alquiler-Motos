@@ -55,7 +55,11 @@ $status = $_POST['response_type'] ?? 'error';
 
 // --- PASO 2: EXTRACCIÓN DEL ID DEL ALQUILER ---
 // Ahora, el ID del alquiler es la fuente principal de verdad, obtenido desde la URL.
+<<<<<<< HEAD
 // Esto hace que mi proceso sea más robusto que si dependiera solo de la sesión.
+=======
+// Esto hace el proceso más robusto que depender solo de la sesión.
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
 $id_alquiler = isset($_GET['alquiler_id']) ? (int)$_GET['alquiler_id'] : 0;
 
 // --- PASO 3: VERIFICACIÓN DE AUTENTICACIÓN Y DATOS VÁLIDOS ---

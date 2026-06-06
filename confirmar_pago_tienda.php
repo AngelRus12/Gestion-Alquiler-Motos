@@ -25,7 +25,11 @@ if (isset($_GET['id'])) {
 
     // Segundo, necesito saber qué moto es para poder marcarla como no disponible.
     // Para ello, busco el ID de la moto a partir del ID del alquiler.
+<<<<<<< HEAD
     $sql_get_moto = "SELECT moto_id FROM alquileres WHERE id = ?"; // Busco el ID de la moto.
+=======
+    $sql_get_moto = "SELECT moto_id FROM alquileres WHERE id = ?";
+>>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
     $stmt_get_moto = mysqli_prepare($conexion, $sql_get_moto);
     mysqli_stmt_bind_param($stmt_get_moto, "i", $id_alquiler);
     mysqli_stmt_execute($stmt_get_moto);
