@@ -2,16 +2,16 @@
 /**
  * login.php
  * Página de acceso del usuario.
- * - Evito el acceso de usuarios ya autenticados redirigiéndolos a la página principal.
- * - Detecto si el cliente es móvil para cargar la hoja de estilo correcta.
- * - Muestro mensajes de error de login y resultados del registro.
+ * - Evita el acceso de usuarios ya autenticados redirigiéndolos a la página principal.
+ * - Detecta si el cliente es móvil para cargar la hoja de estilo correcta.
+ * - Muestra mensajes de error de login y resultados del registro.
  */
-// Configuro el tiempo de vida de la sesión (30 minutos de inactividad).
+// Configurar el tiempo de vida de la sesión (ej. 30 minutos de inactividad)
 require_once 'funciones.php';
 ini_set('session.gc_maxlifetime', 1800);
 start_secure_session();
 
-generar_csrf_token(); // Genero el token CSRF para el formulario.
+generar_csrf_token();
 
 // Función para detectar dispositivos móviles
 function isMobile() {

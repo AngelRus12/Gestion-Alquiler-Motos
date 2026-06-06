@@ -2,9 +2,9 @@
 /**
  * procesar_modificacion_reserva.php
  * Procesa la modificación de las fechas de una reserva.
- * - Realizo todas las validaciones de seguridad y reglas de negocio en el servidor.
- * - Compruebo la disponibilidad de las nuevas fechas.
- * - Recalculo el precio y actualizo la reserva en la base de datos.
+ * - Realiza todas las validaciones de seguridad y reglas de negocio en el servidor.
+ * - Comprueba disponibilidad de las nuevas fechas.
+ * - Recalcula el precio y actualiza la reserva en la base de datos.
  */
 header('Content-Type: text/html; charset=utf-8');
 session_start();
@@ -31,7 +31,7 @@ $id_alquiler = (int)$_POST['id_alquiler'];
 $id_usuario = $_SESSION['usuario_id'];
 $rango_fechas = trim($_POST['nuevas_fechas']);
 
-// Parseo el rango de fechas que me llega del calendario.
+// Parsear el rango de fechas
 $fechas = explode(" to ", $rango_fechas);
 if (count($fechas) !== 2) {
     header('Location: modificar_reserva.php?id=' . $id_alquiler . '&error=fecha_invalida');
@@ -47,7 +47,7 @@ if (!$conexion) {
 }
 mysqli_set_charset($conexion, "utf8");
 
-// --- 3. VUELVO A VALIDAR LA PROPIEDAD Y LAS REGLAS DE NEGOCIO EN EL SERVIDOR ---
+// --- 3. VALIDAR PROPIEDAD Y REGLAS DE NEGOCIO (DE NUEVO EN SERVIDOR) ---
 $sql_alquiler = "SELECT * FROM alquileres WHERE id = ? AND usuario_id = ?";
 $stmt = mysqli_prepare($conexion, $sql_alquiler);
 mysqli_stmt_bind_param($stmt, "ii", $id_alquiler, $id_usuario);
@@ -71,7 +71,7 @@ if (strtotime($alquiler['fecha_inicio']) <= strtotime('+48 hours')) {
 }
 
 // --- 4. COMPROBAR DISPONIBILIDAD DE NUEVAS FECHAS ---
-// Uso una consulta que excluye el alquiler actual para comprobar si las nuevas fechas están libres.
+// Usamos una consulta que excluye el alquiler actual
 $sql_solapamiento = "SELECT COUNT(*) as total FROM alquileres
                      WHERE moto_id = ?
                        AND id != ?
@@ -89,7 +89,7 @@ if ($resultado_solapamiento['total'] > 0) {
 }
 
 // --- 5. RECALCULAR PRECIO Y ACTUALIZAR RESERVA ---
-// Obtengo el precio/día de la moto para recalcular el total.
+// Obtener precio/día de la moto
 $sql_moto = "SELECT precio_dia FROM motos WHERE id = ?";
 $stmt_moto = mysqli_prepare($conexion, $sql_moto);
 mysqli_stmt_bind_param($stmt_moto, "i", $alquiler['moto_id']);
@@ -102,11 +102,11 @@ if (!$moto) {
     exit();
 }
 
-// Recalculo los días y el precio total.
+// Recalcular días y precio total
 $nuevos_dias = (strtotime($nueva_fecha_fin) - strtotime($nueva_fecha_inicio)) / (60 * 60 * 24) + 1;
 $nuevo_precio_total = $nuevos_dias * $moto['precio_dia'];
 
-// Actualizo la base de datos con los nuevos datos.
+// Actualizar la base de datos
 $sql_update = "UPDATE alquileres SET fecha_inicio = ?, fecha_fin = ?, dias_alquiler = ?, precio_total = ? WHERE id = ? AND usuario_id = ?";
 $stmt_update = mysqli_prepare($conexion, $sql_update);
 mysqli_stmt_bind_param($stmt_update, "ssidis", $nueva_fecha_inicio, $nueva_fecha_fin, $nuevos_dias, $nuevo_precio_total, $id_alquiler, $id_usuario);

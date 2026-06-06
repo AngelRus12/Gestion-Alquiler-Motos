@@ -2,8 +2,8 @@
 /**
  * index.php
  * Página de entrada del sitio.
- * - Muestro la navegación, promociones y enlaces a catálogo, login y registro.
- * - Detecto si el usuario está autenticado para ajustar las opciones del menú.
+ * - Muestra navegación, promociones y enlaces a catálogo, login y registro.
+ * - Detecta si el usuario está autenticado para ajustar las opciones de menú.
  */
 header('Content-Type: text/html; charset=utf-8');
 session_start();
@@ -18,7 +18,7 @@ if (!$conexion) {
 mysqli_set_charset($conexion, "utf8");
 
 
-// Mi función para detectar dispositivos móviles.
+// Función para detectar dispositivos móviles
 function isMobile() {
     return preg_match("/(android|avantgo|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino)/i", $_SERVER["HTTP_USER_AGENT"]);
 }
@@ -72,7 +72,7 @@ $is_mobile = isMobile();
             <h2 class="titulo-seccion">Motos Destacadas</h2>
             <div class="grid">
                 <?php
-                $consulta = "SELECT * FROM motos WHERE disponible = 1 ORDER BY precio_dia DESC LIMIT 4";
+                $consulta = "SELECT * FROM motos WHERE disponible = 1 OR disponible = 'si' ORDER BY precio_dia DESC LIMIT 4";
                 $resultado = mysqli_query($conexion, $consulta);
                 
                 while ($fila = mysqli_fetch_assoc($resultado)) {

@@ -3,9 +3,9 @@
  * procesar_solicitud_recuperacion.php
  * Procesa la solicitud de recuperación de contraseña.
  * - Valida el email.
- * - Genero un token seguro y una fecha de expiración.
- * - Guardo el token hasheado en la BD para más seguridad.
- * - Envío un email con el enlace de recuperación.
+ * - Genera un token seguro y una fecha de expiración.
+ * - Guarda el token hasheado en la BD.
+ * - Simula el envío de un email con el enlace de recuperación.
  */
 // Incluir PHPMailer
 use PHPMailer\PHPMailer\PHPMailer;
@@ -30,7 +30,7 @@ if (!$conexion) {
     die("Error de conexión a la base de datos.");
 }
 
-// Busco al usuario por email.
+// Buscar al usuario por email
 $sql_user = "SELECT id FROM usuarios WHERE email = ?";
 $stmt_user = mysqli_prepare($conexion, $sql_user);
 mysqli_stmt_bind_param($stmt_user, "s", $email);
@@ -40,23 +40,23 @@ $usuario = mysqli_fetch_assoc($resultado);
 mysqli_stmt_close($stmt_user);
 
 if ($usuario) {
-    // Genero un token seguro.
+    // Generar un token seguro
     $token = bin2hex(random_bytes(32));
     $token_hash = hash('sha256', $token);
 
-    // Establezco una fecha de expiración (1 hora).
+    // Establecer una fecha de expiración (ej. 1 hora)
     $expires = new DateTime('now', new DateTimeZone('Europe/Madrid'));
     $expires->add(new DateInterval('PT1H')); // 1 hora de validez
     $expires_str = $expires->format('Y-m-d H:i:s');
 
-    // Guardo el token hasheado y la expiración en la base de datos.
+    // Guardar el token hasheado y la expiración en la base de datos
     $sql_update = "UPDATE usuarios SET reset_token = ?, reset_token_expires = ? WHERE id = ?";
     $stmt_update = mysqli_prepare($conexion, $sql_update);
     mysqli_stmt_bind_param($stmt_update, "ssi", $token_hash, $expires_str, $usuario['id']);
     mysqli_stmt_execute($stmt_update);
     mysqli_stmt_close($stmt_update);
 
-    // Construyo el enlace de recuperación.
+    // Construir el enlace de recuperación
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host = $_SERVER['HTTP_HOST'];
     $path = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
@@ -73,19 +73,19 @@ if ($usuario) {
     mail($email, $subject, $message, $headers);
     */
     try {
-        // Configuración del servidor SMTP.
-        // ¡Aquí debo usar las credenciales del correo que he creado en el hosting!
+        // Configuración del servidor SMTP para x10hosting (o cualquier cPanel)
+        // ¡DEBES USAR LAS CREDENCIALES DEL CORREO QUE CREASTE EN CPANEL!
         $mail->isSMTP();
-        // En mi hosting, 'localhost' es la opción correcta porque el script se ejecuta
-        // en el mismo servidor que el servicio de correo.
+        // En la mayoría de los hostings compartidos como x10hosting, 'localhost' es la opción correcta.
+        // Esto se debe a que el script se ejecuta en el mismo servidor que el servicio de correo.
         $mail->Host       = 'localhost';
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'info@alquilermotos.x10.mx'; // Mi dirección de correo completa creada en cPanel.
-        $mail->Password   = '12345678'; // La contraseña de esa cuenta de correo.
+        $mail->Username   = 'info@alquilermotos.x10.mx'; // Tu dirección de correo completa creada en cPanel
+        $mail->Password   = '12345678'; // La contraseña de ESA cuenta de correo, no la de cPanel.
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
-        // Remitente y destinatario.
+        // Remitente y destinatario
         $mail->setFrom($mail->Username, 'ARUSLAT Motos'); // Es buena práctica que el remitente sea el mismo que el usuario de autenticación.
         $mail->addAddress($email); // El correo del usuario que solicitó la recuperación
 
@@ -106,13 +106,13 @@ if ($usuario) {
 
         $mail->send();
     } catch (Exception $e) {
-        // Si el correo falla, registro el error para mí, pero no le informo al usuario
-        // para no revelar si el email existe o no en el sistema (medida de seguridad).
+        // Si el correo falla, puedes registrar el error pero no debes informar al usuario
+        // para no revelar si el email existe o no.
         error_log("PHPMailer Error: {$mail->ErrorInfo}");
     }
 }
 
-// Siempre redirijo a la misma página para no revelar si un email existe o no en la base de datos.
+// Siempre redirigir a la misma página para no revelar si un email existe o no.
 header('Location: solicitar_recuperacion.php?status=sent');
 mysqli_close($conexion);
 exit();

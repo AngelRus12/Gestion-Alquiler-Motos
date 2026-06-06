@@ -2,8 +2,8 @@
 /**
  * restablecer_password.php
  * Página para que el usuario introduzca su nueva contraseña.
- * - Valido el token que viene en la URL.
- * - Muestro el formulario para que introduzca la nueva contraseña.
+ * - Valida el token de la URL.
+ * - Muestra el formulario de nueva contraseña.
  */
 require_once 'funciones.php';
 start_secure_session();
@@ -19,7 +19,7 @@ $token_hash = hash('sha256', $token);
 require_once 'loginbd.php';
 $conexion = mysqli_connect($db_hostname, $db_username, $db_password, $db_database);
 
-// Busco el token en la base de datos y compruebo que no ha expirado.
+// Buscar el token en la base de datos y comprobar que no ha expirado
 $sql = "SELECT id FROM usuarios WHERE reset_token = ? AND reset_token_expires > NOW()";
 $stmt = mysqli_prepare($conexion, $sql);
 mysqli_stmt_bind_param($stmt, "s", $token_hash);

@@ -2,17 +2,13 @@
 /**
  * admin_dashboard.php
  * Panel administrativo para gestionar usuarios, motos, reservas y promociones.
- * - Lo he diseñado para que sea accesible solo por administradores.
-<<<<<<< HEAD
- * - Antes de mostrar nada, actualizo los estados de los alquileres y muestro estadísticas.
-=======
- * - Antes de mostrar nada, actualizo los estados de los alquileres y muestro estadísticas clave.
- * - Desde aquí permito publicar promociones con fechas y estado activo.
->>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
+ * - Solo accesible por admin.
+ * - Actualiza estados de alquiler automáticamente y muestra estadísticas clave.
+ * - Permite publicar promociones con fechas y estado activo.
  */
 // Establece la codificación de caracteres a UTF-8 para soportar caracteres especiales.
 header('Content-Type: text/html; charset=utf-8');
-// Inicio la sesión para poder acceder a las variables de sesión.
+// Inicia la sesión para poder acceder a las variables de sesión.
 session_start();
 // Incluye el archivo con las credenciales de la base de datos.
 require_once 'loginbd.php';
@@ -20,8 +16,8 @@ require_once 'loginbd.php';
 require_once 'funciones.php';
 
 // --- 1. CONTROL DE ACCESO ---
-// Verifico si el usuario ha iniciado sesión y si tiene el rol de 'admin'.
-// Si no cumple las condiciones, lo redirijo a la página de login con un mensaje de error.
+// Verifica si el usuario ha iniciado sesión y si tiene el rol de 'admin'.
+// Si no cumple las condiciones, se le redirige a la página de login con un mensaje de error.
 if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
     header('Location: login.php?error=acceso_denegado');
     exit();
@@ -29,54 +25,42 @@ if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
 
 // --- 2. CONEXIÓN A LA BASE DE DATOS ---
 $conexion = mysqli_connect($db_hostname, $db_username, $db_password, $db_database);
-// Si la conexión falla, detengo la ejecución y muestro un error.
+// Si la conexión falla, se detiene la ejecución y se muestra un error.
 if (!$conexion) {
     die("Error de conexión: " . mysqli_connect_error());
 }
-// Establezco el conjunto de caracteres a UTF-8 para la conexión con la base de datos.
+// Establece el conjunto de caracteres a UTF-8 para la conexión con la base de datos.
 mysqli_set_charset($conexion, "utf8");
 
 // --- 3. ACTUALIZACIÓN DEL SISTEMA ---
-// Llamo a mi función centralizada que actualiza el estado de alquileres y motos.
-// Por ejemplo, esta función pasa alquileres 'confirmados' a 'en_curso' si la fecha de inicio ya ha llegado.
+// Llama a una función centralizada que actualiza el estado de alquileres y motos.
+// Por ejemplo, pasa alquileres 'confirmados' a 'en_curso' si la fecha de inicio ya ha llegado.
 actualizar_sistema_completo($conexion);
 
 // --- 4. GESTIÓN DE MENSAJES DE FEEDBACK ---
-// Compruebo la URL en busca de parámetros 'msg' (éxito) o 'error' para mostrarle alertas al administrador.
+// Comprueba la URL en busca de parámetros 'msg' (éxito) o 'error' para mostrar alertas al administrador.
 $mensaje_html = "";
 if (isset($_GET['msg'])) {
-<<<<<<< HEAD
-    // He decidido usar mensajes genéricos para cubrir diferentes operaciones (crear, actualizar, eliminar).
+    // Se usan mensajes genéricos para cubrir diferentes operaciones (crear, actualizar, eliminar).
     $mensaje_html = "<div class='alerta alerta-exito'>Operación realizada con éxito.</div>";
 }
 if (isset($_GET['error'])) {
-    // Aquí manejo un caso específico que diseñé: el error de auto-eliminación.
-=======
-    // Uso mensajes genéricos para cubrir diferentes operaciones (crear, actualizar, eliminar).
-    $mensaje_html = "<div class='alerta alerta-exito'>Operación realizada con éxito.</div>";
-}
-if (isset($_GET['error'])) {
-    // Aquí manejo un caso específico: el error de auto-eliminación.
->>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
+    // Manejo específico para el error de auto-eliminación.
     if ($_GET['error'] == 'autodelecion') {
         $mensaje_html = "<div class='alerta alerta-error'>No puedes eliminar tu propia cuenta.</div>";
     } else {
-        // Y un mensaje de error genérico para otras situaciones.
+        // Mensaje de error genérico para otras situaciones.
         $mensaje_html = "<div class='alerta alerta-error'>Hubo un error al procesar la solicitud.</div>";
     }
 }
 
 // --- 5. CONSULTAS PARA LAS TARJETAS DE RESUMEN (OVERVIEW) ---
-// Realizo 3 consultas separadas para obtener los totales de usuarios, motos y alquileres pendientes.
+// Se realizan 3 consultas separadas para obtener los totales de usuarios, motos y alquileres pendientes.
 $total_users_res = mysqli_query($conexion, "SELECT COUNT(*) as total FROM usuarios");
 $total_motos_res = mysqli_query($conexion, "SELECT COUNT(*) as total FROM motos");
 $res_pendientes_res = mysqli_query($conexion, "SELECT COUNT(*) as total FROM alquileres WHERE estado = 'pendiente'");
 
-<<<<<<< HEAD
-// Extraigo el valor 'total' de cada resultado para mostrarlo en las tarjetas.
-=======
-// Extraigo el valor 'total' de cada resultado.
->>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
+// Se extrae el valor 'total' de cada resultado.
 $total_users = mysqli_fetch_assoc($total_users_res)['total'] ?? 0;
 $total_motos = mysqli_fetch_assoc($total_motos_res)['total'] ?? 0;
 $total_pendientes_res = mysqli_query($conexion, "SELECT COUNT(*) as total FROM alquileres WHERE estado = 'pendiente'");
@@ -103,11 +87,7 @@ $offset_alquileres = ($page_alquileres - 1) * $limit;
 $total_pages_alquileres = ceil($total_alquileres / $limit);
 
 // --- 6. OPTIMIZACIÓN DE CONSULTAS (N+1) PARA TABLAS Y CALENDARIO ---
-<<<<<<< HEAD
-// En lugar de hacer consultas dentro de bucles (problema N+1), obtengo todos los datos que necesito al principio.
-=======
-// En lugar de hacer consultas dentro de bucles, obtengo todos los datos que necesito al principio.
->>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
+// En lugar de hacer consultas dentro de bucles, obtenemos todos los datos necesarios al principio.
 
 // a) Obtener los alquileres para la página actual y para el calendario
 $stmt_alquileres = mysqli_prepare($conexion, "SELECT * FROM alquileres ORDER BY fecha_reserva DESC LIMIT ? OFFSET ?");
@@ -126,11 +106,7 @@ $usuarios_todos = mysqli_fetch_all($resultado_usuarios, MYSQLI_ASSOC);
 $resultado_motos_tabla = mysqli_query($conexion, "SELECT id, marca, modelo, precio_dia, disponible, tipo, imagen FROM motos ORDER BY id DESC LIMIT $limit OFFSET $offset_motos");
 $motos_todas = mysqli_fetch_all($resultado_motos_tabla, MYSQLI_ASSOC);
 
-<<<<<<< HEAD
-// c) Creo "mapas" (arrays asociativos) para un acceso rápido a los datos. Así no necesito hacer nuevas consultas dentro de los bucles.
-=======
-// c) Creo "mapas" para un acceso rápido a los datos, así no necesito hacer nuevas consultas dentro de los bucles.
->>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
+// c) Crear "mapas" para un acceso rápido a los datos sin necesidad de nuevas consultas.
 $usuarios_map = [];
 foreach ($usuarios_todos as $usuario) {
     $usuarios_map[$usuario['id']] = $usuario;
@@ -141,20 +117,16 @@ foreach ($motos_todas as $moto) {
     $motos_map[$moto['id']] = $moto;
 }
 
-<<<<<<< HEAD
-// d) Preparo los datos para el calendario. Para esto, obtengo todos los alquileres, sin paginación.
-=======
-// d) Preparo los datos para el calendario (para esto, obtengo todos los alquileres, sin paginación).
->>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
+// d) Preparar los datos para el calendario (se obtienen todos los alquileres para el calendario, sin paginación)
 $eventos_calendario = [];
 $resultado_alquileres_calendario = mysqli_query($conexion, "SELECT * FROM alquileres ORDER BY fecha_reserva DESC");
 $alquileres_calendario = mysqli_fetch_all($resultado_alquileres_calendario, MYSQLI_ASSOC);
 
 foreach ($alquileres_calendario as $evento) {
-    // Busco el usuario en mi mapa. Si no existe (porque fue eliminado), uso valores por defecto.
+    // Buscamos el usuario en nuestro mapa. Si no existe (fue eliminado), usamos valores por defecto. (Puede que necesitemos un mapa más grande para esto)
     $usuario_info = $usuarios_map[$evento['usuario_id']] ?? ['nombre' => 'Usuario', 'apellidos' => 'Eliminado'];
     
-    // Hago lo mismo para la moto.
+    // Hacemos lo mismo para la moto.
     $moto_info = $motos_map[$evento['moto_id']] ?? ['marca' => 'Moto', 'modelo' => 'Eliminada'];
     
     $eventos_calendario[] = [
@@ -167,11 +139,7 @@ foreach ($alquileres_calendario as $evento) {
     ];
 }
 
-<<<<<<< HEAD
-// Esta es una función local que he creado para generar los enlaces de paginación.
-=======
-// Esta es una función local para generar los enlaces de paginación.
->>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
+// Función para generar los enlaces de paginación
 function generar_paginacion($page, $total_pages, $base_url) {
     if ($total_pages <= 1) return;
 
@@ -195,7 +163,7 @@ function generar_paginacion($page, $total_pages, $base_url) {
 }
 
 ?>
-<!-- Aquí empieza la estructura HTML que muestra todos los datos que he obtenido. -->
+<!-- El resto del archivo es la estructura HTML que muestra los datos obtenidos. -->
 
 <!DOCTYPE html>
 <html lang="es">
@@ -305,7 +273,7 @@ function generar_paginacion($page, $total_pages, $base_url) {
                                 <td><span class="etiqueta etiqueta-azul"><?php echo strtoupper(htmlspecialchars($user['rol'])); ?></span></td>
                                 <td>
                                     <?php 
-                                    // Asigno una clase CSS diferente según el estado del usuario para darle un color distintivo.
+                                    // Se asigna una clase CSS diferente según el estado del usuario para darle un color distintivo.
                                     $clase_estado = 'etiqueta-error';
                                     if ($user['estado'] == 'activo') {
                                         $clase_estado = 'etiqueta-exito';
@@ -375,10 +343,10 @@ function generar_paginacion($page, $total_pages, $base_url) {
                                         <div class="info-alquilada">
                                             <span class="etiqueta etiqueta-aviso">Alquilada</span>
                                             <?php
-                                            // Busco un alquiler activo para esta moto en los datos que ya tengo.
+                                            // Buscamos un alquiler activo para esta moto en los datos que ya tenemos
                                             foreach ($alquileres_todos as $alquiler_activo) {
                                                 if ($alquiler_activo['moto_id'] == $moto['id'] && in_array($alquiler_activo['estado'], ['confirmado', 'en_curso'])) {
-                                                    // Uso el mapa de usuarios para obtener el nombre.
+                                                    // Usamos el mapa de usuarios para obtener el nombre
                                                     $quien_alquila = $usuarios_map[$alquiler_activo['usuario_id']] ?? null;
                                                     if ($quien_alquila) {
                                                         echo '<a href="detalle_alquiler.php?id=' . htmlspecialchars($alquiler_activo['id']) . '" class="boton boton-secundario boton-pequeño mt-5">👤 ' . htmlspecialchars($quien_alquila['nombre'] . ' ' . $quien_alquila['apellidos']) . '</a>';
@@ -429,11 +397,11 @@ function generar_paginacion($page, $total_pages, $base_url) {
                         <tbody>
                             <?php 
                             $hay_pendientes = false;
-                            // Para los pendientes, recorro todos los alquileres del calendario, no solo los que están paginados.
+                            // Para los pendientes, recorremos todos los alquileres del calendario, no solo los paginados
                             foreach ($alquileres_calendario as $alquiler) {
-                                if ($alquiler['estado'] === 'pendiente') { // Me centro solo en los que están pendientes de pago en tienda.
+                                if ($alquiler['estado'] === 'pendiente') {
                                     $hay_pendientes = true;
-                                    // Uso los mapas para obtener los datos sin hacer nuevas consultas.
+                                    // Usamos los mapas para obtener los datos sin nuevas consultas
                                     $user_data = $usuarios_map[$alquiler['usuario_id']] ?? ['nombre' => 'Usuario', 'apellidos' => 'Eliminado'];
                                     $moto_data = $motos_map[$alquiler['moto_id']] ?? ['marca' => 'Moto', 'modelo' => 'Eliminada'];
                             ?>
@@ -462,7 +430,7 @@ function generar_paginacion($page, $total_pages, $base_url) {
                             </tr>
                             <?php 
                                 }
-                            } if (!$hay_pendientes) { // Si no encontré ninguno, muestro un mensaje. ?>
+                            } if (!$hay_pendientes) { ?>
                                 <!-- Mensaje que se muestra si no hay alquileres pendientes. -->
                                 <tr><td colspan="5" class="table-empty">No hay pagos pendientes de confirmación.</td></tr>
                             <?php } ?>
@@ -495,11 +463,7 @@ function generar_paginacion($page, $total_pages, $base_url) {
                             <?php 
                             if (!empty($alquileres_todos)) {
                                 foreach ($alquileres_todos as $alquiler) {
-<<<<<<< HEAD
-                                    // Reutilizo los mapas que ya he creado para no volver a consultar la BD.
-=======
-                                    // Reutilizo los mapas que ya he creado.
->>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
+                                    // Reutilizamos los mapas que ya hemos creado
                                     $usuario_alquiler = $usuarios_map[$alquiler['usuario_id']] ?? ['nombre' => 'Usuario', 'apellidos' => 'Eliminado'];
                                     $moto_alquiler = $motos_map[$alquiler['moto_id']] ?? ['marca' => 'Moto', 'modelo' => 'Eliminada'];
                             ?>
@@ -663,11 +627,7 @@ function generar_paginacion($page, $total_pages, $base_url) {
 </html>
 <?php
 // --- 6. CIERRE DE CONEXIÓN ---
-<<<<<<< HEAD
-// Como buena práctica, cierro la conexión a la base de datos al final del script para liberar recursos.
-=======
-// Como buena práctica, cierro la conexión a la base de datos al final del script
+// Es una buena práctica cerrar la conexión a la base de datos al final del script
 // para liberar recursos en el servidor.
->>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
 mysqli_close($conexion); 
 ?>

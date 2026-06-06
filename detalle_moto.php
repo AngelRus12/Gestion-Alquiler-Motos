@@ -2,8 +2,8 @@
 /**
  * detalle_moto.php
  * Página que muestra la información completa de una moto y permite reservarla.
- * - Uso consultas preparadas para obtener los datos de la moto de forma segura.
- * - He incluido validaciones de disponibilidad y mensajes de error para el usuario.
+ * - Usa consultas preparadas para obtener datos explorando el ID seguro.
+ * - Incluye validaciones de disponibilidad y mensajes de error para el usuario.
  */
 header('Content-Type: text/html; charset=utf-8');
 session_start();
@@ -22,32 +22,28 @@ if (isset($_GET['id'])) {
     $id_moto = (int)$_GET['id'];
 }
 
-<<<<<<< HEAD
 // Uso una consulta preparada para coger los datos de la moto de forma segura,
-// así evito que alguien pueda manipular la URL para atacar la base de datos.
-=======
-// Uso una consulta preparada para coger los datos de la moto de forma segura.
 // evitando que alguien pueda manipular la URL para atacar la base de datos.
->>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
 $consulta = "SELECT * FROM motos WHERE id = ?";
 $stmt = mysqli_prepare($conexion, $consulta);
-// La "i" indica que el parámetro que voy a vincular es un entero (integer).
+// La "i" indica que el parámetro que se va a vincular es un entero (integer).
 mysqli_stmt_bind_param($stmt, "i", $id_moto);
 mysqli_stmt_execute($stmt);
 $resultado = mysqli_stmt_get_result($stmt);
 $moto = mysqli_fetch_assoc($resultado);
 
-<<<<<<< HEAD
-// Si no encuentro ninguna moto con ese ID, redirijo al usuario al catálogo.
-=======
-// Si no encuentro ninguna moto con ese ID, redirijo al catálogo.
->>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
+// Si no se encuentra ninguna moto con ese ID, se redirige al catálogo.
 if (!$moto) { 
     header('Location: catalogo.php'); 
     exit(); 
 }
 
 $esta_disponible = ($moto['disponible'] == 1);
+
+// Función para detectar dispositivos móviles
+function isMobile() {
+    return preg_match("/(android|avantgo|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino)/i", $_SERVER["HTTP_USER_AGENT"]);
+}
 
 $is_mobile = isMobile();
 ?>
@@ -164,13 +160,8 @@ $is_mobile = isMobile();
                     <?php else: ?>
                         <p class="alerta-error text-center alerta-sin-fondo">No disponible actualmente</p>
                         <?php
-<<<<<<< HEAD
-                        // Si la moto no está disponible y quien la mira es un admin (o sea, yo mismo),
-                        // he añadido una lógica para mostrar quién la tiene alquilada.
-=======
-                        // Si la moto no está disponible y quien la mira es un admin (o sea, yo),
-                        // muestro quién la tiene alquilada.
->>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
+                        // Si la moto no está disponible y el que mira es un admin,
+                        // le muestro quién la tiene alquilada.
                         if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin') {
                             // Primero, busco si hay un alquiler activo para esta moto.
                             $sql_alquiler_moto = "SELECT usuario_id, fecha_inicio, fecha_fin, id as alquiler_id FROM alquileres WHERE moto_id = ? AND estado IN ('confirmado', 'en_curso') ORDER BY fecha_inicio DESC LIMIT 1";
@@ -179,7 +170,7 @@ $is_mobile = isMobile();
                             mysqli_stmt_execute($stmt_alquiler_moto);
                             $res_alquiler_moto = mysqli_stmt_get_result($stmt_alquiler_moto);
 
-                            // Si encuentro un alquiler activo...
+                            // Si lo encuentro...
                             if ($alquiler_info = mysqli_fetch_assoc($res_alquiler_moto)) {
                                 // ...uso el ID del usuario para buscar su nombre.
                                 $sql_usuario_alquila = "SELECT nombre, apellidos FROM usuarios WHERE id = ?";
@@ -192,7 +183,7 @@ $is_mobile = isMobile();
                                 if ($quien_alquila = mysqli_fetch_assoc($res_usuario_alquila)) {
                                     $alquiler_actual = array_merge($alquiler_info, $quien_alquila);
                                     ?>
-                                    <!-- Muestro la información combinada en el HTML. -->
+                                    <!-- Se muestra la información combinada en el HTML. -->
                                     <div class="alerta alerta-error text-center espaciado-arriba">
                                         <p class="detalle-alquilada-text"><strong>Alquilada por:</strong> <a href="detalle_alquiler.php?id=<?php echo $alquiler_actual['alquiler_id']; ?>" class="enlace-discreto"><?php echo htmlspecialchars($alquiler_actual['nombre'] . ' ' . $alquiler_actual['apellidos']); ?></a></p>
                                         <p class="detalle-alquiler-periodo">Del <?php echo date('d/m/Y', strtotime($alquiler_actual['fecha_inicio'])); ?> al <?php echo date('d/m/Y', strtotime($alquiler_actual['fecha_fin'])); ?></p>
@@ -221,7 +212,7 @@ $is_mobile = isMobile();
             const precioBaseValorElement = document.getElementById('precio-base-valor');
             const precioFinalElement = document.getElementById('precio-final');
 
-            // 1. Establezco el mínimo de la fecha de fin basado en la fecha de inicio para evitar errores.
+            // 1. Establecer el mínimo de la fecha de fin basado en la fecha de inicio
             if (f_inicio_input.value) {
                 f_fin_input.min = f_inicio_input.value;
             }
@@ -249,11 +240,7 @@ $is_mobile = isMobile();
             }
         }
 
-<<<<<<< HEAD
-        // Como detalle adicional, he impedido que se puedan reservar fechas pasadas al cargar la página.
-=======
-        // Como detalle adicional, impido que se puedan reservar fechas pasadas al cargar la página.
->>>>>>> 4f061c50123c453b05ee62e02056c332830aa6a5
+        // Opcional: Impedir que reserven fechas pasadas al cargar la página
         window.onload = function() {
             const hoy = new Date().toISOString().split('T')[0];
             document.getElementById('f_inicio').setAttribute('min', hoy);
@@ -262,6 +249,6 @@ $is_mobile = isMobile();
         
             </script>
 
-    <?php mysqli_stmt_close($stmt); // Cierro la consulta preparada principal ?>
+    <?php mysqli_stmt_close($stmt); // Cerrar la consulta preparada principal ?>
 </body>
 </html>

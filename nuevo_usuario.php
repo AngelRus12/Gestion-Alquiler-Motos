@@ -2,14 +2,14 @@
 session_start();
 require_once 'loginbd.php';
 
-if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') { // Solo yo (admin) puedo acceder aquí.
+if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
     header('Location: login.php?error=acceso_denegado');
     exit();
 }
 
 $conexion = mysqli_connect($db_hostname, $db_username, $db_password, $db_database);
 
-// Mi función para detectar dispositivos móviles.
+// Función para detectar dispositivos móviles
 function isMobile() {
     return preg_match("/(android|avantgo|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino)/i", $_SERVER["HTTP_USER_AGENT"]);
 }

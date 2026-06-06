@@ -2,7 +2,7 @@
 session_start();
 require_once 'loginbd.php';
 
-// 1. Seguridad: Verifico que el usuario sea administrador.
+// 1. Seguridad: Verificar que el usuario es administrador
 if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
     header('Location: login.php?error=acceso_denegado');
     exit();
@@ -14,7 +14,7 @@ if (!$conexion) {
 }
 mysqli_set_charset($conexion, "utf8");
 
-// 2. Valido que se haya proporcionado un ID de moto.
+// 2. Validar que se ha proporcionado un ID de moto
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     header('Location: admin_dashboard.php?error=id_invalido');
     exit();
@@ -22,7 +22,7 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 $id = (int)$_GET['id'];
 
 // Función para detectar dispositivos móviles
-function isMobile() { // Mi función para detectar si es un móvil.
+function isMobile() {
     return preg_match("/(android|avantgo|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino)/i", $_SERVER["HTTP_USER_AGENT"]);
 }
 $is_mobile = isMobile();
@@ -30,12 +30,12 @@ $is_mobile = isMobile();
 // 3. Procesar el formulario si se envía por POST
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Recoger y limpiar datos
-    $marca = trim($_POST['marca']); // Recojo y limpio los datos del formulario.
+    $marca = trim($_POST['marca']);
     $modelo = trim($_POST['modelo']);
     $precio = (float)$_POST['precio_dia'];
     $disponible = (int)$_POST['disponible'];
 
-    // Uso consultas preparadas para la actualización por seguridad.
+    // Usar consultas preparadas para la actualización
     $sql = "UPDATE motos SET marca = ?, modelo = ?, precio_dia = ?, disponible = ? WHERE id = ?";
     $stmt = mysqli_prepare($conexion, $sql);
     mysqli_stmt_bind_param($stmt, "ssdii", $marca, $modelo, $precio, $disponible, $id);
@@ -46,13 +46,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         header('Location: admin_dashboard.php?msg=actualizado');
         exit();
     } else {
-        // En caso de error, redirijo con un mensaje.
+        // En caso de error, redirigir con un mensaje
         header('Location: editar_moto.php?id=' . $id . '&error=sql');
         exit();
     }
 }
 
-// 4. Obtengo los datos de la moto para mostrarlos en el formulario.
+// 4. Obtener los datos de la moto para mostrarlos en el formulario
 $sql_moto = "SELECT * FROM motos WHERE id = ?";
 $stmt_moto = mysqli_prepare($conexion, $sql_moto);
 mysqli_stmt_bind_param($stmt_moto, "i", $id);

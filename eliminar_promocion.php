@@ -2,8 +2,8 @@
 /**
  * eliminar_promocion.php
  * Procesa la eliminación de una promoción.
- * - Solo es accesible por administradores.
- * - Utilizo consultas preparadas para mayor seguridad.
+ * - Solo accesible por administradores.
+ * - Utiliza consultas preparadas para mayor seguridad.
  */
 header('Content-Type: text/html; charset=utf-8');
 session_start();
@@ -29,7 +29,7 @@ if (!$conexion) {
     die("Error de conexión: " . mysqli_connect_error());
 }
 
-// 4. Hago la eliminación segura con una consulta preparada.
+// 4. Eliminación segura con consulta preparada.
 $sql = "DELETE FROM promociones WHERE id = ?";
 $stmt = mysqli_prepare($conexion, $sql);
 mysqli_stmt_bind_param($stmt, "i", $promocion_id);
