@@ -1,12 +1,12 @@
 <?php
 /**
  * login.php
- * Página de acceso del usuario.
- * - Evita el acceso de usuarios ya autenticados redirigiéndolos a la página principal.
- * - Detecta si el cliente es móvil para cargar la hoja de estilo correcta.
- * - Muestra mensajes de error de login y resultados del registro.
+ * Esta es mi página de acceso para los usuarios.
+ * - Si un usuario ya está autenticado, lo redirijo a la página principal para que no vea el login otra vez.
+ * - He añadido una función para detectar si el cliente usa un móvil y así cargar la hoja de estilo correcta.
+ * - También muestro mensajes de error si el login falla o un mensaje de éxito si viene de la página de registro.
  */
-// Configurar el tiempo de vida de la sesión (ej. 30 minutos de inactividad)
+// Configuro el tiempo de vida de la sesión (ej. 30 minutos de inactividad).
 require_once 'funciones.php';
 ini_set('session.gc_maxlifetime', 1800);
 start_secure_session();

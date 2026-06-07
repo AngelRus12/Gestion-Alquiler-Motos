@@ -1,9 +1,9 @@
 <?php
 /**
  * detalle_moto.php
- * Página que muestra la información completa de una moto y permite reservarla.
- * - Usa consultas preparadas para obtener datos explorando el ID seguro.
- * - Incluye validaciones de disponibilidad y mensajes de error para el usuario.
+ * Esta página muestra la información completa de una moto y permite al usuario reservarla.
+ * - Uso consultas preparadas para obtener los datos de forma segura a partir del ID.
+ * - He incluido validaciones de disponibilidad y mensajes de error claros para el usuario.
  */
 header('Content-Type: text/html; charset=utf-8');
 session_start();
@@ -22,11 +22,11 @@ if (isset($_GET['id'])) {
     $id_moto = (int)$_GET['id'];
 }
 
-// Uso una consulta preparada para coger los datos de la moto de forma segura,
+// Uso una consulta preparada para coger los datos de la moto de forma segura.
 // evitando que alguien pueda manipular la URL para atacar la base de datos.
 $consulta = "SELECT * FROM motos WHERE id = ?";
 $stmt = mysqli_prepare($conexion, $consulta);
-// La "i" indica que el parámetro que se va a vincular es un entero (integer).
+// La "i" indica que el parámetro que voy a vincular es un entero (integer).
 mysqli_stmt_bind_param($stmt, "i", $id_moto);
 mysqli_stmt_execute($stmt);
 $resultado = mysqli_stmt_get_result($stmt);
@@ -160,8 +160,8 @@ $is_mobile = isMobile();
                     <?php else: ?>
                         <p class="alerta-error text-center alerta-sin-fondo">No disponible actualmente</p>
                         <?php
-                        // Si la moto no está disponible y el que mira es un admin,
-                        // le muestro quién la tiene alquilada.
+                        // Si la moto no está disponible y soy yo (un admin) quien la está viendo,
+                        // muestro quién la tiene alquilada.
                         if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin') {
                             // Primero, busco si hay un alquiler activo para esta moto.
                             $sql_alquiler_moto = "SELECT usuario_id, fecha_inicio, fecha_fin, id as alquiler_id FROM alquileres WHERE moto_id = ? AND estado IN ('confirmado', 'en_curso') ORDER BY fecha_inicio DESC LIMIT 1";
@@ -172,7 +172,7 @@ $is_mobile = isMobile();
 
                             // Si lo encuentro...
                             if ($alquiler_info = mysqli_fetch_assoc($res_alquiler_moto)) {
-                                // ...uso el ID del usuario para buscar su nombre.
+                                // ...uso el ID de ese usuario para buscar su nombre.
                                 $sql_usuario_alquila = "SELECT nombre, apellidos FROM usuarios WHERE id = ?";
                                 $stmt_usuario_alquila = mysqli_prepare($conexion, $sql_usuario_alquila);
                                 mysqli_stmt_bind_param($stmt_usuario_alquila, "i", $alquiler_info['usuario_id']);
@@ -183,7 +183,7 @@ $is_mobile = isMobile();
                                 if ($quien_alquila = mysqli_fetch_assoc($res_usuario_alquila)) {
                                     $alquiler_actual = array_merge($alquiler_info, $quien_alquila);
                                     ?>
-                                    <!-- Se muestra la información combinada en el HTML. -->
+                                    <!-- Muestro la información combinada en el HTML. -->
                                     <div class="alerta alerta-error text-center espaciado-arriba">
                                         <p class="detalle-alquilada-text"><strong>Alquilada por:</strong> <a href="detalle_alquiler.php?id=<?php echo $alquiler_actual['alquiler_id']; ?>" class="enlace-discreto"><?php echo htmlspecialchars($alquiler_actual['nombre'] . ' ' . $alquiler_actual['apellidos']); ?></a></p>
                                         <p class="detalle-alquiler-periodo">Del <?php echo date('d/m/Y', strtotime($alquiler_actual['fecha_inicio'])); ?> al <?php echo date('d/m/Y', strtotime($alquiler_actual['fecha_fin'])); ?></p>

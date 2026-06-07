@@ -1,9 +1,9 @@
 <?php
 /**
  * generar_factura.php
- * Genera y muestra una factura PDF para un alquiler concreto.
- * - Usa la librería FPDF para crear un PDF dinámico.
- * - Verifica que el usuario sea el dueño del alquiler o administrador.
+ * Este script genera y muestra una factura en PDF para un alquiler concreto.
+ * - He decidido usar la librería FPDF para crear el PDF de forma dinámica.
+ * - Me aseguro de que solo el dueño del alquiler o un administrador puedan generar la factura.
  */
 session_start();
 require_once 'loginbd.php';
@@ -11,10 +11,12 @@ require_once 'libs/fpdf/fpdf.php';
 
 // --- 1. CONTROL DE ACCESO Y VALIDACIÓN ---
 if (!isset($_SESSION['usuario_id'])) {
+    // Si no ha iniciado sesión, no puede generar ninguna factura.
     die("Acceso denegado. Debes iniciar sesión.");
 }
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    // Si no me pasan un ID o no es un número, detengo la ejecución.
     die("ID de alquiler no válido.");
 }
 
@@ -29,9 +31,9 @@ if (!$conexion) {
 mysqli_set_charset($conexion, "utf8");
 
 // --- 3. OBTENCIÓN DE DATOS (SIN USAR JOINs) ---
-// Para la factura, necesito datos de 3 tablas. Los cojo por separado.
+// Para la factura, necesito datos de 3 tablas distintas. Los cojo por separado para mantener la claridad.
 
-// Primero, obtengo los datos principales del alquiler usando el ID que viene en la URL.
+// Primero, obtengo los datos principales del alquiler usando el ID que me llega por la URL.
 $sql_alquiler = "SELECT * FROM alquileres WHERE id = ?";
 $stmt_alquiler = mysqli_prepare($conexion, $sql_alquiler);
 mysqli_stmt_bind_param($stmt_alquiler, "i", $alquiler_id);
@@ -40,13 +42,13 @@ $resultado_alquiler = mysqli_stmt_get_result($stmt_alquiler);
 $alquiler = mysqli_fetch_assoc($resultado_alquiler);
 mysqli_stmt_close($stmt_alquiler);
 
-// Si no encuentro el alquiler, detengo el script.
+// Si no encuentro el alquiler con ese ID, detengo el script.
 if (!$alquiler) {
     mysqli_close($conexion);
     die("El alquiler solicitado no existe.");
 }
 
-// Segundo, uso el 'moto_id' del alquiler para buscar los datos de la moto.
+// Segundo, uso el 'moto_id' que he obtenido del alquiler para buscar los datos de la moto.
 $sql_moto = "SELECT marca, modelo, matricula FROM motos WHERE id = ?";
 $stmt_moto = mysqli_prepare($conexion, $sql_moto);
 mysqli_stmt_bind_param($stmt_moto, "i", $alquiler['moto_id']);
@@ -65,7 +67,7 @@ mysqli_stmt_close($stmt_usuario);
 mysqli_close($conexion);
 
 // --- 4. VERIFICACIÓN DE PERMISOS ---
-// Compruebo que el usuario que pide la factura es el dueño o un admin.
+// Compruebo que el usuario que está pidiendo la factura es el dueño del alquiler o un admin.
 if (!$alquiler || !$moto_data || !$usuario_data || ($alquiler['usuario_id'] != $usuario_id && $_SESSION['rol'] !== 'admin')) {
     die("No tienes permiso para ver esta factura o los datos están incompletos.");
 }
@@ -76,8 +78,8 @@ $iva_tasa = 0.21; // 21% de IVA
 $base_imponible = $precio_total / (1 + $iva_tasa);
 $iva_monto = $precio_total - $base_imponible;
 
-// Junto los datos de la moto y el usuario con los del alquiler en un solo array.
-// Así es más fácil usarlos después para escribir el PDF.
+// Junto los datos de la moto y del usuario con los del alquiler en un solo array.
+// Así me resulta más fácil usarlos después para escribir el PDF.
 $alquiler = array_merge($alquiler, $moto_data, $usuario_data);
 
 // --- 5. CREACIÓN DEL PDF CON FPDF ---
@@ -85,7 +87,7 @@ $alquiler = array_merge($alquiler, $moto_data, $usuario_data);
 class PDF extends FPDF
 {
     // Cabecera de página
-    function Header()
+    function Header() // He personalizado la cabecera de la factura.
     {
         // Logo
         if (file_exists('logo.png')) {
@@ -97,13 +99,13 @@ class PDF extends FPDF
         $this->Cell(0, 10, 'FACTURA ARUSLAT', 0, 1, 'R');
         
         // Número de factura
-        global $alquiler; // Hacemos la variable global para acceder a ella aquí
+        global $alquiler; // Hago la variable global para poder acceder a ella aquí dentro.
         $this->SetFont('Arial', '', 10);
         $this->Cell(0, 7, utf8_decode('Nº: FAC-') . date("Y") . '-' . str_pad($alquiler['id'], 6, "0", STR_PAD_LEFT), 0, 1, 'R');
         $this->Cell(0, 7, 'Fecha: ' . date("d/m/Y"), 0, 1, 'R');
     }
 
-    // Pie de página
+    // Pie de página personalizado.
     function Footer()
     {
         $this->SetY(-15); // Posición a 1.5 cm del final
@@ -113,7 +115,7 @@ class PDF extends FPDF
     }
 }
 
-// Creación del objeto PDF
+// Aquí creo el objeto PDF y configuro sus propiedades básicas.
 $pdf = new PDF();
 $pdf->AliasNbPages();
 $pdf->AddPage();
@@ -125,7 +127,7 @@ $pdf->SetTextColor(0, 0, 0);
 
 $pdf->Ln(30); // Espacio después de la cabecera
 
-// --- Datos del Cliente y Empresa ---
+// --- Datos del Cliente y de mi Empresa ---
 $pdf->SetFillColor(240, 240, 240);
 $pdf->SetFont('Arial', 'B', 12);
 $pdf->Cell(95, 8, 'Emitido por', 0, 0, 'L', true);
@@ -143,7 +145,7 @@ $pdf->Cell(95, 6, $alquiler['email'], 0, 1, 'L');
 $pdf->Ln(15);
 
 // --- Tabla de Detalles del Alquiler ---
-$pdf->SetFont('Arial', 'B', 12);
+$pdf->SetFont('Arial', 'B', 12); // He diseñado una tabla para los detalles.
 $pdf->SetFillColor(52, 58, 64); // Un gris oscuro para la cabecera
 $pdf->SetTextColor(255, 255, 255);
 $pdf->Cell(70, 10, 'Concepto', 1, 0, 'L', true);
@@ -163,16 +165,16 @@ $periodo_alquiler_texto = $fecha_inicio_formato . " a\n" . $fecha_fin_formato;
 $precio_dia = number_format($base_imponible / $alquiler['dias_alquiler'], 2) . ' ' . chr(128);
 $subtotal = number_format($base_imponible, 2) . ' ' . chr(128);
 
-// Usamos MultiCell para que el texto del concepto se ajuste automáticamente si es muy largo
+// Uso MultiCell para que el texto del concepto se ajuste automáticamente si es muy largo.
 $y_inicial = $pdf->GetY();
 $x_inicial = $pdf->GetX();
 
-// Dibujamos la primera celda (Concepto) y calculamos la altura que ocupará
+// Dibujo la primera celda (Concepto) y calculo la altura que ocupará.
 $pdf->MultiCell(70, 8, $concepto, 'LR', 'L');
 $y_final = $pdf->GetY();
 $altura_fila = $y_final - $y_inicial;
 
-// Reposicionamos el cursor a la derecha de la celda anterior, en la misma línea inicial
+// Reposiciono el cursor a la derecha de la celda anterior, en la misma línea inicial.
 $pdf->SetXY($x_inicial + 70, $y_inicial);
 
 // Dibujamos el resto de celdas como MultiCell, usando la altura calculada para que todas tengan el mismo alto
@@ -203,5 +205,5 @@ $pdf->Cell(130, 10, '', 0, 0);
 $pdf->Cell(30, 10, 'TOTAL', 1, 0, 'C', true);
 $pdf->Cell(30, 10, number_format($alquiler['precio_total'], 2) . ' ' . chr(128), 1, 1, 'R', true);
 
-$pdf->Output('I', 'Factura-ALQ' . $alquiler['id'] . '.pdf'); // 'I' para mostrar en navegador, 'D' para forzar descarga
+$pdf->Output('I', 'Factura-ALQ' . $alquiler['id'] . '.pdf'); // 'I' para mostrar en navegador, 'D' para forzar la descarga.
 ?>

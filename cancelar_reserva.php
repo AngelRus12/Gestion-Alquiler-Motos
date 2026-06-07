@@ -1,13 +1,13 @@
 <?php
 /**
  * cancelar_reserva.php
- * Script para cancelar una reserva hecha por el usuario autenticado.
- * - Verifica la sesión y el propietario del alquiler.
- * - Cambia el estado de la reserva a 'cancelado' de forma segura.
+ * Este es el script que se encarga de cancelar una reserva hecha por un usuario.
+ * - Primero verifico que el usuario haya iniciado sesión y que la reserva sea realmente suya.
+ * - Luego, cambio el estado de la reserva a 'cancelado' de forma segura.
  */
-// Inicia la sesión para acceder a las variables de sesión, como el ID del usuario.
+// Inicio la sesión para acceder a las variables de sesión, como el ID del usuario.
 session_start();
-// Incluye el archivo con las credenciales de la base de datos.
+// Incluyo el archivo con las credenciales de la base de datos.
 require_once 'loginbd.php';
 
 // --- 1. CONTROL DE ACCESO ---
@@ -39,14 +39,14 @@ if (mysqli_connect_errno()) {
 }
 
 // --- 5. ACTUALIZACIÓN SEGURA EN LA BASE DE DATOS ---
-// Se prepara una consulta para actualizar el estado del alquiler a 'cancelado'.
-// CRÍTICO: Se añade la condición `AND usuario_id = ?`. Esto asegura que un usuario
+// Preparo una consulta para actualizar el estado del alquiler a 'cancelado'.
+// ¡CRÍTICO! Añado la condición `AND usuario_id = ?`. Esto me asegura que un usuario
 // solo pueda cancelar una reserva que le pertenece, evitando que un usuario malintencionado
 // cancele la reserva de otro cambiando el ID en la URL.
 $sql = "UPDATE alquileres SET estado = 'cancelado' WHERE id = ? AND usuario_id = ?";
 
 // --- 5. VERIFICACIÓN DE PERMISOS Y REGLA DE 48 HORAS ---
-// Primero, obtenemos los datos del alquiler para verificar al propietario y la fecha.
+// Primero, obtengo los datos del alquiler para verificar que es el propietario y para comprobar la fecha.
 $sql_check = "SELECT usuario_id, fecha_inicio, estado FROM alquileres WHERE id = ?";
 $stmt_check = mysqli_prepare($conexion, $sql_check);
 mysqli_stmt_bind_param($stmt_check, "i", $id_alquiler_a_cancelar);
@@ -61,17 +61,17 @@ if (!$alquiler || $alquiler['usuario_id'] != $id_usuario_actual) {
     exit();
 }
 
-// Comprobamos la regla de las 48 horas.
+// Compruebo mi regla de negocio de las 48 horas.
 if (strtotime($alquiler['fecha_inicio']) <= strtotime('+48 hours')) {
     // Si faltan 48 horas o menos, no se puede cancelar.
     header('Location: perfil_usuario.php?error=cancelacion_fuera_plazo');
     exit();
 }
 
-// Si todo es correcto, procedemos a actualizar.
+// Si todo es correcto, procedo a actualizar.
 
 $stmt = mysqli_prepare($conexion, $sql);
-// Se asocian las variables a los parámetros de la consulta. "ii" significa que ambos son enteros.
+// Asocio las variables a los parámetros de la consulta. "ii" significa que ambos son enteros.
 mysqli_stmt_bind_param($stmt, "ii", $id_alquiler_a_cancelar, $id_usuario_actual);
 
 // Se ejecuta la consulta.
@@ -83,7 +83,7 @@ if (mysqli_stmt_execute($stmt) && mysqli_stmt_affected_rows($stmt) > 0) {
     header('Location: perfil_usuario.php?error=cancelacion_fallida');
 }
 
-// Se cierran la consulta preparada y la conexión para liberar recursos.
+// Cierro la consulta preparada y la conexión para liberar recursos.
 mysqli_stmt_close($stmt);
 mysqli_close($conexion);
 ?>

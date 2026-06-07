@@ -1,9 +1,9 @@
 <?php
 /**
  * ajax_cancelar_reserva.php
- * Script para cancelar una reserva vía AJAX.
- * - Verifica la sesión, el propietario y la regla de las 48 horas.
- * - Devuelve una respuesta JSON.
+ * Este es mi script para cancelar una reserva a través de AJAX.
+ * - Me aseguro de que el usuario haya iniciado sesión, sea el dueño de la reserva y cumpla la regla de las 48 horas.
+ * - Al final, devuelvo una respuesta en formato JSON para que la página se actualice sin recargar.
  */
 header('Content-Type: application/json; charset=utf-8');
 session_start();
@@ -33,7 +33,7 @@ if (mysqli_connect_errno()) {
 }
 
 // --- 5. VERIFICACIÓN DE PERMISOS Y REGLA DE 48 HORAS ---
-// Primero, obtenemos los datos del alquiler para verificar al propietario y la fecha.
+// Primero, obtengo los datos del alquiler para verificar que pertenece al usuario y para comprobar la fecha.
 $sql_check = "SELECT usuario_id, fecha_inicio, estado FROM alquileres WHERE id = ?";
 $stmt_check = mysqli_prepare($conexion, $sql_check);
 mysqli_stmt_bind_param($stmt_check, "i", $id_alquiler_a_cancelar);
@@ -52,6 +52,7 @@ if ($alquiler['usuario_id'] != $id_usuario_actual) {
     exit();
 }
 
+// Esta es mi regla de negocio: no se puede cancelar si faltan 48 horas o menos para el inicio.
 if (strtotime($alquiler['fecha_inicio']) <= strtotime('+48 hours')) {
     echo json_encode(['status' => 'error', 'message' => 'No se puede cancelar. Faltan menos de 48 horas para el inicio del alquiler.']);
     exit();

@@ -1,9 +1,9 @@
 <?php
 /**
  * catalogo.php
- * Lista de motos disponibles para alquilar y filtro dinámico.
- * - Usa paginación y consultas preparadas para evitar inyecciones SQL.
- * - Mejora la experiencia de usuario con filtros por marca, modelo, tipo y rango de precio.
+ * Esta es la página de mi catálogo de motos.
+ * - He implementado paginación y uso consultas preparadas para que sea seguro.
+ * - Para mejorar la experiencia, he añadido filtros dinámicos por marca, modelo, tipo y precio.
  */
 header('Content-Type: text/html; charset=utf-8');
 session_start();
@@ -60,11 +60,11 @@ $is_mobile = isMobile();
 
             <!-- Filtros de búsqueda avanzada (selects dinámicos y prepared statements) -->
             <?php
-            // Obtener valores distintos para selects
+            // Obtengo los valores distintos de la base de datos para rellenar los `select` de los filtros.
             $marcas_res = mysqli_query($conexion, "SELECT DISTINCT marca FROM motos WHERE marca IS NOT NULL AND marca <> '' ORDER BY marca");
             $marcas = mysqli_fetch_all($marcas_res, MYSQLI_ASSOC);
 
-            // Si hay marca seleccionada, limitar el listado de modelos a esa marca.
+            // Si hay una marca seleccionada, limito el listado de modelos a solo los de esa marca.
             $selected_marca = isset($_GET['marca']) ? trim($_GET['marca']) : '';
             $selected_modelo = isset($_GET['modelo']) ? trim($_GET['modelo']) : '';
             $selected_tipo = isset($_GET['tipo']) ? trim($_GET['tipo']) : '';
@@ -77,7 +77,7 @@ $is_mobile = isMobile();
                 $modelos = mysqli_fetch_all($modelos_res, MYSQLI_ASSOC);
                 mysqli_stmt_close($stmt_modelos);
 
-                // Si el modelo seleccionado no pertenece a la marca actual, ignorarlo.
+                // Me aseguro de que si hay un modelo seleccionado, este pertenezca a la marca actual. Si no, lo ignoro.
                 if ($selected_modelo !== '') {
                     $stmt_valida_modelo = mysqli_prepare($conexion, "SELECT COUNT(*) AS total FROM motos WHERE marca = ? AND modelo = ?");
                     mysqli_stmt_bind_param($stmt_valida_modelo, 'ss', $selected_marca, $selected_modelo);
@@ -98,7 +98,7 @@ $is_mobile = isMobile();
             $tipos_res = mysqli_query($conexion, "SELECT DISTINCT tipo FROM motos WHERE tipo IS NOT NULL AND tipo <> '' ORDER BY tipo");
             $tipos = mysqli_fetch_all($tipos_res, MYSQLI_ASSOC);
 
-            // Mostrar formulario de filtros (selects dinámicos)
+            // Aquí muestro el formulario de filtros con los `select` dinámicos.
             ?>
             <form method="get" action="catalogo.php" class="formulario-filtros espaciado-arriba-20 catalogo-filtros-form">
                 <div class="form-grid-3-col">
@@ -156,7 +156,7 @@ $is_mobile = isMobile();
             $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
             $offset = ($page - 1) * $per_page;
 
-            // Construir WHERE y parámetros para prepared statements con los valores ya validados.
+            // Construyo la cláusula WHERE y los parámetros para las consultas preparadas con los valores que ya he validado.
             $where_clauses = array("disponible = 1");
             $params = array();
             $types = '';
@@ -174,11 +174,11 @@ $is_mobile = isMobile();
             $where_sql = '';
             if (count($where_clauses) > 0) { $where_sql = ' WHERE ' . implode(' AND ', $where_clauses); }
 
-            // Contar resultados totales
+            // Cuento el total de resultados que coinciden con los filtros para la paginación.
             $count_sql = "SELECT COUNT(*) as total FROM motos " . $where_sql;
             $count_stmt = mysqli_prepare($conexion, $count_sql);
             if ($types !== '') {
-                // bind params by reference
+                // Hago el bind de los parámetros por referencia.
                 $bind_names = array();
                 $bind_names[] = $types;
                 for ($i=0; $i<count($params); $i++) { $bind_names[] = & $params[$i]; }
@@ -192,11 +192,11 @@ $is_mobile = isMobile();
 
             $total_pages = max(1, ceil($total / $per_page));
 
-            // Consulta principal con LIMIT
+            // Ahora sí, hago la consulta principal con el LIMIT para la paginación.
             $sql = "SELECT * FROM motos " . $where_sql . " ORDER BY marca, modelo LIMIT ? OFFSET ?";
             $stmt = mysqli_prepare($conexion, $sql);
-            // bind params including pagination integers
-            $params_with_limit = $params; // Los parámetros de los filtros
+            // Hago el bind de los parámetros, incluyendo los de la paginación (LIMIT y OFFSET).
+            $params_with_limit = $params; // Cojo los parámetros de los filtros.
             $types_with_limit = $types . 'ii';
             $params_with_limit[] = $per_page;
             $params_with_limit[] = $offset;
@@ -209,12 +209,12 @@ $is_mobile = isMobile();
             mysqli_stmt_execute($stmt);
             $resultado = mysqli_stmt_get_result($stmt);
             
-            // Mostrar resultados
+            // Muestro los resultados en la cuadrícula.
             echo '<div class="grid">';
             $filas_mostradas = 0;
             while ($fila = mysqli_fetch_assoc($resultado)) {
                 $filas_mostradas++;
-                    // Estructura de la tarjeta actualizada para coincidir con .card y .card-body
+                    // La estructura de la tarjeta está diseñada para coincidir con mis clases .card y .card-body.
                     echo '<div class="card">';
                     if (!empty($fila['imagen'])) {
                         echo '<img src="data:image/jpeg;base64,' . base64_encode($fila['imagen']) . '" alt="Moto">';

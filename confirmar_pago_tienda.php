@@ -12,35 +12,35 @@ if (isset($_GET['id'])) {
     
     $id_alquiler = (int)$_GET['id'];
 
-    // Inicio una transacción. Esto es para asegurar que las dos operaciones siguientes
+    // Inicio una transacción. Esto es para asegurarme de que las dos operaciones siguientes
     // (actualizar el alquiler y la moto) se hagan a la vez. O se hacen las dos, o no se hace ninguna.
     mysqli_begin_transaction($conexion);
 
-    // Primero, cambio el estado del alquiler a 'confirmado'.
+    // 1. Cambio el estado del alquiler a 'confirmado'.
     $sql_update_alquiler = "UPDATE alquileres SET estado = 'confirmado' WHERE id = ?";
     $stmt_alquiler = mysqli_prepare($conexion, $sql_update_alquiler);
     mysqli_stmt_bind_param($stmt_alquiler, "i", $id_alquiler);
     $exito_alquiler = mysqli_stmt_execute($stmt_alquiler);
     mysqli_stmt_close($stmt_alquiler);
 
-    // Segundo, necesito saber qué moto es para poder marcarla como no disponible.
+    // 2. Necesito saber qué moto es para poder marcarla como no disponible.
     // Busco el ID de la moto a partir del ID del alquiler.
     $sql_get_moto = "SELECT moto_id FROM alquileres WHERE id = ?";
     $stmt_get_moto = mysqli_prepare($conexion, $sql_get_moto);
     mysqli_stmt_bind_param($stmt_get_moto, "i", $id_alquiler);
     mysqli_stmt_execute($stmt_get_moto);
     $resultado_moto = mysqli_stmt_get_result($stmt_get_moto);
-    $moto_id = mysqli_fetch_assoc($resultado_moto)['moto_id'];
+    $moto_id = mysqli_fetch_assoc($resultado_moto)['moto_id'] ?? 0;
     mysqli_stmt_close($stmt_get_moto);
 
-    // Tercero, con el ID de la moto, la actualizo y la pongo como no disponible.
+    // 3. Con el ID de la moto, la actualizo y la pongo como no disponible.
     $sql_update_moto = "UPDATE motos SET disponible = 0 WHERE id = ?";
     $stmt_moto = mysqli_prepare($conexion, $sql_update_moto);
     mysqli_stmt_bind_param($stmt_moto, "i", $moto_id);
     $exito_moto = mysqli_stmt_execute($stmt_moto);
     mysqli_stmt_close($stmt_moto);
     
-    // Si las dos actualizaciones han funcionado bien, guardo los cambios en la base de datos.
+    // Si las dos actualizaciones han funcionado bien, guardo los cambios permanentemente en la base de datos.
     if ($exito_alquiler && $exito_moto) {
         mysqli_commit($conexion); // Confirmar cambios si todo fue bien
         header('Location: admin_dashboard.php?msg=actualizado');

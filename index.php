@@ -1,9 +1,9 @@
 <?php
 /**
  * index.php
- * Página de entrada del sitio.
- * - Muestra navegación, promociones y enlaces a catálogo, login y registro.
- * - Detecta si el usuario está autenticado para ajustar las opciones de menú.
+ * Esta es la página de entrada de mi sitio.
+ * - Muestra la navegación principal, algunas motos destacadas y los enlaces a catálogo, login y registro.
+ * - He programado que detecte si el usuario está autenticado para ajustar las opciones del menú.
  */
 header('Content-Type: text/html; charset=utf-8');
 session_start();

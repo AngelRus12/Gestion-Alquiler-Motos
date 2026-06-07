@@ -1,9 +1,9 @@
 <?php
 /**
  * registro.php
- * Página de registro de nuevos usuarios.
- * - Guarda temporalmente los datos inválidos en sesión para reinsertarlos en el formulario.
- * - Utiliza validación HTML y mensajes de error claros para facilitar la experiencia.
+ * Esta es mi página de registro para nuevos usuarios.
+ * - Para mejorar la experiencia, si hay un error, guardo temporalmente los datos en la sesión para volver a mostrarlos en el formulario y que el usuario no tenga que reescribir todo.
+ * - Uso validación HTML y mensajes de error claros para que sea más fácil de usar.
  */
 require_once 'funciones.php';
 start_secure_session();

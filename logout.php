@@ -1,8 +1,8 @@
 <?php
 /**
  * logout.php
- * Cierra la sesión del usuario y redirige al inicio.
- * - Elimina todas las variables de sesión y termina la sesión.
+ * Este script cierra la sesión del usuario y lo redirige al inicio.
+ * - Elimino todas las variables de sesión y destruyo la sesión por completo.
  */
 session_start();
 

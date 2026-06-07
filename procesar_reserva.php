@@ -1,19 +1,19 @@
 <?php
 /**
  * procesar_reserva.php
- * Script que procesa una petición de reserva desde detalle_moto.php.
- * - Verifica sesión, fechas válidas y disponibilidad.
- * - Calcula el precio en el servidor para evitar manipulaciones.
- * - Inserta la reserva con estado 'pendiente' y redirige según el método de pago.
+ * Este es el script que procesa una petición de reserva desde la página de detalle de la moto.
+ * - Verifico la sesión del usuario, que las fechas sean válidas y que haya disponibilidad.
+ * - Calculo el precio siempre en el servidor para evitar manipulaciones desde el cliente.
+ * - Inserto la reserva con estado 'pendiente' y redirijo al usuario según el método de pago que haya elegido.
  */
 // --- CONFIGURACIÓN DE LA SESIÓN ---
-// Se establece un tiempo de vida de 30 minutos para la sesión.
+// Establezco un tiempo de vida de 30 minutos para la sesión.
 ini_set('session.gc_maxlifetime', 1800);
 session_set_cookie_params(1800);
-// Se inicia la sesión para poder acceder a las variables de sesión.
+// Inicio la sesión para poder acceder a las variables de sesión.
 session_start();
 
-// Se incluyen los archivos de configuración de la BD y de funciones reutilizables.
+// Incluyo los archivos de configuración de la BD y mis funciones reutilizables.
 require_once 'loginbd.php';
 require_once 'funciones.php';
 
@@ -30,7 +30,7 @@ if (!$conexion) {
     die("Error de conexión: " . mysqli_connect_error());
 }
 // Establece la codificación de caracteres a UTF-8.
-mysqli_set_charset($conexion, "utf8");
+mysqli_set_charset($conexion, "utf8"); // Pongo la codificación a UTF-8 para la conexión.
 
 // --- 3. RECOLECCIÓN Y VALIDACIÓN DE DATOS DEL FORMULARIO ---
 // Se recogen los datos del formulario de reserva.
@@ -56,26 +56,26 @@ if (existe_solapamiento_reserva($conexion, $moto_id, $f_inicio, $f_fin)) {
 }
 
 // --- 5. CÁLCULO SEGURO DEL PRECIO EN EL SERVIDOR ---
-// CRÍTICO: Es fundamental que los cálculos de días y, sobre todo, el precio total, se hagan aquí, en el backend.
-// Si se confiara en un precio enviado desde el formulario del cliente (frontend), un usuario malintencionado
-// podría manipularlo fácilmente para pagar menos. Aquí, se recalcula todo de forma segura.
+// ¡CRÍTICO! Para mí es fundamental que los cálculos de días y, sobre todo, el precio total, se hagan aquí, en el backend.
+// Si confiara en un precio enviado desde el formulario del cliente (frontend), un usuario malintencionado
+// podría manipularlo fácilmente para pagar menos. Por eso, aquí recalculo todo de forma segura.
 
-// Se calculan los días de alquiler.
+// Calculo los días de alquiler.
 $dias = (strtotime($f_fin) - strtotime($f_inicio)) / 86400 + 1;
-// Se llama a una función segura que obtiene el precio/día de la moto desde la BD y calcula el total.
+// Llamo a mi función segura que obtiene el precio/día de la moto desde la BD y calcula el total.
 $total = calcular_precio_total($conexion, $moto_id, $f_inicio, $f_fin);
 
-// El estado inicial de cualquier reserva nueva es 'pendiente'.
-// Este estado cambiará a 'confirmado' solo después de que el pago se complete con éxito.
+// El estado inicial de cualquier reserva nueva que creo es 'pendiente'.
+// Este estado solo cambiará a 'confirmado' después de que el pago se complete con éxito.
 $estado = 'pendiente'; 
 
 // --- 5. INSERCIÓN EN LA BASE DE DATOS ---
-// Se inserta la nueva reserva en la tabla `alquileres` usando una consulta preparada para máxima seguridad.
+// Inserto la nueva reserva en la tabla `alquileres` usando una consulta preparada para máxima seguridad.
 $sql = "INSERT INTO alquileres (usuario_id, moto_id, fecha_inicio, fecha_fin, dias_alquiler, precio_total, estado) 
         VALUES (?, ?, ?, ?, ?, ?, ?)";
 
 $stmt = mysqli_prepare($conexion, $sql);
-// Se asocian las variables a los marcadores de posición. "iissids" especifica los tipos de datos:
+// Asocio las variables a los marcadores de posición. "iissids" especifica los tipos de datos:
 // i (integer), s (string), d (double).
 mysqli_stmt_bind_param($stmt, "iissids", $u_id, $moto_id, $f_inicio, $f_fin, $dias, $total, $estado);
 
@@ -84,21 +84,21 @@ if (mysqli_stmt_execute($stmt)) {
     // --- 6. REDIRECCIÓN SEGÚN EL MÉTODO DE PAGO ---
     // Si la reserva se guarda correctamente, se decide el siguiente paso según el método de pago elegido.
     if ($metodo == 'web') {
-        // Si el pago es online ('web'), se guarda el ID del alquiler recién creado y el monto en la sesión.
-        // Luego, se redirige al usuario a la página de la pasarela de pago (`pago.php`).
+        // Si el pago es online ('web'), guardo el ID del alquiler recién creado y el monto en la sesión.
+        // Luego, redirijo al usuario a mi página de la pasarela de pago (`pago.php`).
         $_SESSION['id_pago_pendiente'] = mysqli_insert_id($conexion);
         $_SESSION['monto_pago'] = $total;
         header('Location: pago.php');
     } else {
-        // Si el método es otro (ej. 'tienda'), se redirige directamente al perfil del usuario.
+        // Si el método es otro (ej. 'tienda'), lo redirijo directamente a su perfil.
         header('Location: perfil_usuario.php?reserva=ok');
     }
 } else {
-    // Si hay un error al guardar en la base de datos, se redirige a la página de detalle de la moto con un error.
+    // Si hay un error al guardar en la base de datos, lo redirijo a la página de detalle de la moto con un mensaje de error.
     header('Location: detalle_moto.php?id=' . $moto_id . '&error=reserva');
 }
 
-// Se cierran la consulta preparada y la conexión.
+// Cierro la consulta preparada y la conexión.
 mysqli_stmt_close($stmt);
 mysqli_close($conexion);
 ?>

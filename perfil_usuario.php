@@ -1,15 +1,15 @@
 <?php
 /**
  * perfil_usuario.php
- * Panel personal del usuario autenticado.
- * - Muestra datos personales, historial de alquileres y mensajes de estado.
- * - Emplea funciones centralizadas como actualizar_sistema_completo() para mantener la consistencia.
+ * Este es el panel personal del usuario una vez que se ha autenticado.
+ * - Aquí le muestro sus datos personales, su historial de alquileres y los mensajes de estado (ej. pago confirmado).
+ * - Uso mi función centralizada `actualizar_sistema_completo()` para mantener la consistencia de los datos.
  */
 header('Content-Type: text/html; charset=utf-8');
 session_start();
 require_once 'loginbd.php';
 
-// Incluir funciones y actualizar el sistema
+// Incluyo mis funciones y actualizo el sistema.
 require_once 'funciones.php';
 
 // ¡SEGURIDAD! Generamos un token CSRF para proteger los formularios de esta página.
@@ -22,15 +22,15 @@ if (!isset($_SESSION['usuario_id'])) {
 
 $conexion = mysqli_connect($db_hostname, $db_username, $db_password, $db_database);
 
-// Se llama a la función que actualiza el estado de todo el sistema antes de mostrar la página.
-// Esto asegura que el usuario vea siempre la información más reciente (ej. un alquiler que acaba de finalizar).
+// Llamo a la función que actualiza el estado de todo el sistema antes de mostrar la página.
+// Así me aseguro de que el usuario vea siempre la información más reciente (ej. un alquiler que acaba de finalizar).
 actualizar_sistema_completo($conexion);
 
 mysqli_set_charset($conexion, "utf8");
 
 $u_id = $_SESSION['usuario_id'];
 
-// Se obtienen los datos del usuario y sus estadísticas (antigüedad, total gastado)
+// Obtengo los datos del usuario y sus estadísticas (antigüedad, total gastado)
 // utilizando las funciones personalizadas creadas en `funciones.php`.
 // Usar consultas preparadas para seguridad y eficiencia
 $sql_usuario = "SELECT *, antiguedad_usuario(?) as dias_antiguedad, total_gastadoo(?) as total_invertido FROM usuarios WHERE id = ?";
@@ -44,7 +44,7 @@ mysqli_stmt_close($stmt_usuario);
 // --- LÓGICA DE PAGINACIÓN PARA ALQUILERES ---
 $limit = 10; // 10 alquileres por página
 
-// 1. Contar el total de alquileres del usuario.
+// 1. Cuento el total de alquileres del usuario para saber cuántas páginas necesito.
 $sql_count = "SELECT COUNT(*) as total FROM alquileres WHERE usuario_id = ?";
 $stmt_count = mysqli_prepare($conexion, $sql_count);
 mysqli_stmt_bind_param($stmt_count, "i", $u_id);
@@ -52,12 +52,12 @@ mysqli_stmt_execute($stmt_count);
 $total_alquileres = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt_count))['total'] ?? 0;
 mysqli_stmt_close($stmt_count);
 
-// 2. Calcular páginas.
+// 2. Calculo el número total de páginas.
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
 $total_pages = ceil($total_alquileres / $limit);
 
-// 3. Se obtienen los alquileres del usuario para la página actual.
+// 3. Obtengo solo los alquileres del usuario para la página actual.
 $sql_alquileres = "SELECT * FROM alquileres WHERE usuario_id = ? ORDER BY fecha_reserva DESC LIMIT ? OFFSET ?";
 $stmt_alquileres = mysqli_prepare($conexion, $sql_alquileres);
 mysqli_stmt_bind_param($stmt_alquileres, "iii", $u_id, $limit, $offset);
@@ -67,7 +67,7 @@ $alquileres_data = mysqli_fetch_all($alquileres, MYSQLI_ASSOC); // Datos solo pa
 mysqli_stmt_close($stmt_alquileres);
 
 // --- OPTIMIZACIÓN N+1 ---
-// 1. Recolectar todos los IDs de moto de los alquileres.
+// 1. Para evitar el problema N+1, primero recolecto todos los IDs de las motos de los alquileres de esta página.
 $moto_ids = [];
 foreach ($alquileres_data as $alq) {
     if (!in_array($alq['moto_id'], $moto_ids)) {
@@ -75,10 +75,10 @@ foreach ($alquileres_data as $alq) {
     }
 }
 
-// 2. Obtener todas las motos necesarias en UNA SOLA consulta.
+// 2. Ahora obtengo todas las motos necesarias en UNA SOLA consulta.
 $motos_map = [];
 if (!empty($moto_ids)) {
-    // Creamos los placeholders (?) dinámicamente
+    // Creo los placeholders (?) dinámicamente para la cláusula IN.
     $placeholders = implode(',', array_fill(0, count($moto_ids), '?'));
     $types = str_repeat('i', count($moto_ids));
     $sql_motos = "SELECT id, marca, modelo FROM motos WHERE id IN ($placeholders)";
@@ -87,12 +87,12 @@ if (!empty($moto_ids)) {
     mysqli_stmt_execute($stmt_motos);
     $resultado_motos = mysqli_stmt_get_result($stmt_motos);
     while ($moto = mysqli_fetch_assoc($resultado_motos)) {
-        $motos_map[$moto['id']] = $moto; // Creamos un mapa para fácil acceso
+        $motos_map[$moto['id']] = $moto; // Creo un mapa para un acceso súper rápido después.
     }
     mysqli_stmt_close($stmt_motos);
 }
 
-// Función para generar los enlaces de paginación (local para esta página)
+// He creado esta función para generar los enlaces de paginación, es local para esta página.
 function generar_paginacion($page, $total_pages, $base_url) {
     if ($total_pages <= 1) return;
 
@@ -115,7 +115,7 @@ function generar_paginacion($page, $total_pages, $base_url) {
     echo '</div>';
 }
 
-// Función para detectar dispositivos móviles
+// Función simple para detectar si es un dispositivo móvil y cargar un CSS diferente.
 function isMobile() {
     return preg_match("/(android|avantgo|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino)/i", $_SERVER["HTTP_USER_AGENT"]);
 }
@@ -168,13 +168,13 @@ $is_mobile = isMobile();
             <h2 class="titulo-pagina">Mi Perfil</h2>
             
             <?php
-            // Aquí compruebo si en la URL viene un parámetro 'pago'.
+            // Aquí compruebo si en la URL viene un parámetro 'pago' desde el callback.
             if (isset($_GET['pago'])) {
                 $mensaje = '';
                 $clase_alerta = 'alerta-exito';
                 $icono_alerta = '✔️';
                 
-                // Según el valor del parámetro ('confirmado', 'rechazado', etc.),
+                // Según el valor del parámetro ('confirmado', 'rechazado', etc.), preparo un mensaje
                 // preparo un mensaje y un estilo diferente para la alerta.
                 switch ($_GET['pago']) {
                     case 'confirmado':
@@ -204,7 +204,7 @@ $is_mobile = isMobile();
                         break;
                 }
                 
-                // Si he preparado un mensaje, lo muestro en un 'div' con el estilo correspondiente.
+                // Si he preparado un mensaje, lo muestro en un 'div' con su estilo correspondiente.
                 if ($mensaje) {
                     echo '<div class="alerta ' . $clase_alerta . '">';
                     echo '<span class="alerta-icono">' . $icono_alerta . '</span> ' . $mensaje;
@@ -212,14 +212,14 @@ $is_mobile = isMobile();
                 }
             }
             
-            // Este es un mensaje más simple para cuando se paga en tienda.
+            // Este es un mensaje más simple para cuando el usuario elige pagar en tienda.
             if (isset($_GET['reserva']) && $_GET['reserva'] == 'ok') {
                 echo '<div class="alerta-exito">';
                 echo '<span class="alerta-icono">✔️</span> ¡Reserva realizada exitosamente! El pago se realizará en tienda.';
                 echo '</div>';
             }
 
-            // Lógica similar para los mensajes de cambio de contraseña.
+            // He implementado una lógica similar para los mensajes de cambio de contraseña.
             // Si el cambio fue bueno, muestro un mensaje de éxito.
             if (isset($_GET['password_change'])) {
                 echo '<div class="alerta alerta-exito">✔️ Tu contraseña ha sido actualizada correctamente.</div>';
@@ -243,7 +243,7 @@ $is_mobile = isMobile();
                 echo '<div class="alerta alerta-error">❌ ' . $error_msg . '</div>';
             }
 
-            // Y lo mismo para los mensajes de cancelación de reserva.
+            // Y lo mismo para los mensajes de cancelación de una reserva.
             if (isset($_GET['cancelacion']) && $_GET['cancelacion'] == 'exitosa') {
                 echo '<div class="alerta alerta-exito">✔️ Tu reserva ha sido cancelada correctamente.</div>';
             }
@@ -297,7 +297,7 @@ $is_mobile = isMobile();
                         if (count($alquileres_data) > 0) {
                             // Recorro la lista de alquileres del usuario.
                             foreach ($alquileres_data as $alq) {
-                                // Buscamos la moto en nuestro mapa, sin hacer una nueva consulta.
+                                // Busco la moto en mi mapa, sin hacer una nueva consulta por cada fila.
                                 $moto = $motos_map[$alq['moto_id']] ?? null;
                                 $moto_nombre = ($moto)
                                     ? htmlspecialchars($moto['marca'] . " " . $moto['modelo'])
@@ -311,7 +311,7 @@ $is_mobile = isMobile();
                             <td class="precio"><?php echo htmlspecialchars($alq['precio_total']); ?>€</td>
                             <td class="text-center">
                                 <span class="etiqueta <?php
-                                    // Aquí pongo una clase CSS diferente según el estado del alquiler para que tenga un color distinto.
+                                    // Aquí pongo una clase CSS diferente según el estado del alquiler para que tenga un color distintivo.
                                     if($alq['estado'] == 'en_curso') { echo 'en-curso'; } // azul
                                     elseif($alq['estado'] == 'finalizado') { echo 'etiqueta-error'; } // rojo
                                     elseif($alq['estado'] == 'confirmado') { echo 'etiqueta-exito'; } // verde
@@ -324,7 +324,7 @@ $is_mobile = isMobile();
                             <td class="text-center">
                                 <a href="detalle_alquiler.php?id=<?php echo htmlspecialchars($alq['id']); ?>" class="boton boton-pequeño">Ver Detalles</a>
                                 <?php
-                                // Lógica para mostrar botones de Cancelar/Modificar
+                                // Mi lógica para mostrar los botones de Cancelar/Modificar es la siguiente:
                                 // 1. El estado debe ser 'pendiente' o 'confirmado'.
                                 // 2. Deben faltar más de 48 horas para el inicio del alquiler.
                                 $es_modificable = false;

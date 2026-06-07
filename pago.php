@@ -1,26 +1,26 @@
 <?php
-// Inicia la sesión para acceder a las variables de sesión.
+// Inicio la sesión para poder acceder a las variables que guardé en el paso anterior.
 session_start();
 
 // --- 1. CONTROL DE ACCESO ---
-// Si un usuario llega a esta página sin haber iniciado un proceso de reserva
-// (es decir, sin que exista `id_pago_pendiente` en su sesión), se le redirige al catálogo.
+// Si un usuario llega a esta página sin haber iniciado un proceso de reserva,
+// lo que significa que no existe `id_pago_pendiente` en su sesión, lo redirijo al catálogo.
 if (!isset($_SESSION['id_pago_pendiente'])) {
     header('Location: catalogo.php');
     exit();
 }
 
 // --- 2. RECOLECCIÓN DE DATOS DE LA SESIÓN ---
-// Se recupera el monto a pagar y el ID del alquiler desde las variables de sesión.
+// Recupero el monto a pagar y el ID del alquiler desde las variables de sesión.
 $monto = $_SESSION['monto_pago'];
 $id_alquiler = $_SESSION['id_pago_pendiente'];
 
 // --- 3. PREPARACIÓN DE DATOS PARA LA PASARELA DE PAGO ---
-// Se preparan los datos que se enviarán al simulador de la pasarela de pago.
+// Preparo los datos que voy a enviar a mi simulador de pasarela de pago.
 $amount = $monto; // Monto en euros
 
-// Se crea un ID de orden único para esta transacción, combinando el ID del alquiler y una marca de tiempo.
-// Esto es útil para el seguimiento y para evitar procesar la misma orden dos veces.
+// Creo un ID de orden único para esta transacción, combinando el ID del alquiler y una marca de tiempo.
+// Esto me resulta útil para el seguimiento y para evitar procesar la misma orden dos veces.
 $order_id = 'ALQ-' . $id_alquiler . '-' . time();
 $description = 'Alquiler de motocicleta - ID: ' . $id_alquiler;
 
@@ -28,7 +28,7 @@ $description = 'Alquiler de motocicleta - ID: ' . $id_alquiler;
 // En este caso, es el script `callback_pago.php` que procesará el resultado.
 // Se construye la URL de retorno dinámicamente para mayor robustez.
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-$host = $_SERVER['HTTP_HOST'];
+$host = $_SERVER['HTTP_HOST']; // Construyo la URL de retorno dinámicamente para que funcione en cualquier servidor.
 $return_url = $protocol . '://' . $host . '/perfil_usuario.php';
 ?>
 <!DOCTYPE html>
