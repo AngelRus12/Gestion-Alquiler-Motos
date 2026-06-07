@@ -141,17 +141,20 @@ $is_mobile = isMobile();
             <h2 class="titulo-pagina text-left">Detalle del Alquiler #<?php echo htmlspecialchars($alquiler['id']); ?></h2>
             <a href="perfil_usuario" class="enlace-discreto enlace-volver">&larr; Volver a Mi Perfil</a>
 
-            <div class="detalle-alquiler-container">
-                <div class="moto-detalle-card">
-                    <?php 
-                    $imagen_src = 'imgs/default.jpg';
-                    if (!empty($alquiler['imagen'])) {
-                        $imagen_src = 'data:image/jpeg;base64,' . base64_encode($alquiler['imagen']);
-                    }
-                    ?>
-                    <img src="<?php echo htmlspecialchars($imagen_src); ?>" alt="Moto">
+            <div class="detalle-grid-alquiler">
+                <!-- Contenedor de la imagen (solo para móvil) -->
+                <div class="detalle-img-alquiler">
+                     <?php 
+                        $imagen_src = 'imgs/default.jpg';
+                        if (!empty($alquiler['imagen'])) {
+                            $imagen_src = 'data:image/jpeg;base64,' . base64_encode($alquiler['imagen']);
+                        }
+                     ?>
+                    <img src="<?php echo htmlspecialchars($imagen_src); ?>" alt="Imagen de la moto">
+                </div>
+
+                <div class="moto-detalle-card moto-detalle-card-alquiler">
                     <h3><?php echo htmlspecialchars($alquiler['marca'] . " " . $alquiler['modelo']); ?></h3>
-                    <p class="texto-gris-claro"><?php echo htmlspecialchars($alquiler['moto_descripcion']); ?></p>
                     <span class="etiqueta etiqueta-azul"><?php echo strtoupper(htmlspecialchars($alquiler['tipo'])); ?></span>
                 </div>
 
@@ -165,7 +168,7 @@ $is_mobile = isMobile();
                         </p>
                         <p><strong>Fecha de reserva:</strong> <?php echo htmlspecialchars(date("d/m/Y H:i", strtotime($alquiler['fecha_reserva']))); ?></p>
                         <p><strong>Fecha de finalización:</strong> <?php echo htmlspecialchars(date("d/m/Y H:i", strtotime($alquiler['fecha_fin']))); ?></p>
-                        <p><strong>Cliente:</strong> <?php echo htmlspecialchars($alquiler['nombre'] . " " . $alquiler['apellidos']); ?></p>
+                        <p><strong>Cliente:</strong> <?php echo htmlspecialchars($alquiler['nombre'] . " " . $alquiler['apellidos']); ?> (<?php echo htmlspecialchars($alquiler['dni']); ?>)</p>
                         <p><strong>Email:</strong> <?php echo htmlspecialchars($alquiler['email']); ?></p>
                     </div>
 
