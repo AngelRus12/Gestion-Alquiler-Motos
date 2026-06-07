@@ -46,7 +46,13 @@ if ($usuario = mysqli_fetch_assoc($resultado)) {
         $_SESSION['usuario_nombre'] = $usuario['nombre'];
         $_SESSION['rol'] = $usuario['rol']; 
         
-        if ($usuario['rol'] == 'admin') {
+        // ¡MEJORA! Compruebo si hay una URL guardada para redirigir al usuario
+        // a la página donde estaba antes de iniciar sesión.
+        if (isset($_SESSION['redirect_url'])) {
+            $redirect_url = $_SESSION['redirect_url'];
+            unset($_SESSION['redirect_url']); // Limpio la variable para futuros logins
+            header('Location: ' . $redirect_url);
+        } else if ($usuario['rol'] == 'admin') {
             header('Location: admin_dashboard.php');
         } else {
             header('Location: index.php');

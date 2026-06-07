@@ -46,6 +46,15 @@ function isMobile() {
 }
 
 $is_mobile = isMobile();
+
+// ¡MEJORA! Compruebo si hay datos de una reserva temporal en la sesión.
+// Si es así, los guardo en variables para usarlos en el formulario.
+$reserva_temporal = null;
+if (isset($_SESSION['reserva_temporal'])) {
+    $reserva_temporal = $_SESSION['reserva_temporal'];
+    // Limpio la variable de sesión para que no se vuelva a usar.
+    unset($_SESSION['reserva_temporal']);
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -130,11 +139,11 @@ $is_mobile = isMobile();
 
                             <div class="form-group">
                                 <label>Fecha Inicio:</label>
-                                <input type="date" name="f_inicio" id="f_inicio" required onchange="calcularTotal()">
+                                <input type="date" name="f_inicio" id="f_inicio" required onchange="calcularTotal()" value="<?php echo htmlspecialchars($reserva_temporal['f_inicio'] ?? ''); ?>">
                             </div>
                             <div class="form-group">
                                 <label>Fecha Fin:</label>
-                                <input type="date" name="f_fin" id="f_fin" required onchange="calcularTotal()">
+                                <input type="date" name="f_fin" id="f_fin" required onchange="calcularTotal()" value="<?php echo htmlspecialchars($reserva_temporal['f_fin'] ?? ''); ?>">
                             </div>
                             <div class="form-group">
                                 <label>Método de Pago:</label>
@@ -205,6 +214,12 @@ $is_mobile = isMobile();
             const f_inicio_input = document.getElementById('f_inicio');
             const f_fin_input = document.getElementById('f_fin');
             const precio_dia = parseFloat(document.getElementById('precio_dia_val').value);
+
+            // Si las fechas ya tienen valor al cargar la página, calculamos el total.
+            if (f_inicio_input.value && f_fin_input.value) {
+                calcularTotal();
+            }
+
             const moto_id = <?php echo $moto['id']; ?>;
 
             const precioDesglose = document.getElementById('precio-desglose');

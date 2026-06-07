@@ -19,7 +19,14 @@ require_once 'funciones.php';
 
 // --- 1. CONTROL DE ACCESO ---
 // Verifica si el usuario ha iniciado sesión. Si no, lo redirige al login.
+// ¡MEJORA! Ahora, si no ha iniciado sesión, guardo los datos de la reserva
+// en la sesión para que no se pierdan y le pido que inicie sesión.
 if (!isset($_SESSION['usuario_id'])) {
+    $_SESSION['redirect_url'] = 'detalle_moto.php?id=' . (int)$_POST['id_moto'];
+    $_SESSION['reserva_temporal'] = [
+        'f_inicio' => $_POST['f_inicio'],
+        'f_fin' => $_POST['f_fin']
+    ];
     header('Location: login.php?error=acceso_denegado');
     exit();
 }
