@@ -150,7 +150,7 @@ $is_mobile = isMobile();
                     }
 
                     if ($_SESSION['rol'] === 'admin') { ?>
-                        <a href="admin_dashboard" class="nav-destacado">Panel Admin</a>
+                        <a href="admin_dashboard" class="nav-destacado">Administración</a>
                     <?php } ?>
 
                     <a href="perfil_usuario">Mi Perfil</a> 

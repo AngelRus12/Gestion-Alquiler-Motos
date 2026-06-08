@@ -79,7 +79,7 @@ if (isset($_SESSION['reserva_temporal'])) {
                 <a href="catalogo.php">Catálogo</a>
                 <?php if (isset($_SESSION['usuario_id'])): ?>
                     <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin'): ?>
-                        <a href="admin_dashboard.php" class="nav-destacado">Panel Admin</a>
+                        <a href="admin_dashboard.php" class="nav-destacado">Administración</a>
                     <?php endif; ?>
                     <a href="perfil_usuario.php">Mi Perfil</a> 
                     <a href="logout.php">Cerrar Sesión</a>

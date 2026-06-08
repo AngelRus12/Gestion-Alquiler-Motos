@@ -172,14 +172,14 @@ function generar_paginacion($page, $total_pages, $base_url) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="logo.png" type="image/png">
     <link rel="apple-touch-icon" href="logo.png">
-    <title>Panel Administrativo - ARUSLAT</title>
+    <title>Administración - ARUSLAT</title>
     <link rel="stylesheet" href="estilos.css">
 </head>
 <body>
     
     <header class="barra-navegacion">
         <div class="contenedor">
-            <h1>ARUSLAT Admin</h1>
+            <h1>Administración</h1>
             <nav>
                 <a href="index">Ir a la Web</a>
                 <a href="perfil_usuario">Mi Perfil</a>
