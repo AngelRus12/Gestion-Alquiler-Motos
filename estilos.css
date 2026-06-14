@@ -649,6 +649,10 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
     grid-column: 1 / -1;
 }
 
+.detalle-info .etiqueta {
+    margin-top: 10px;
+}
+
 /* Componentes de Perfil de Usuario */
 .stats-badge {
     display: inline-block;
@@ -695,32 +699,6 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
     margin-top: 20px;
 }
 
-/* Componentes de Detalle de Alquiler */
-.detalle-alquiler-container {
-    display: flex;
-    gap: 30px;
-    margin-top: 40px;
-    align-items: flex-start;
-}
-.moto-detalle-card {
-    flex: 1;
-    background: var(--bg-tarjeta);
-    border: 1px solid var(--borde-tarjeta);
-    border-radius: var(--borde-redondeado);
-    padding: 20px;
-    box-shadow: var(--sombre-tarjeta);
-}
-.moto-detalle-card img {
-    width: 100%;
-    border-radius: 8px;
-    margin-bottom: 15px;
-}
-.resumen-alquiler {
-    flex: 1;
-}
-.resumen-alquiler .perfil-container {
-    margin-top: 0;
-}
 .precio-total-grande {
     font-size: 1.5em;
 }
@@ -916,6 +894,13 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
 .text-center-muted { text-align: center; color: var(--texto-gris); }
 .text-left { text-align: left; }
 .texto-gris-claro { color: var(--texto-gris); }
+
+/* Estilo para títulos de sección con subtítulo */
+.seccion-titulo-flex {
+    text-align: center;
+    margin-bottom: 30px;
+}
+.seccion-titulo-flex h3 { margin-bottom: 5px; }
 
 /* Formularios y enlaces del panel administrativo */
 .inline-form {
@@ -1210,10 +1195,6 @@ footer p:last-child { margin-bottom: 0; color: #666; font-size: 12px;}
     .reserva-card {
         position: static; /* El panel de reserva ya no flota */
         margin-top: 20px;
-    }
-
-    .detalle-alquiler-container {
-        flex-direction: column;
     }
 
     .admin-stats-grid {

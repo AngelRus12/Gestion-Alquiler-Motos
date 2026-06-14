@@ -139,6 +139,12 @@ foreach ($alquileres_calendario as $evento) {
     ];
 }
 
+// e) Obtener solo los alquileres pendientes para la sección de confirmación
+$resultado_pendientes = mysqli_query($conexion, "SELECT * FROM alquileres WHERE estado = 'pendiente' ORDER BY fecha_reserva ASC");
+$alquileres_pendientes = mysqli_fetch_all($resultado_pendientes, MYSQLI_ASSOC);
+$hay_pendientes = count($alquileres_pendientes) > 0;
+
+
 // He creado esta función para generar los enlaces de paginación de forma reutilizable en la página.
 function generar_paginacion($page, $total_pages, $base_url) {
     if ($total_pages <= 1) return;
@@ -164,29 +170,10 @@ function generar_paginacion($page, $total_pages, $base_url) {
 
 ?>
 <!-- El resto del archivo es la estructura HTML que muestra los datos obtenidos. -->
-
-<!DOCTYPE html>
-<html lang="es">
+<?php require 'header.php'; ?>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="logo.png" type="image/png">
-    <link rel="apple-touch-icon" href="logo.png">
     <title>Administración - ARUSLAT</title>
-    <link rel="stylesheet" href="estilos.css">
 </head>
-<body>
-    
-    <header class="barra-navegacion">
-        <div class="contenedor">
-            <h1>Administración</h1>
-            <nav>
-                <a href="index">Ir a la Web</a>
-                <a href="perfil_usuario">Mi Perfil</a>
-                <a href="logout">Cerrar Sesión</a>
-            </nav>
-        </div>
-    </header>
 
     <main class="contenido-principal">
         <div class="contenedor">
@@ -396,12 +383,9 @@ function generar_paginacion($page, $total_pages, $base_url) {
                         </thead>
                         <tbody>
                             <?php 
-                            $hay_pendientes = false;
-                            // Para los pendientes, recorro todos los alquileres que cargué para el calendario, no solo los de la página actual.
-                            foreach ($alquileres_calendario as $alquiler) {
-                                if ($alquiler['estado'] === 'pendiente') {
-                                    $hay_pendientes = true;
-                                    // Uso los mapas para obtener los datos sin hacer nuevas consultas.
+                            if ($hay_pendientes) {
+                                foreach ($alquileres_pendientes as $alquiler) {
+                                    // Reutilizo los mapas de usuarios y motos que ya he cargado.
                                     $user_data = $usuarios_map[$alquiler['usuario_id']] ?? ['nombre' => 'Usuario', 'apellidos' => 'Eliminado'];
                                     $moto_data = $motos_map[$alquiler['moto_id']] ?? ['marca' => 'Moto', 'modelo' => 'Eliminada'];
                             ?>
@@ -430,8 +414,8 @@ function generar_paginacion($page, $total_pages, $base_url) {
                             </tr>
                             <?php 
                                 }
-                            } if (!$hay_pendientes) { // Si mi bandera sigue en false, es que no había ninguno. ?>
-                                <!-- Mensaje que se muestra si no hay alquileres pendientes. -->
+                            } else { 
+                            ?>
                                 <tr><td colspan="5" class="table-empty">No hay pagos pendientes de confirmación.</td></tr>
                             <?php } ?>
                         </tbody>
@@ -618,16 +602,8 @@ function generar_paginacion($page, $total_pages, $base_url) {
         document.addEventListener('DOMContentLoaded', renderCalendar);
     </script>
 
-    <footer class="pie-pagina">
-        <p>&copy; 2026 ARUSLAT - Alquiler de Motos</p>
-        <p>Proyecto TFG - Ángel Rus Latorre - ASIR</p>
-    </footer>
-
-</body>
-</html>
 <?php
-// --- 6. CIERRE DE CONEXIÓN ---
-// Cierro la conexión a la base de datos al final del script
-// para liberar recursos en el servidor. Es una buena práctica.
+require 'footer.php';
+// Cierro la conexión a la base de datos para liberar recursos.
 mysqli_close($conexion); 
 ?>

@@ -1,19 +1,21 @@
 <?php
 /**
  * perfil_usuario.php
- * Este es el panel personal del usuario una vez que se ha autenticado.
- * - Aquí le muestro sus datos personales, su historial de alquileres y los mensajes de estado (ej. pago confirmado).
- * - Uso mi función centralizada `actualizar_sistema_completo()` para mantener la consistencia de los datos.
+ * Panel personal del usuario donde puede ver sus datos, historial de alquileres y cambiar su contraseña.
+ * Utiliza `actualizar_sistema_completo()` para asegurar que los datos mostrados (ej. estado de alquileres) están al día.
  */
 header('Content-Type: text/html; charset=utf-8');
-session_start();
-require_once 'loginbd.php';
+require_once 'loginbd.php'; // Necesario antes de session_start si la sesión depende de la BD.
 
 // Incluyo mis funciones y actualizo el sistema.
 require_once 'funciones.php';
 
 // ¡SEGURIDAD! Generamos un token CSRF para proteger los formularios de esta página.
 generar_csrf_token();
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 if (!isset($_SESSION['usuario_id'])) {
     header('Location: login.php?error=acceso_denegado');
@@ -115,53 +117,11 @@ function generar_paginacion($page, $total_pages, $base_url) {
     echo '</div>';
 }
 
-// Función simple para detectar si es un dispositivo móvil y cargar un CSS diferente.
-function isMobile() {
-    return preg_match("/(android|avantgo|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino)/i", $_SERVER["HTTP_USER_AGENT"]);
-}
-
-$is_mobile = isMobile();
+require 'header.php'; // Incluir la cabecera
 ?>
-<!DOCTYPE html>
-<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="logo.png" type="image/png">
-    <link rel="apple-touch-icon" href="logo.png">
     <title>Mi Perfil - ARUSLAT</title>
-    <?php if ($is_mobile): ?>
-        <link rel="stylesheet" href="estilos_mobile.css">
-    <?php else: ?>
-        <link rel="stylesheet" href="estilos.css">
-    <?php endif; ?>
 </head>
-<body>
-    <header class="navbar">
-        <div class="container">
-            <h1><a href="index.php">ARUSLAT</a></h1>
-            <nav>
-                <a href="index">Inicio</a>
-                <a href="catalogo">Catálogo</a>
-                
-                <?php if (isset($_SESSION['usuario_id'])) { 
-                    if (!isset($_SESSION['rol'])) {
-                        $_SESSION['rol'] = $usuario['rol'];
-                    }
-
-                    if ($_SESSION['rol'] === 'admin') { ?>
-                        <a href="admin_dashboard" class="nav-destacado">Administración</a>
-                    <?php } ?>
-
-                    <a href="perfil_usuario">Mi Perfil</a> 
-                    <a href="logout">Cerrar Sesión</a>
-                <?php } else { ?>
-                    <a href="login">Login</a>
-                    <a href="registro">Registro</a>
-                <?php } ?>
-            </nav>
-        </div>
-    </header>
 
     <main class="main-content">
         <div class="container">
@@ -357,7 +317,10 @@ $is_mobile = isMobile();
             </div>
 
             <div class="perfil-container">
-                <h3>Cambiar Contraseña</h3>
+                <div class="seccion-titulo-flex">
+                    <h3>Cambiar Contraseña</h3>
+                    <p class="texto-gris-claro">Para tu seguridad, elige una contraseña fuerte.</p>
+                </div>
                 <form action="procesar_cambio_password.php" method="POST" class="form-grid-3-col">
                     <!-- Campo oculto con el token CSRF para proteger contra ataques -->
                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
@@ -380,11 +343,6 @@ $is_mobile = isMobile();
             </div>
         </div>
     </main>
-
-    <footer>
-        <p>© 2026 ARUSLAT - Alquiler de Motos</p>
-        <p>Proyecto TFG - Ángel Rus Latorre - ASIR</p>
-    </footer>
 
     <script>
     function cancelarReserva(button, idAlquiler) {
@@ -426,5 +384,7 @@ $is_mobile = isMobile();
     }
     </script>
 </body>
-</html>
-<?php mysqli_close($conexion); ?>
+<?php 
+require 'footer.php'; // Incluir el pie de página
+mysqli_close($conexion); 
+?>

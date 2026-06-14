@@ -141,38 +141,35 @@ $is_mobile = isMobile();
             <h2 class="titulo-pagina text-left">Detalle del Alquiler #<?php echo htmlspecialchars($alquiler['id']); ?></h2>
             <a href="perfil_usuario" class="enlace-discreto enlace-volver">&larr; Volver a Mi Perfil</a>
 
-            <div class="detalle-grid-alquiler">
-                <!-- Contenedor de la imagen (solo para móvil) -->
-                <div class="detalle-img-alquiler">
-                     <?php 
-                        $imagen_src = 'imgs/default.jpg';
-                        if (!empty($alquiler['imagen'])) {
-                            $imagen_src = 'data:image/jpeg;base64,' . base64_encode($alquiler['imagen']);
-                        }
-                     ?>
-                    <img src="<?php echo htmlspecialchars($imagen_src); ?>" alt="Imagen de la moto">
-                </div>
-
-                <div class="moto-detalle-card moto-detalle-card-alquiler">
-                    <h3><?php echo htmlspecialchars($alquiler['marca'] . " " . $alquiler['modelo']); ?></h3>
+            <div class="detalle-grid">
+                <!-- Columna Izquierda: Detalles de la Moto -->
+                <div class="detalle-info">
+                    <div class="detalle-img">
+                        <?php 
+                            $imagen_src = 'imgs/default.jpg';
+                            if (!empty($alquiler['imagen'])) {
+                                $imagen_src = 'data:image/jpeg;base64,' . base64_encode($alquiler['imagen']);
+                            }
+                        ?>
+                        <img src="<?php echo htmlspecialchars($imagen_src); ?>" alt="Imagen de la moto">
+                    </div>
+                    <h3 class="titulo-seccion titulo-detalle-moto"><?php echo htmlspecialchars($alquiler['marca'] . " " . $alquiler['modelo']); ?></h3>
                     <span class="etiqueta etiqueta-azul"><?php echo strtoupper(htmlspecialchars($alquiler['tipo'])); ?></span>
+                    <p class="espaciado-arriba"><?php echo htmlspecialchars($alquiler['moto_descripcion']); ?></p>
                 </div>
 
-                <div class="resumen-alquiler">
+                <!-- Columna Derecha: Resumen del Alquiler -->
+                <div class="detalle-reserva">
                     <div class="perfil-container">
                         <h3>Resumen de la Reserva</h3>
                         <p><strong>Estado:</strong> 
-                            <span class="estado-alquiler <?php echo htmlspecialchars($alquiler['estado']); ?>">
+                            <span class="etiqueta estado-alquiler <?php echo htmlspecialchars($alquiler['estado']); ?>">
                                 <?php echo str_replace('_', ' ', strtoupper(htmlspecialchars($alquiler['estado']))); ?>
                             </span>
                         </p>
                         <p><strong>Fecha de reserva:</strong> <?php echo htmlspecialchars(date("d/m/Y H:i", strtotime($alquiler['fecha_reserva']))); ?></p>
-                        <p><strong>Fecha de finalización:</strong> <?php echo htmlspecialchars(date("d/m/Y H:i", strtotime($alquiler['fecha_fin']))); ?></p>
-                        <p><strong>Cliente:</strong> <?php echo htmlspecialchars($alquiler['nombre'] . " " . $alquiler['apellidos']); ?> (<?php echo htmlspecialchars($alquiler['dni']); ?>)</p>
-                        <p><strong>Email:</strong> <?php echo htmlspecialchars($alquiler['email']); ?></p>
-                    </div>
-
-                    <div class="perfil-container">
+                        <p><strong>Periodo:</strong> <?php echo htmlspecialchars(date("d/m/Y", strtotime($alquiler['fecha_inicio']))); ?> al <?php echo htmlspecialchars(date("d/m/Y", strtotime($alquiler['fecha_fin']))); ?></p>
+                        <hr class="divider-muted">
                         <h3>Detalles del Precio</h3>
                         <p><strong>Precio por día:</strong> <?php echo htmlspecialchars(number_format($alquiler['precio_dia'], 2)); ?>€</p>
                         <p><strong>Días de alquiler:</strong> <?php echo htmlspecialchars($alquiler['dias_alquiler']); ?></p>
